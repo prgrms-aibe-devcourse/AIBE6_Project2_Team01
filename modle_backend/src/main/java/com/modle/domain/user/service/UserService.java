@@ -6,6 +6,7 @@ import com.modle.domain.user.entity.User;
 import com.modle.domain.user.entity.Client;
 import com.modle.domain.user.entity.Model;
 import com.modle.domain.user.entity.type.Role;
+import com.modle.domain.user.entity.type.UserStatus;
 import com.modle.domain.user.repository.ClientRepository;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.UserRepository;
@@ -23,9 +24,10 @@ public class UserService {
     private final ModelRepository modelRepository;
     private final ClientRepository clientRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final AuthTokenService authTokenService;
 
     @Transactional
-    public void registerModel(ModelRegisterRequest request) {
+    public User registerModel(ModelRegisterRequest request) {
         // 1. 이메일 중복 검증
         if (userRepository.existsByEmail(request.email())) {
             throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
@@ -46,10 +48,11 @@ public class UserService {
                 request.age()
         );
         modelRepository.save(model);
+        return user;
     }
 
     @Transactional
-    public void registerClient(ClientRegisterRequest request) {
+    public User registerClient(ClientRegisterRequest request) {
         // 1. 이메일 중복 검증
         if (userRepository.existsByEmail(request.email())) {
             throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
@@ -68,5 +71,35 @@ public class UserService {
                 request.companyNumber()
         );
         clientRepository.save(client);
+        return user;
+    }
+
+    @Transactional(readOnly = true)
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+    
+    @Transactional(readOnly = true)
+    public void checkPassword(User user, String password) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        }
+    }
+
+    public String genAccessToken(User user) {
+        return authTokenService.genAccessToken(user);
+    }
+
+    public void checkStatus(User user) {
+        if (user.getStatus() == UserStatus.PENDING) {
+            throw new CustomException(ErrorCode.USER_PENDING);
+        } else if (user.getStatus() == UserStatus.SUSPENDED) {
+            throw new CustomException(ErrorCode.USER_SUSPENDED);
+        } else if (user.getStatus() == UserStatus.WITHDRAWN) {
+            throw new CustomException(ErrorCode.USER_WITHDRAWN);
+        } else if (user.getStatus() == UserStatus.REJECTED) {
+            throw new CustomException(ErrorCode.USER_REJECTED);
+        }
     }
 }
