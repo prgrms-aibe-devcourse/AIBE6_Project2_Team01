@@ -25,52 +25,57 @@ public class UserService {
     private final ClientRepository clientRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final AuthTokenService authTokenService;
+    private final EmailVerifyService emailVerifyService;
 
     @Transactional
     public User registerModel(ModelRegisterRequest request) {
-        // 1. 이메일 중복 검증
+        // 1. 이메일 인증 완료 여부 확인
+        emailVerifyService.checkVerified(request.email());
+
+        // 2. 이메일 중복 검증
         if (userRepository.existsByEmail(request.email())) {
             throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
         }
 
-        // 2. 비밀번호 암호화 및 공통 유저 엔티티 생성 (모델은 가입 즉시 ACTIVE)
+        // 3. 비밀번호 암호화 + 유저 생성
         String encodedPassword = passwordEncoder.encode(request.password());
         User user = User.createLocal(request.email(), encodedPassword, request.region(), Role.MODEL);
         userRepository.save(user);
 
-        // 3. 모델 프로필 엔티티 생성 및 저장 (나머지 필드는 자동으로 null 및 기본값 0.0 세팅됨)
-        Model model = Model.create(
-                user,
-                request.name(),
-                request.height(),
-                request.weight(),
-                request.gender(),
-                request.age()
-        );
+        // 4. 모델 프로필 생성
+        Model model = Model.create(user, request.name(), request.height(),
+                request.weight(), request.gender(), request.age());
         modelRepository.save(model);
+
+        // 5. 인증 완료 표시 삭제 (재사용 방지)
+        emailVerifyService.deleteVerified(request.email());
+
         return user;
     }
 
     @Transactional
     public User registerClient(ClientRegisterRequest request) {
-        // 1. 이메일 중복 검증
+        // 1. 이메일 인증 완료 여부 확인
+        emailVerifyService.checkVerified(request.email());
+
+        // 2. 이메일 중복 검증
         if (userRepository.existsByEmail(request.email())) {
             throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
         }
 
-        // 2. 비밀번호 암호화 및 공통 유저 엔티티 생성 (의뢰인은 가입 시 PENDING)
+        // 3. 비밀번호 암호화 + 유저 생성
         String encodedPassword = passwordEncoder.encode(request.password());
         User user = User.createLocal(request.email(), encodedPassword, request.region(), Role.CLIENT);
         userRepository.save(user);
 
-        // 3. 의뢰인 프로필 엔티티 생성 및 저장
-        Client client = Client.create(
-                user,
-                request.clientType(),
-                request.companyName(),
-                request.companyNumber()
-        );
+        // 4. 의뢰인 프로필 생성
+        Client client = Client.create(user, request.clientType(),
+                request.companyName(), request.companyNumber());
         clientRepository.save(client);
+
+        // 5. 인증 완료 표시 삭제 (재사용 방지)
+        emailVerifyService.deleteVerified(request.email());
+
         return user;
     }
 

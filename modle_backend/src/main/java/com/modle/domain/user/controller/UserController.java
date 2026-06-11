@@ -1,18 +1,15 @@
 package com.modle.domain.user.controller;
 
 import com.modle.domain.user.dto.UserDto;
-import com.modle.domain.user.dto.request.ClientRegisterRequest;
-import com.modle.domain.user.dto.request.LoginRequest;
-import com.modle.domain.user.dto.request.ModelRegisterRequest;
+import com.modle.domain.user.dto.request.*;
 import com.modle.domain.user.dto.response.LoginResponse;
 import com.modle.domain.user.entity.User;
 import com.modle.domain.user.service.UserService;
 import com.modle.global.response.ApiResponse;
 import com.modle.global.rq.Rq;
+import com.modle.domain.user.service.EmailVerifyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserService userService;
     private final Rq rq;
+    private final EmailVerifyService emailVerifyService;
 
     @PostMapping("/signup/model")
     public ApiResponse<Void> registerModel(
@@ -45,6 +43,22 @@ public class UserController {
                 "201-1",
                 "환영합니다. 회원가입이 완료되었습니다."
         );
+    }
+
+    @PostMapping("/email/verify/send")
+    public ApiResponse<Void> sendVerificationCode(
+            @Valid @RequestBody EmailVerifyRequest request
+    ) {
+        emailVerifyService.sendVerificationCode(request.email());
+        return new ApiResponse<>("200-1", "인증 코드가 발송되었습니다.");
+    }
+
+    @PostMapping("/email/verify/confirm")
+    public ApiResponse<Void> confirmVerificationCode(
+            @Valid @RequestBody EmailVerifyConfirmRequest request
+    ) {
+        emailVerifyService.verifyCode(request.email(), request.code());
+        return new ApiResponse<>("200-1", "이메일 인증이 완료되었습니다.");
     }
 
     @PostMapping("/login")
