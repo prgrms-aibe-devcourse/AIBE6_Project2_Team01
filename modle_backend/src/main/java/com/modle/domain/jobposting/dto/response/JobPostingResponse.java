@@ -11,6 +11,7 @@ public record JobPostingResponse(
         String title,
         String content,
         String category,
+        String region,
         JobPostingStatus status,
         LocalDateTime createDate
 ) {
@@ -21,6 +22,7 @@ public record JobPostingResponse(
                 jobPosting.getTitle(),
                 jobPosting.getContent(),
                 jobPosting.getCategory(),
+                jobPosting.getRegion(),
                 jobPosting.getStatus(),
                 jobPosting.getCreateDate()
         );

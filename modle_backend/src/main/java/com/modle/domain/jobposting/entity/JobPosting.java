@@ -34,22 +34,27 @@ public class JobPosting extends BaseEntity {
     @Column(nullable = false)
     private String category;
 
+    @Column(nullable = false)
+    private String region;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private JobPostingStatus status;
 
     @Builder
-    private JobPosting(Long clientId, String title, String content, String category, JobPostingStatus status) {
+    private JobPosting(Long clientId, String title, String content, String category, String region, JobPostingStatus status) {
         this.clientId = clientId;
         this.title = title;
         this.content = content;
         this.category = category;
+        this.region = region;
         this.status = status;
     }
 
-    public void update(String title, String content, String category) {
+    public void update(String title, String content, String category, String region) {
         this.title = title;
         this.content = content;
         this.category = category;
+        this.region = region;
     }
 }

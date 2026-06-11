@@ -44,6 +44,7 @@ public class JobPostingService {
                 .title(request.title())
                 .content(request.content())
                 .category(request.category())
+                .region(request.region())
                 .status(JobPostingStatus.RECRUITING)
                 .build();
 
@@ -66,7 +67,7 @@ public class JobPostingService {
         }
 
         // TODO(인증): 인증 머지 후 clientId == 토큰 userId 일치 검증 추가
-        jobPosting.update(request.title(), request.content(), request.category());
+        jobPosting.update(request.title(), request.content(), request.category(), request.region());
         return JobPostingResponse.from(jobPosting);
     }
 

@@ -10,6 +10,9 @@ public record JobPostingCreateRequest(
         String content,
 
         @NotBlank(message = "카테고리는 필수입니다.")
-        String category
+        String category,
+
+        @NotBlank(message = "촬영 지역은 필수입니다.")
+        String region
 ) {
 }
