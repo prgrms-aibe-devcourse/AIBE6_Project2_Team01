@@ -45,7 +45,9 @@ public class Rq {
                 .orElse(defaultValue);
     }
 
-    public void setCookie(String name, String value) {
+
+    // MaxAge 직접 지정
+    public void setCookie(String name, String value, int maxAge) {
         if (value == null) value = "";
 
         Cookie cookie = new Cookie(name, value);
@@ -54,15 +56,15 @@ public class Rq {
         cookie.setDomain("localhost"); // 쿠키가 적용될 도메인 지정
         cookie.setSecure(true); // https 에서만 쿠키전송
         cookie.setAttribute("SameSite", "Strict"); // 동일 사이트에서만 쿠키 전송(CSRF 공격방어)
-
         // 값이 없다면 해당 변수를 삭제하라는 뜻
-        if (value.isBlank()) {
-            cookie.setMaxAge(0);
-        } else {
-            cookie.setMaxAge(60 * 60 * 24 * 365); // 1년
-        }
+        cookie.setMaxAge(value.isBlank() ? 0 : maxAge);
 
         resp.addCookie(cookie);
+    }
+
+    // 기본 MaxAge (Refresh Token용 — 7일)
+    public void setCookie(String name, String value) {
+        setCookie(name, value, 60 * 60 * 24 * 7);
     }
 
     public void deleteCookie(String name) {

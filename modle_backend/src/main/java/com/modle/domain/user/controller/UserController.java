@@ -5,15 +5,16 @@ import com.modle.domain.user.dto.request.*;
 import com.modle.domain.user.dto.response.LoginResponse;
 import com.modle.domain.user.entity.User;
 import com.modle.domain.user.service.UserService;
+import com.modle.global.auth.SecurityUser;
+import com.modle.global.exception.CustomException;
+import com.modle.global.exception.ErrorCode;
 import com.modle.global.response.ApiResponse;
 import com.modle.global.rq.Rq;
 import com.modle.domain.user.service.EmailVerifyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -69,14 +70,49 @@ public class UserController {
         // 패스워트, 상태 검증
         userService.checkPassword(user, request.password());
         userService.checkStatus(user);
-        // 쿠키 설정
+
+        // Access Token — 30분
         String accessToken = userService.genAccessToken(user);
-        rq.setCookie("accessToken", accessToken);
+        rq.setCookie("accessToken", accessToken, 60 * 30);
+
+        // Refresh Token — 7일
+        String refreshToken = userService.genRefreshToken(user);
+        rq.setCookie("refreshToken", refreshToken);
 
         return new ApiResponse<LoginResponse>(
                 "200-1",
                 "로그인 성공",
                 new LoginResponse(new UserDto(user))
         );
+    }
+
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout() {
+        // 쿠키에서 Refresh Token 꺼내서 Redis 삭제
+        String refreshToken = rq.getCookieValue("refreshToken", "");
+        if (!refreshToken.isBlank()) {
+            userService.deleteRefreshToken(refreshToken);
+        }
+
+        // 쿠키 삭제
+        rq.deleteCookie("accessToken");
+        rq.deleteCookie("refreshToken");
+
+        return new ApiResponse<>("200-1", "로그아웃 되었습니다.");
+    }
+
+    @PostMapping("/reissue")
+    public ApiResponse<Void> reissue() {
+        // 쿠키에서 Refresh Token 꺼냄
+        String refreshToken = rq.getCookieValue("refreshToken", "");
+        if (refreshToken.isBlank()) {
+            throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
+        }
+
+        // 새 Access Token 발급
+        String newAccessToken = userService.reissueAccessToken(refreshToken);
+        rq.setCookie("accessToken", newAccessToken, 60 * 30);
+
+        return new ApiResponse<>("200-1", "토큰이 재발급되었습니다.");
     }
 }

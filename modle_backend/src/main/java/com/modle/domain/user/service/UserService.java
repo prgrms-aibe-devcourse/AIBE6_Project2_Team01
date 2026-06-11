@@ -10,6 +10,7 @@ import com.modle.domain.user.entity.type.UserStatus;
 import com.modle.domain.user.repository.ClientRepository;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.UserRepository;
+import com.modle.global.auth.JwtTokenProvider;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final AuthTokenService authTokenService;
     private final EmailVerifyService emailVerifyService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public User registerModel(ModelRegisterRequest request) {
@@ -92,10 +94,6 @@ public class UserService {
         }
     }
 
-    public String genAccessToken(User user) {
-        return authTokenService.genAccessToken(user);
-    }
-
     public void checkStatus(User user) {
         if (user.getStatus() == UserStatus.PENDING) {
             throw new CustomException(ErrorCode.USER_PENDING);
@@ -106,5 +104,27 @@ public class UserService {
         } else if (user.getStatus() == UserStatus.REJECTED) {
             throw new CustomException(ErrorCode.USER_REJECTED);
         }
+    }
+
+    public String genAccessToken(User user) {
+        return authTokenService.genAccessToken(user);
+    }
+
+    public String genRefreshToken(User user) {
+        return authTokenService.genRefreshToken(user);
+    }
+
+    public String reissueAccessToken(String refreshToken) {
+        return authTokenService.reissueAccessToken(refreshToken);
+    }
+
+    public void deleteRefreshToken(String refreshToken) {
+        Long userId = jwtTokenProvider.getUserId(refreshToken);
+        authTokenService.deleteRefreshToken(userId);
+    }
+
+    public User findById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 }
