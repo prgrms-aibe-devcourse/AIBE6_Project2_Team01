@@ -4,7 +4,16 @@ spring:
     username: root
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
-
+  config:
+    import: optional:file:.env[.properties]
+    cloud:
+      gcp:
+        storage:
+          # .env 파일의 GCP_PROJECT_ID 값을 주입
+          project-id: ${GCP_PROJECT_ID}
+          credentials:
+            # .env 파일의 GCS_CREDENTIALS_PATH 값을 주입
+            location: ${GCS_CREDENTIALS_PATH}
   jpa:
     hibernate:
       ddl-auto: update
@@ -17,3 +26,7 @@ jwt:
   secret: ${JWT_SECRET}
   access-expiration: 1800000
   refresh-expiration: 604800000
+
+# 커스텀 설정: 버킷 이름을 전역으로 사용하기 위해 정의
+gcs:
+  bucket: ${GCS_BUCKET_NAME}
