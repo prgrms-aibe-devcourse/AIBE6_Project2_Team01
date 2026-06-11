@@ -35,6 +35,17 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+
+    // GCP Storage 연동
+    implementation ("com.google.cloud:spring-cloud-gcp-starter-storage")
+}
+
+dependencyManagement {
+    imports {
+        // GCP 라이브러리들의 버전 충돌을 막고 호환성을 맞춰주는 BOM 설정
+
+        mavenBom("com.google.cloud:spring-cloud-gcp-dependencies:5.0.4")
+    }
 }
 
 tasks.withType<Test> {
