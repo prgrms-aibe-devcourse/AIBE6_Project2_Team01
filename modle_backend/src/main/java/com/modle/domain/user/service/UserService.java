@@ -9,6 +9,8 @@ import com.modle.domain.user.entity.type.Role;
 import com.modle.domain.user.repository.ClientRepository;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.UserRepository;
+import com.modle.global.exception.CustomException;
+import com.modle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,7 +28,7 @@ public class UserService {
     public void registerModel(ModelRegisterRequest request) {
         // 1. 이메일 중복 검증
         if (userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다."); // 추후 커스텀 예외로 변경
+            throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
         }
 
         // 2. 비밀번호 암호화 및 공통 유저 엔티티 생성 (모델은 가입 즉시 ACTIVE)
@@ -50,7 +52,7 @@ public class UserService {
     public void registerClient(ClientRegisterRequest request) {
         // 1. 이메일 중복 검증
         if (userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+            throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
         }
 
         // 2. 비밀번호 암호화 및 공통 유저 엔티티 생성 (의뢰인은 가입 시 PENDING)
