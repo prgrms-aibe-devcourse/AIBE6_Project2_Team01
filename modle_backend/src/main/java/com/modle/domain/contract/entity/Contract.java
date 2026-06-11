@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 public class Contract extends BaseEntity {
 
+    // TODO: Application 엔티티 확정 후 Long applicationId를 @OneToOne 연관관계로 변경
     @Column(nullable = false, unique = true)
     private Long applicationId;
 
