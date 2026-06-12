@@ -58,4 +58,18 @@ public class Model extends BaseEntity {
         model.age = age;
         return model;
     }
+
+    public void update(String name, int height, int weight, boolean gender,
+                       int age, String field, String tags,
+                       String introduction, String profileImageUrl) {
+        this.name = name;
+        this.height = height;
+        this.weight = weight;
+        this.gender = gender;
+        this.age = age;
+        this.field = field;
+        this.tags = tags;
+        this.introduction = introduction;
+        this.profileImageUrl = profileImageUrl;
+    }
 }
