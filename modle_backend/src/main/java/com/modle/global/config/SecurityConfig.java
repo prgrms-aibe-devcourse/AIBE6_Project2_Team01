@@ -50,7 +50,10 @@ public class SecurityConfig {
                                 "/api/v1/auth/email/verify/send",
                                 "/api/v1/auth/email/verify/confirm",
                                 "/api/v1/auth/login",
-                                "/api/v1/auth/reissue",
+                                "/api/v1/auth/reissue"
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/models",
                                 "/api/v1/models/**"
                         ).permitAll()
                         // 관리자만
