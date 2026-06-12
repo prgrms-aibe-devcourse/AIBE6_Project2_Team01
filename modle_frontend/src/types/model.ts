@@ -2,11 +2,15 @@
 export interface Model {
   id: number;
   name: string;
-  region: string;
+  region?: string;
   rating: number;
   reviewCount: number;
   profileImageUrl: string;
-  categories: string[];
+  categories?: string[];
+  age?: number;
+  height?: number;
+  weight?: number;
+  introduction?: string;
 }
 
 export interface ModelListResponse {

@@ -17,8 +17,15 @@ export function ModelCard({ model }: { model: Model }) {
         <p className="text-body-sm text-mute mt-1">
           {model.region} | ★ {model.rating} ({model.reviewCount})
         </p>
+        {(model.age || model.height || model.weight) && (
+          <p className="text-[11px] text-mute mt-0.5">
+            {model.age ? `${model.age}세 ` : ''}
+            {model.height ? `${model.height}cm ` : ''}
+            {model.weight ? `${model.weight}kg` : ''}
+          </p>
+        )}
         <div className="flex flex-wrap gap-1 mt-3">
-          {model.categories.map(cat => (
+          {model.categories?.map(cat => (
             <span key={cat} className="text-[11px] bg-canvas-soft text-body px-2 py-0.5 rounded-full border border-hairline">
               {cat}
             </span>
