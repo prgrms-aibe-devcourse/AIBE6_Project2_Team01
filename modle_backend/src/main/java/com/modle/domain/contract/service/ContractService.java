@@ -47,8 +47,8 @@ public class ContractService {
     }
 
     private void validateShootTime(ContractCreateRequest request) {
-        if (request.shootStartAt().isAfter(request.shootEndAt())) {
-            throw new IllegalArgumentException("촬영 시작 시간은 촬영 종료 시간보다 이전이어야 합니다.");
+        if (!request.shootEndAt().isAfter(request.shootStartAt())) {
+            throw new IllegalArgumentException("촬영 종료 시간은 촬영 시작 시간 이후여야 합니다.");
         }
     }
 }
