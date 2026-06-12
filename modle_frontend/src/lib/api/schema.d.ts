@@ -24,6 +24,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    // ─── Jobs ───
+    "/api/v1/jobs": {
+        parameters: { query?: never; header?: never; path?: never; cookie?: never; };
+        get: operations["listJobPostings"];
+        put?: never;
+        post: operations["createJobPosting"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/{id}": {
+        parameters: { query?: never; header?: never; path: { id: number }; cookie?: never; };
+        get: operations["getJobPosting"];
+        put?: never;
+        post?: never;
+        delete: operations["deleteJobPosting"];
+        options?: never;
+        head?: never;
+        patch: operations["updateJobPosting"];
+        trace?: never;
+    };
+    "/api/v1/jobs/templates": {
+        parameters: { query?: never; header?: never; path?: never; cookie?: never; };
+        get: operations["listJobPostingTemplates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -68,6 +102,181 @@ export interface components {
             /** @enum {string} */
             status?: "DRAFT" | "NOTIFIED" | "VIEWED" | "AGREED" | "REJECTED" | "CONFIRMED" | "CANCELLED";
         };
+        // ─── Jobs ───
+        JobPostingCreateRequest: {
+            title: string;
+            content: string;
+            /** @enum {string} */
+            category: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            /** @enum {string} */
+            region: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
+            /** @enum {string} */
+            requiredSex?: "M" | "F" | "ANY";
+            ageMin?: number;
+            ageMax?: number;
+            heightMin?: number;
+            heightMax?: number;
+            weightMin?: number;
+            weightMax?: number;
+            minCareerMonths?: number;
+            payment?: number;
+            /** @enum {string} */
+            payType?: "CASH" | "SERVICE" | "FREE";
+            /** Format: date */
+            shootDate?: string;
+        };
+        JobPostingUpdateRequest: {
+            title: string;
+            content: string;
+            /** @enum {string} */
+            category: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            /** @enum {string} */
+            region: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
+            /** @enum {string} */
+            requiredSex?: "M" | "F" | "ANY";
+            ageMin?: number;
+            ageMax?: number;
+            heightMin?: number;
+            heightMax?: number;
+            weightMin?: number;
+            weightMax?: number;
+            minCareerMonths?: number;
+            payment?: number;
+            /** @enum {string} */
+            payType?: "CASH" | "SERVICE" | "FREE";
+            /** Format: date */
+            shootDate?: string;
+        };
+        JobPostingResponse: {
+            id: number;
+            clientId: number;
+            title: string;
+            content: string;
+            /** @enum {string} */
+            category: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            /** @enum {string} */
+            region: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
+            /** @enum {string} */
+            status: "RECRUITING" | "SHOOTING" | "COMPLETED" | "CANCELLED" | "ON_HOLD" | "CLOSED";
+            /** @enum {string} */
+            requiredSex?: "M" | "F" | "ANY";
+            ageMin?: number;
+            ageMax?: number;
+            heightMin?: number;
+            heightMax?: number;
+            weightMin?: number;
+            weightMax?: number;
+            minCareerMonths?: number;
+            payment?: number;
+            /** @enum {string} */
+            payType?: "CASH" | "SERVICE" | "FREE";
+            /** Format: date */
+            shootDate?: string;
+            /** Format: date-time */
+            createdDate?: string;
+        };
+        JobPostingListResponse: {
+            id: number;
+            title: string;
+            /** @enum {string} */
+            category: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            /** @enum {string} */
+            region: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
+            /** @enum {string} */
+            status: "RECRUITING" | "SHOOTING" | "COMPLETED" | "CANCELLED" | "ON_HOLD" | "CLOSED";
+            /** @enum {string} */
+            requiredSex?: "M" | "F" | "ANY";
+            payment?: number;
+            /** @enum {string} */
+            payType?: "CASH" | "SERVICE" | "FREE";
+            /** Format: date */
+            shootDate?: string;
+            /** Format: date-time */
+            createdDate?: string;
+        };
+        JobPostingModelDetailResponse: {
+            id: number;
+            title: string;
+            content: string;
+            /** @enum {string} */
+            category: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            /** @enum {string} */
+            region: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
+            /** @enum {string} */
+            status: "RECRUITING" | "SHOOTING" | "COMPLETED" | "CANCELLED" | "ON_HOLD" | "CLOSED";
+            /** @enum {string} */
+            requiredSex?: "M" | "F" | "ANY";
+            ageMin?: number;
+            ageMax?: number;
+            heightMin?: number;
+            heightMax?: number;
+            weightMin?: number;
+            weightMax?: number;
+            minCareerMonths?: number;
+            payment?: number;
+            /** @enum {string} */
+            payType?: "CASH" | "SERVICE" | "FREE";
+            /** Format: date */
+            shootDate?: string;
+            /** Format: date-time */
+            createdDate?: string;
+            favorited: boolean;
+        };
+        JobPostingClientDetailResponse: {
+            id: number;
+            clientId: number;
+            title: string;
+            content: string;
+            /** @enum {string} */
+            category: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            /** @enum {string} */
+            region: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
+            /** @enum {string} */
+            status: "RECRUITING" | "SHOOTING" | "COMPLETED" | "CANCELLED" | "ON_HOLD" | "CLOSED";
+            /** @enum {string} */
+            requiredSex?: "M" | "F" | "ANY";
+            ageMin?: number;
+            ageMax?: number;
+            heightMin?: number;
+            heightMax?: number;
+            weightMin?: number;
+            weightMax?: number;
+            minCareerMonths?: number;
+            payment?: number;
+            /** @enum {string} */
+            payType?: "CASH" | "SERVICE" | "FREE";
+            /** Format: date */
+            shootDate?: string;
+            /** Format: date-time */
+            createdDate?: string;
+            recommendedModelIds: number[];
+        };
+        JobPostingOtherDetailResponse: {
+            id: number;
+            title: string;
+            content: string;
+            /** @enum {string} */
+            category: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            /** @enum {string} */
+            region: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
+            /** @enum {string} */
+            status: "RECRUITING" | "SHOOTING" | "COMPLETED" | "CANCELLED" | "ON_HOLD" | "CLOSED";
+            /** @enum {string} */
+            requiredSex?: "M" | "F" | "ANY";
+            payment?: number;
+            /** @enum {string} */
+            payType?: "CASH" | "SERVICE" | "FREE";
+            /** Format: date */
+            shootDate?: string;
+            /** Format: date-time */
+            createdDate?: string;
+        };
+        JobPostingTemplateResponse: {
+            id: number;
+            category: string;
+            title: string;
+            content: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -99,6 +308,55 @@ export interface operations {
                     "*/*": components["schemas"]["ContractResponse"];
                 };
             };
+        };
+    };
+    // ─── Jobs ───
+    listJobPostings: {
+        parameters: {
+            query?: { region?: string; category?: string; page?: number; size?: number; sort?: string; };
+            header?: never; path?: never; cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: { [name: string]: unknown; };
+                content: { "*/*": { resultCode: string; msg: string; data: { content: components["schemas"]["JobPostingListResponse"][]; totalPages: number; totalElements: number; number: number; size: number; first: boolean; last: boolean; empty: boolean; }; }; };
+            };
+        };
+    };
+    createJobPosting: {
+        parameters: { query?: never; header?: never; path?: never; cookie?: never; };
+        requestBody: { content: { "application/json": components["schemas"]["JobPostingCreateRequest"]; }; };
+        responses: {
+            201: { headers: { [name: string]: unknown; }; content: { "*/*": { resultCode: string; msg: string; data: components["schemas"]["JobPostingResponse"]; }; }; };
+        };
+    };
+    getJobPosting: {
+        parameters: { query?: never; header?: never; path: { id: number }; cookie?: never; };
+        requestBody?: never;
+        responses: {
+            200: { headers: { [name: string]: unknown; }; content: { "*/*": { resultCode: string; msg: string; data: components["schemas"]["JobPostingModelDetailResponse"] | components["schemas"]["JobPostingClientDetailResponse"] | components["schemas"]["JobPostingOtherDetailResponse"]; }; }; };
+        };
+    };
+    updateJobPosting: {
+        parameters: { query?: never; header?: never; path: { id: number }; cookie?: never; };
+        requestBody: { content: { "application/json": components["schemas"]["JobPostingUpdateRequest"]; }; };
+        responses: {
+            200: { headers: { [name: string]: unknown; }; content: { "*/*": { resultCode: string; msg: string; data: components["schemas"]["JobPostingResponse"]; }; }; };
+        };
+    };
+    deleteJobPosting: {
+        parameters: { query?: never; header?: never; path: { id: number }; cookie?: never; };
+        requestBody?: never;
+        responses: {
+            200: { headers: { [name: string]: unknown; }; content: { "*/*": { resultCode: string; msg: string; data: null; }; }; };
+        };
+    };
+    listJobPostingTemplates: {
+        parameters: { query?: { category: string; }; header?: never; path?: never; cookie?: never; };
+        requestBody?: never;
+        responses: {
+            200: { headers: { [name: string]: unknown; }; content: { "*/*": { resultCode: string; msg: string; data: components["schemas"]["JobPostingTemplateResponse"][]; }; }; };
         };
     };
 }

@@ -10,44 +10,29 @@ import com.modle.domain.jobposting.entity.RequiredSex;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record JobPostingResponse(
+// JOB-008: 기타 사용자 뷰 — 공고 기본 정보만 노출 (AI 추천·지원·쪽지 버튼 없음)
+public record JobPostingOtherDetailResponse(
         Long id,
-        Long clientId,
         String title,
         String content,
         Category category,
         Region region,
         JobPostingStatus status,
         RequiredSex requiredSex,
-        Integer ageMin,
-        Integer ageMax,
-        Integer heightMin,
-        Integer heightMax,
-        Integer weightMin,
-        Integer weightMax,
-        Integer minCareerMonths,
         BigDecimal payment,
         PayType payType,
         LocalDateTime shootDate,
         LocalDateTime createdDate
 ) {
-    public static JobPostingResponse from(JobPosting jobPosting) {
-        return new JobPostingResponse(
+    public static JobPostingOtherDetailResponse from(JobPosting jobPosting) {
+        return new JobPostingOtherDetailResponse(
                 jobPosting.getId(),
-                jobPosting.getClientId(),
                 jobPosting.getTitle(),
                 jobPosting.getContent(),
                 jobPosting.getCategory(),
                 jobPosting.getRegion(),
                 jobPosting.getStatus(),
                 jobPosting.getRequiredSex(),
-                jobPosting.getAgeMin(),
-                jobPosting.getAgeMax(),
-                jobPosting.getHeightMin(),
-                jobPosting.getHeightMax(),
-                jobPosting.getWeightMin(),
-                jobPosting.getWeightMax(),
-                jobPosting.getMinCareerMonths(),
                 jobPosting.getPayment(),
                 jobPosting.getPayType(),
                 jobPosting.getShootDate(),

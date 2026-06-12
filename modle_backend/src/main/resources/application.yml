@@ -6,7 +6,6 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   config:
     import: optional:file:.env[.properties]
-
   cloud:
     gcp:
       storage:
@@ -15,7 +14,6 @@ spring:
         credentials:
           # .env 파일의 GCS_CREDENTIALS_PATH 값을 주입
           location: ${GCS_CREDENTIALS_PATH}
-
   jpa:
     hibernate:
       ddl-auto: update
