@@ -1,8 +1,8 @@
 package com.modle.domain.profile.service;
 
-import com.modle.domain.profile.entity.Model;
-import com.modle.domain.profile.repository.ModelRepository;
-import jakarta.validation.constraints.NotBlank;
+import com.modle.domain.user.entity.Model;
+import com.modle.domain.user.entity.User;
+import com.modle.domain.user.repository.ModelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +13,10 @@ import java.util.List;
 public class ModelService {
     private final ModelRepository modelRepository;
 
+    public long count(){
+        return modelRepository.count();
+    }
+
     public List<Model> getList() {
         return modelRepository.findAll();
     }
@@ -21,45 +25,25 @@ public class ModelService {
         return modelRepository.findById(id).get();
     }
     public Model create(
-            String name,
-            String region,
-            int age,
-            int height,
-            int weight,
-            String introduction,
-            String profile_image_url,
-            double avg_rating,
-            int review_count,
-            int user_id
+            User user, String name, int height,
+            int weight, boolean gender, int age
     ){
-        Model model = new Model(
-                name,
-                region,
-                age,
-                height,
-                weight,
-                introduction,
-                profile_image_url,
-                avg_rating,
-                review_count,
-                user_id
-        );
+        Model model = Model.create(user, name, height, weight, gender, age);
         return modelRepository.save(model);
     }
 
     public void update(
             Model model,
-            String region,
-            @NotBlank int age,
-            @NotBlank int height,
-            @NotBlank int weight,
+            String name,
+            int height,
+            int weight,
+            boolean gender,
+            int age,
+            String field,
+            String tags,
             String introduction,
-            String profile_image_url,
-            double avg_rating,
-            int review_count,
-            int user_id) {
-        model.modify(region, age, height, weight, introduction,
-                profile_image_url, avg_rating, review_count, user_id);
+            String profileImageUrl) {
+        model.update(name, height, weight, gender, age, field, tags, introduction, profileImageUrl);
     }
 
     public void delete(Model model) {

@@ -3,13 +3,13 @@ package com.modle.domain.profile.controller;
 import com.modle.domain.profile.dto.ModelDto;
 import com.modle.domain.profile.dto.request.ModelCreateReqBody;
 import com.modle.domain.profile.dto.request.ModelModifyReqBody;
-import com.modle.domain.profile.entity.Model;
 import com.modle.domain.profile.service.ModelService;
+import com.modle.domain.user.entity.Model;
 import com.modle.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,17 +49,27 @@ public class ModelController {
     ) {
 
         Model model = modelService.create(
+                null, // TODO: Resolve User from Security Context or request
                 reqBody.name(),
-                reqBody.region(),
-                reqBody.age(),
                 reqBody.height(),
                 reqBody.weight(),
+                reqBody.gender(),
+                reqBody.age()
+        );
+        
+        // Update optional fields
+        modelService.update(
+                model,
+                reqBody.name(),
+                reqBody.height(),
+                reqBody.weight(),
+                reqBody.gender(),
+                reqBody.age(),
+                reqBody.field(),
+                reqBody.tags(),
                 reqBody.introduction(),
-                reqBody.profile_image_url(),
-                reqBody.avg_rating(),
-                reqBody.review_count(),
-                reqBody.user_id()
-                );
+                reqBody.profileImageUrl()
+        );
 
         return new RsData<>(
                 "201-1",
@@ -78,17 +88,16 @@ public class ModelController {
         Model model = modelService.findById(id);
         modelService.update(
                 model,
-                reqBody.region(),
-                reqBody.age(),
+                reqBody.name(),
                 reqBody.height(),
                 reqBody.weight(),
+                reqBody.gender(),
+                reqBody.age(),
+                reqBody.field(),
+                reqBody.tags(),
                 reqBody.introduction(),
-                reqBody.profile_image_url(),
-                reqBody.avg_rating(),
-                reqBody.review_count(),
-                reqBody.user_id()
-
-                );
+                reqBody.profileImageUrl()
+        );
 
         return new RsData<>(
                 "200-1",

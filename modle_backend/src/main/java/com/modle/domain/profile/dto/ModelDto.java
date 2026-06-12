@@ -1,6 +1,6 @@
 package com.modle.domain.profile.dto;
 
-import com.modle.domain.profile.entity.Model;
+import com.modle.domain.user.entity.Model;
 import org.springframework.lang.NonNull;
 
 import java.time.LocalDateTime;
@@ -9,15 +9,17 @@ public record ModelDto(
         @NonNull long id,
         @NonNull LocalDateTime createdDate,
         @NonNull LocalDateTime modifiedDate,
-        @NonNull  String name,
-        @NonNull String region,
-        @NonNull int age,
+        @NonNull String name,
         @NonNull int height,
         @NonNull int weight,
-        @NonNull String introduction,
-        @NonNull String profile_image_url,
-        @NonNull double avg_rating,
-        @NonNull int review_count
+        @NonNull boolean gender,
+        @NonNull int age,
+        String field,
+        String tags,
+        String introduction,
+        String profileImageUrl,
+        @NonNull double avgRating,
+        @NonNull int reviewCount
 ) {
     public ModelDto(Model model){
         this(
@@ -25,10 +27,12 @@ public record ModelDto(
                 model.getCreatedDate(),
                 model.getModifiedDate(),
                 model.getName(),
-                model.getRegion(),
-                model.getAge(),
                 model.getHeight(),
                 model.getWeight(),
+                model.isGender(),
+                model.getAge(),
+                model.getField(),
+                model.getTags(),
                 model.getIntroduction(),
                 model.getProfileImageUrl(),
                 model.getAvgRating(),
