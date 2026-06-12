@@ -11,6 +11,8 @@ import com.modle.domain.jobposting.dto.response.JobPostingTemplateResponse;
 import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.JobPostingStatus;
 import com.modle.domain.jobposting.entity.ViewerType;
+import com.modle.global.exception.CustomException;
+import com.modle.global.exception.ErrorCode;
 import com.modle.domain.jobposting.event.JobPostingCreatedEvent;
 import com.modle.domain.jobposting.exception.JobPostingNotEditableException;
 import com.modle.domain.jobposting.exception.JobPostingNotFoundException;
@@ -84,7 +86,10 @@ public class JobPostingService {
             throw new JobPostingNotEditableException(jobPostingId, jobPosting.getStatus());
         }
 
-        // TODO(인증): 인증 머지 후 clientId == 토큰 userId 일치 검증 추가
+        if (!jobPosting.getClientId().equals(clientId)) {
+            throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
+        }
+
         jobPosting.update(request.title(), request.content(), request.category(), request.region(),
                 request.requiredSex(), request.ageMin(), request.ageMax(),
                 request.heightMin(), request.heightMax(),
@@ -105,7 +110,10 @@ public class JobPostingService {
             throw new JobPostingNotEditableException(jobPostingId, jobPosting.getStatus());
         }
 
-        // TODO(인증): 인증 머지 후 clientId == 토큰 userId 일치 검증 추가
+        if (!jobPosting.getClientId().equals(clientId)) {
+            throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
+        }
+
         jobPostingRepository.delete(jobPosting);
     }
 

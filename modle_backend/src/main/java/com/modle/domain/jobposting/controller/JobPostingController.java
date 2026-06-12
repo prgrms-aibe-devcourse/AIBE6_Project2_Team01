@@ -7,6 +7,7 @@ import com.modle.domain.jobposting.dto.response.JobPostingResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingTemplateResponse;
 import com.modle.domain.jobposting.entity.ViewerType;
 import com.modle.domain.jobposting.service.JobPostingService;
+import com.modle.global.auth.SecurityUser;
 import com.modle.global.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,47 +30,42 @@ public class JobPostingController {
     private final JobPostingService jobPostingService;
 
     // JOB-001: 카테고리별 공고 템플릿 목록 반환.
-    // TODO(인증): 역할 제한은 시트의 JOB-001 역할 컬럼 확인 후 @PreAuthorize 적용
     @GetMapping("/templates")
     public ApiResponse<List<JobPostingTemplateResponse>> getTemplates(@RequestParam String category) {
         return ApiResponse.ok("공고 템플릿 목록 조회 성공", jobPostingService.getTemplatesByCategory(category));
     }
 
     // JOB-002: 공고 등록(상태=모집 중) 후 AI 모델 추천 트리거.
-    // TODO(인증): @PreAuthorize("hasRole('CLIENT')") 적용
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('CLIENT')")
     @PostMapping
     public ApiResponse<JobPostingResponse> create(
-            // TODO(인증) 임시: @AuthenticationPrincipal에서 사용자 추출로 교체
-            @RequestParam Long userId,
+            @AuthenticationPrincipal SecurityUser securityUser,
             @Valid @RequestBody JobPostingCreateRequest request) {
-        return ApiResponse.ok("공고 등록 성공", jobPostingService.createJobPosting(userId, request));
+        return ApiResponse.ok("공고 등록 성공", jobPostingService.createJobPosting(securityUser.getId(), request));
     }
 
     // JOB-003: 공고 수정 (모집 중 상태에서만 가능).
-    // TODO(인증): @PreAuthorize("hasRole('CLIENT')") 적용
+    @PreAuthorize("hasRole('CLIENT')")
     @PatchMapping("/{id}")
     public ApiResponse<JobPostingResponse> update(
             @PathVariable Long id,
-            // TODO(인증) 임시: @AuthenticationPrincipal에서 사용자 추출로 교체
-            @RequestParam Long userId,
+            @AuthenticationPrincipal SecurityUser securityUser,
             @Valid @RequestBody JobPostingUpdateRequest request) {
-        return ApiResponse.ok("공고 수정 성공", jobPostingService.updateJobPosting(id, userId, request));
+        return ApiResponse.ok("공고 수정 성공", jobPostingService.updateJobPosting(id, securityUser.getId(), request));
     }
 
     // JOB-004: 공고 삭제 (모집 중 상태에서만 가능).
-    // TODO(인증): @PreAuthorize("hasRole('CLIENT')") 적용
+    @PreAuthorize("hasRole('CLIENT')")
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(
             @PathVariable Long id,
-            // TODO(인증) 임시: @AuthenticationPrincipal에서 사용자 추출로 교체
-            @RequestParam Long userId) {
-        jobPostingService.deleteJobPosting(id, userId);
+            @AuthenticationPrincipal SecurityUser securityUser) {
+        jobPostingService.deleteJobPosting(id, securityUser.getId());
         return ApiResponse.ok("공고 삭제 성공");
     }
 
     // JOB-005: 지역·카테고리 필터를 적용한 공고 목록 반환.
-    // TODO(인증): 인증 머지 후 역할별 접근 제한 적용
     @GetMapping
     public ApiResponse<Page<JobPostingListResponse>> getJobPostings(
             @RequestParam(required = false) String region,
@@ -76,12 +74,16 @@ public class JobPostingController {
         return ApiResponse.ok("공고 목록 조회 성공", jobPostingService.getJobPostings(region, category, pageable));
     }
 
-    // JOB-006~008: 뷰어 타입에 따라 공고 상세 반환.
-    // TODO(인증): 인증 머지 후 viewer 파라미터 제거 — JWT role + clientId로 서버 사이드 자동 결정
+    // JOB-006~008: 역할에 따라 공고 상세 반환 (MODEL → 모델 뷰, CLIENT → 클라이언트 뷰, 그 외 → OTHER 뷰).
     @GetMapping("/{id}")
     public ApiResponse<Object> getJobPostingDetail(
             @PathVariable Long id,
-            @RequestParam ViewerType viewer) {
-        return ApiResponse.ok("공고 상세 조회 성공", jobPostingService.getJobPostingDetail(id, viewer));
+            @AuthenticationPrincipal SecurityUser securityUser) {
+        ViewerType viewerType = switch (securityUser.getRole()) {
+            case "MODEL" -> ViewerType.MODEL;
+            case "CLIENT" -> ViewerType.CLIENT;
+            default -> ViewerType.OTHER;
+        };
+        return ApiResponse.ok("공고 상세 조회 성공", jobPostingService.getJobPostingDetail(id, viewerType));
     }
 }
