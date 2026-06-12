@@ -9,7 +9,7 @@ export async function getModels(params: Record<string, string>): Promise<ModelLi
     const models = data.map((item: any) => ({
       id: item.id,
       name: item.name || '이름 없음',
-      region: '지역 미상', // default
+      region: item.region || '지역 미상',
       rating: item.avg_rating || 0,
       reviewCount: item.review_count || 0,
       profileImageUrl: item.profile_image_url || '',
