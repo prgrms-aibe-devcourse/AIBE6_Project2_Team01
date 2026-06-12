@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { createContext, useCallback, useEffect, useState } from "react";
 
 import { client, setSessionExpiredHandler } from "@/lib/api/client";
 import {
@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // 쿠키 값을 컴포넌트 상태로 동기화하는 마운트 시 1회 초기화입니다.
+    // 쿠키 값을 컴포넌트 상태로 동기화하는 마운트 시 1회 초기화
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setUser(readAuthUserCookie());
     setIsLoading(false);

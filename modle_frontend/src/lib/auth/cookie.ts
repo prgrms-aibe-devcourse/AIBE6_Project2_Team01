@@ -1,7 +1,7 @@
 import type { AuthUser } from '@/types/auth'
 
 const AUTH_USER_COOKIE = 'modle_auth_user'
-// refreshToken 수명(7일)과 동일하게 맞춘다.
+// refreshToken 수명(7일)과 동일하게 맞춤
 const AUTH_USER_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 
 export function readAuthUserCookie(): AuthUser | null {

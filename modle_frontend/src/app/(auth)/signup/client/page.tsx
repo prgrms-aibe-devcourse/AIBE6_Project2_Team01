@@ -1,63 +1,63 @@
-'use client'
+"use client";
 
-import { useEmailVerification } from '@/hooks/useEmailVerification'
-import { useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
+import { useEmailVerification } from "@/hooks/useEmailVerification";
+import type { ReactNode, SubmitEvent } from "react";
+import { useState } from "react";
 
-import Link from 'next/link'
+import Link from "next/link";
 
-import { client } from '@/lib/api/client'
-import { getErrorMessage } from '@/lib/api/error'
+import { client } from "@/lib/api/client";
+import { getErrorMessage } from "@/lib/api/error";
 
-type ClientType = 'INDIVIDUAL' | 'ORGANIZATION'
+type ClientType = "INDIVIDUAL" | "ORGANIZATION";
 
 type FormState = {
-  email: string
-  password: string
-  region: string
-  companyName: string
-  companyNumber: string
-  clientType: ClientType
-}
+  email: string;
+  password: string;
+  region: string;
+  companyName: string;
+  companyNumber: string;
+  clientType: ClientType;
+};
 
 const initialForm: FormState = {
-  email: '',
-  password: '',
-  region: '',
-  companyName: '',
-  companyNumber: '',
-  clientType: 'INDIVIDUAL',
-}
+  email: "",
+  password: "",
+  region: "",
+  companyName: "",
+  companyNumber: "",
+  clientType: "INDIVIDUAL",
+};
 
 const CLIENT_TYPE_OPTIONS: { value: ClientType; label: string }[] = [
-  { value: 'INDIVIDUAL', label: '개인' },
-  { value: 'ORGANIZATION', label: '사업자' },
-]
+  { value: "INDIVIDUAL", label: "개인" },
+  { value: "ORGANIZATION", label: "사업자" },
+];
 
 export default function ClientSignupPage() {
-  const [form, setForm] = useState<FormState>(initialForm)
+  const [form, setForm] = useState<FormState>(initialForm);
   const [status, setStatus] = useState<
-    'idle' | 'submitting' | 'success' | 'error'
-  >('idle')
-  const [message, setMessage] = useState('')
+    "idle" | "submitting" | "success" | "error"
+  >("idle");
+  const [message, setMessage] = useState("");
 
-  const emailVerification = useEmailVerification()
+  const emailVerification = useEmailVerification();
   const isEmailVerified =
-    form.email !== '' && emailVerification.verifiedEmail === form.email
+    form.email !== "" && emailVerification.verifiedEmail === form.email;
 
   const updateField = <K extends keyof FormState>(
     key: K,
     value: FormState[K],
   ) => {
-    setForm((current) => ({ ...current, [key]: value }))
-  }
+    setForm((current) => ({ ...current, [key]: value }));
+  };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setStatus('submitting')
-    setMessage('')
+  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatus("submitting");
+    setMessage("");
 
-    const { data, error } = await client.POST('/api/v1/auth/signup/client', {
+    const { data, error } = await client.POST("/api/v1/auth/signup/client", {
       body: {
         email: form.email,
         password: form.password,
@@ -66,22 +66,22 @@ export default function ClientSignupPage() {
         companyNumber: form.companyNumber,
         clientType: form.clientType,
       },
-    })
+    });
 
     if (error) {
-      setStatus('error')
-      setMessage(getErrorMessage(error, '회원가입에 실패했습니다.'))
-      return
+      setStatus("error");
+      setMessage(getErrorMessage(error, "회원가입에 실패했습니다."));
+      return;
     }
 
-    setStatus('success')
+    setStatus("success");
     setMessage(
       data?.msg ??
-        '회원가입이 완료되었습니다. 관리자 승인 후 이용할 수 있습니다.',
-    )
-  }
+        "회원가입이 완료되었습니다. 관리자 승인 후 이용할 수 있습니다.",
+    );
+  };
 
-  if (status === 'success') {
+  if (status === "success") {
     return (
       <main className="flex flex-1 items-center justify-center bg-canvas px-4 py-12 text-ink">
         <div className="w-full max-w-[420px] rounded-lg border border-hairline bg-surface p-8 text-center">
@@ -97,7 +97,7 @@ export default function ClientSignupPage() {
           </Link>
         </div>
       </main>
-    )
+    );
   }
 
   return (
@@ -118,25 +118,25 @@ export default function ClientSignupPage() {
                 type="email"
                 required
                 value={form.email}
-                onChange={(event) => updateField('email', event.target.value)}
+                onChange={(event) => updateField("email", event.target.value)}
                 className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
               />
               <button
                 type="button"
                 disabled={
                   !form.email ||
-                  emailVerification.status === 'sending' ||
+                  emailVerification.status === "sending" ||
                   isEmailVerified
                 }
                 onClick={() => emailVerification.sendCode(form.email)}
                 className="h-11 shrink-0 rounded-md border border-hairline-strong bg-surface px-4 text-[15px] font-semibold leading-6 text-ink transition hover:border-ink disabled:text-mute"
               >
-                {isEmailVerified ? '인증완료' : '인증코드 발송'}
+                {isEmailVerified ? "인증완료" : "인증코드 발송"}
               </button>
             </div>
           </Field>
 
-          {!isEmailVerified && emailVerification.status !== 'idle' ? (
+          {!isEmailVerified && emailVerification.status !== "idle" ? (
             <Field label="인증코드" required>
               <div className="flex gap-2">
                 <input
@@ -151,7 +151,7 @@ export default function ClientSignupPage() {
                 />
                 <button
                   type="button"
-                  disabled={emailVerification.status === 'confirming'}
+                  disabled={emailVerification.status === "confirming"}
                   onClick={() => emailVerification.confirmCode(form.email)}
                   className="h-11 shrink-0 rounded-md border border-hairline-strong bg-surface px-4 text-[15px] font-semibold leading-6 text-ink transition hover:border-ink disabled:text-mute"
                 >
@@ -164,9 +164,9 @@ export default function ClientSignupPage() {
           {emailVerification.message ? (
             <p
               className={`text-[13px] leading-5 ${
-                emailVerification.status === 'verified'
-                  ? 'text-success'
-                  : 'text-mute'
+                emailVerification.status === "verified"
+                  ? "text-success"
+                  : "text-mute"
               }`}
             >
               {emailVerification.message}
@@ -180,7 +180,7 @@ export default function ClientSignupPage() {
               minLength={5}
               maxLength={50}
               value={form.password}
-              onChange={(event) => updateField('password', event.target.value)}
+              onChange={(event) => updateField("password", event.target.value)}
               className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
             />
           </Field>
@@ -191,7 +191,7 @@ export default function ClientSignupPage() {
               required
               maxLength={50}
               value={form.region}
-              onChange={(event) => updateField('region', event.target.value)}
+              onChange={(event) => updateField("region", event.target.value)}
               className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
             />
           </Field>
@@ -203,7 +203,7 @@ export default function ClientSignupPage() {
               maxLength={100}
               value={form.companyName}
               onChange={(event) =>
-                updateField('companyName', event.target.value)
+                updateField("companyName", event.target.value)
               }
               className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
             />
@@ -216,7 +216,7 @@ export default function ClientSignupPage() {
               maxLength={20}
               value={form.companyNumber}
               onChange={(event) =>
-                updateField('companyNumber', event.target.value)
+                updateField("companyNumber", event.target.value)
               }
               className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
             />
@@ -228,11 +228,11 @@ export default function ClientSignupPage() {
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => updateField('clientType', option.value)}
+                  onClick={() => updateField("clientType", option.value)}
                   className={`h-11 rounded-md border px-4 text-[15px] font-semibold leading-6 transition ${
                     form.clientType === option.value
-                      ? 'border-primary bg-primary text-on-primary'
-                      : 'border-hairline bg-surface text-body hover:border-hairline-strong'
+                      ? "border-primary bg-primary text-on-primary"
+                      : "border-hairline bg-surface text-body hover:border-hairline-strong"
                   }`}
                 >
                   {option.label}
@@ -243,10 +243,10 @@ export default function ClientSignupPage() {
 
           <button
             type="submit"
-            disabled={status === 'submitting' || !isEmailVerified}
+            disabled={status === "submitting" || !isEmailVerified}
             className="mt-2 h-11 w-full rounded-md bg-primary px-6 text-[15px] font-semibold leading-6 text-on-primary transition hover:bg-primary-hover disabled:bg-canvas-soft disabled:text-mute"
           >
-            {status === 'submitting' ? '가입 중' : '가입하기'}
+            {status === "submitting" ? "가입 중" : "가입하기"}
           </button>
 
           {message ? (
@@ -260,7 +260,7 @@ export default function ClientSignupPage() {
         </form>
       </div>
     </main>
-  )
+  );
 }
 
 function Field({
@@ -268,9 +268,9 @@ function Field({
   required,
   children,
 }: {
-  label: string
-  required?: boolean
-  children: ReactNode
+  label: string;
+  required?: boolean;
+  children: ReactNode;
 }) {
   return (
     <label className="block">
@@ -280,5 +280,5 @@ function Field({
       </span>
       {children}
     </label>
-  )
+  );
 }

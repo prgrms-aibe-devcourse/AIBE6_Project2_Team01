@@ -1,43 +1,43 @@
-'use client'
+"use client";
 
-import { useAuth } from '@/hooks/useAuth'
-import { useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
+import { useAuth } from "@/hooks/useAuth";
+import type { ReactNode, SubmitEvent } from "react";
+import { useState } from "react";
 
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-import { client } from '@/lib/api/client'
-import { getErrorMessage } from '@/lib/api/error'
+import { client } from "@/lib/api/client";
+import { getErrorMessage } from "@/lib/api/error";
 
 export default function LoginPage() {
-  const router = useRouter()
-  const { login } = useAuth()
+  const router = useRouter();
+  const { login } = useAuth();
 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'error'>('idle')
-  const [message, setMessage] = useState('')
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
+  const [message, setMessage] = useState("");
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setStatus('submitting')
-    setMessage('')
+  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatus("submitting");
+    setMessage("");
 
-    const { data: result, error } = await client.POST('/api/v1/auth/login', {
+    const { data: result, error } = await client.POST("/api/v1/auth/login", {
       body: { email, password },
-    })
+    });
 
     if (error || !result?.data) {
-      setStatus('error')
-      setMessage(getErrorMessage(error, '로그인에 실패했습니다.'))
-      return
+      setStatus("error");
+      setMessage(getErrorMessage(error, "로그인에 실패했습니다."));
+      return;
     }
 
-    login({ id: result.data.item.id, role: result.data.item.role })
-    setStatus('idle')
-    router.push('/')
-  }
+    login({ id: result.data.item.id, role: result.data.item.role });
+    setStatus("idle");
+    router.push("/");
+  };
 
   return (
     <main className="flex flex-1 items-center justify-center bg-canvas px-4 py-12 text-ink">
@@ -70,10 +70,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={status === 'submitting'}
+            disabled={status === "submitting"}
             className="mt-2 h-11 w-full rounded-md bg-primary px-6 text-[15px] font-semibold leading-6 text-on-primary transition hover:bg-primary-hover disabled:bg-canvas-soft disabled:text-mute"
           >
-            {status === 'submitting' ? '로그인 중' : '로그인'}
+            {status === "submitting" ? "로그인 중" : "로그인"}
           </button>
 
           {message ? (
@@ -87,14 +87,14 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-6 text-center text-[13px] leading-5 text-mute">
-          계정이 없으신가요?{' '}
+          계정이 없으신가요?{" "}
           <Link href="/signup" className="font-semibold text-ink underline">
             회원가입
           </Link>
         </p>
       </div>
     </main>
-  )
+  );
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -105,5 +105,5 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
       </span>
       {children}
     </label>
-  )
+  );
 }
