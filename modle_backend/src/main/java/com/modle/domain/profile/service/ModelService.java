@@ -24,6 +24,12 @@ public class ModelService {
     public Model findById(Long id) {
         return modelRepository.findById(id).get();
     }
+
+    public Model findByUserId(Long userId) {
+        return modelRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저의 모델 프로필이 존재하지 않습니다."));
+    }
+
     public Model create(
             User user, String name, int height,
             int weight, boolean gender, int age
