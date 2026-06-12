@@ -1,4 +1,4 @@
-package com.modle.global.util;
+package com.modle.infra.mail;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
@@ -54,8 +54,6 @@ public class MailService {
                 아쉽게도 회원가입이 반려되었습니다.
                 
                 반려 사유: %s
-                
-                문의사항이 있으시면 고객센터로 연락해주세요.
                 """.formatted(reason);
         send(to, subject, text);
     }

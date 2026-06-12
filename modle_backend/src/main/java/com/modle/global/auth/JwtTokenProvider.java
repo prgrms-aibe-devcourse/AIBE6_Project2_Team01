@@ -39,10 +39,10 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    // Refresh Token 생성 (userId만 담아서 발급)
-    public String createRefreshToken(Long userId) {
+    // Refresh Token 생성 (userId + role 담아서 발급)
+    public String createRefreshToken(Long userId, String role) {
         return Jwts.builder()
-                .claims(Map.of("id", userId))
+                .claims(Map.of("id", userId, "role", role))
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + refreshExpiration))
                 .signWith(getSecretKey())

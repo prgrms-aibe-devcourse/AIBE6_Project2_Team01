@@ -2,7 +2,7 @@ package com.modle.domain.user.service;
 
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
-import com.modle.global.util.MailService;
+import com.modle.infra.mail.MailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;

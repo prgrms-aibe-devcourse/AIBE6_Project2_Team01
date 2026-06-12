@@ -19,6 +19,7 @@ public class AuthTokenService {
     private final UserRepository userRepository;
 
     private static final String REFRESH_PREFIX = "refresh:";
+    private static final String ROLE_PREFIX = "role:";
     private static final long REFRESH_EXPIRE_DAYS = 7;
 
     // Access Token 생성
@@ -26,9 +27,12 @@ public class AuthTokenService {
         return jwtTokenProvider.createAccessToken(user.getId(), user.getRole().name());
     }
 
+
     // Refresh Token 생성 + Redis 저장
     public String genRefreshToken(User user) {
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
+        String refreshToken = jwtTokenProvider.createRefreshToken(
+                user.getId(), user.getRole().name()
+        );
         redisTemplate.opsForValue().set(
                 REFRESH_PREFIX + user.getId(),
                 refreshToken,
@@ -54,12 +58,11 @@ public class AuthTokenService {
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
 
-        // 유저 조회는 userId만 있으면 되니까 role은 토큰에서 꺼냄
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        // role은 Refresh Token payload에서 꺼냄
+        String role = jwtTokenProvider.getRole(refreshToken);
 
         // 새 Access Token 발급
-        return jwtTokenProvider.createAccessToken(userId, user.getRole().name());
+        return jwtTokenProvider.createAccessToken(userId, role);
     }
 
     // Refresh Token 삭제 (로그아웃)
