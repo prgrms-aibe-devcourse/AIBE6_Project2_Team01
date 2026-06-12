@@ -25,7 +25,11 @@ public enum ErrorCode {
     // JWT
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "401-2", "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "401-3", "만료된 토큰입니다."),
-    TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "401-4", "토큰이 없습니다.");
+    TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "401-4", "토큰이 없습니다."),
+
+    //계약
+    CONTRACT_ALREADY_EXISTS(HttpStatus.CONFLICT, "409-2", "이미 해당 지원 ID로 계약이 존재합니다."),
+    INVALID_CONTRACT_SHOOT_TIME(HttpStatus.BAD_REQUEST, "400-5", "촬영 종료 시간은 촬영 시작 시간 이후여야 합니다.");
 
     private final HttpStatus status;
     private final String resultCode;
