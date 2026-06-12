@@ -48,6 +48,55 @@ public class ModelController {
                 new ModelDto(item)
         );
     }
+
+    @Transactional(readOnly = true)
+    @GetMapping("/my")
+    @Operation(summary = "내 프로필 단건 조회")
+    public RsData<ModelDto> getMyItem(@AuthenticationPrincipal SecurityUser currentUser) {
+        if (currentUser == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+        Model item = modelService.findByUserId(currentUser.getId());
+
+        return new RsData<>(
+                "200-1",
+                "조회 성공",
+                new ModelDto(item)
+        );
+    }
+
+    @PutMapping("/my")
+    @Transactional
+    @Operation(summary = "내 프로필 수정")
+    public RsData<Void> modifyMyItem(
+            @Valid @RequestBody ModelModifyReqBody reqBody,
+            @AuthenticationPrincipal SecurityUser currentUser
+    ) {
+        if (currentUser == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+        
+        Model model = modelService.findByUserId(currentUser.getId());
+
+        modelService.update(
+                model,
+                reqBody.name(),
+                reqBody.height(),
+                reqBody.weight(),
+                reqBody.gender(),
+                reqBody.age(),
+                reqBody.field(),
+                reqBody.tags(),
+                reqBody.introduction(),
+                reqBody.profileImageUrl()
+        );
+
+        return new RsData<>(
+                "200-1",
+                "내 프로필이 수정되었습니다."
+        );
+    }
+
     @PostMapping
     @Transactional
     @Operation(summary = "모델 프로필 생성")
@@ -86,40 +135,40 @@ public class ModelController {
                 new ModelDto(model)
         );
     }
-    @PutMapping("/{id}")
-    @Transactional
-    @Operation(summary = "수정")
-    public RsData<Void> modify(
-            @PathVariable long id,
-            @Valid @RequestBody ModelModifyReqBody reqBody,
-            @AuthenticationPrincipal SecurityUser currentUser
-    ) {
-
-        Model model = modelService.findById(id);
-
-        // 권한 검증: 현재 로그인한 사용자가 이 모델 프로필의 소유자인지 확인
-        if (currentUser == null || !model.getUser().getId().equals(currentUser.getId())) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
-
-        modelService.update(
-                model,
-                reqBody.name(),
-                reqBody.height(),
-                reqBody.weight(),
-                reqBody.gender(),
-                reqBody.age(),
-                reqBody.field(),
-                reqBody.tags(),
-                reqBody.introduction(),
-                reqBody.profileImageUrl()
-        );
-
-        return new RsData<>(
-                "200-1",
-                "%d번 게시글이 수정되었습니다.".formatted(id)
-        );
-    }
+//    @PutMapping("/{id}")
+//    @Transactional
+//    @Operation(summary = "수정")
+//    public RsData<Void> modify(
+//            @PathVariable long id,
+//            @Valid @RequestBody ModelModifyReqBody reqBody,
+//            @AuthenticationPrincipal SecurityUser currentUser
+//    ) {
+//
+//        Model model = modelService.findById(id);
+//
+//        // 권한 검증: 현재 로그인한 사용자가 이 모델 프로필의 소유자인지 확인
+//        if (currentUser == null || !model.getUser().getId().equals(currentUser.getId())) {
+//            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+//        }
+//
+//        modelService.update(
+//                model,
+//                reqBody.name(),
+//                reqBody.height(),
+//                reqBody.weight(),
+//                reqBody.gender(),
+//                reqBody.age(),
+//                reqBody.field(),
+//                reqBody.tags(),
+//                reqBody.introduction(),
+//                reqBody.profileImageUrl()
+//        );
+//
+//        return new RsData<>(
+//                "200-1",
+//                "%d번 게시글이 수정되었습니다.".formatted(id)
+//        );
+//    }
     @DeleteMapping("/{id}")
     @Transactional
     @Operation(summary = "삭제")
