@@ -10,9 +10,9 @@ import com.modle.domain.jobposting.entity.RequiredSex;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record JobPostingResponse(
+// JOB-006: 모델 뷰 — 공고 정보 + 즐겨찾기 여부 (지원하기·즐겨찾기 버튼은 프론트에서 노출)
+public record JobPostingModelDetailResponse(
         Long id,
-        Long clientId,
         String title,
         String content,
         Category category,
@@ -29,12 +29,13 @@ public record JobPostingResponse(
         BigDecimal payment,
         PayType payType,
         LocalDateTime shootDate,
-        LocalDateTime createdDate
+        LocalDateTime createdDate,
+        // TODO(즐겨찾기): 즐겨찾기 단위 구현 후 실제 값으로 교체
+        boolean favorited
 ) {
-    public static JobPostingResponse from(JobPosting jobPosting) {
-        return new JobPostingResponse(
+    public static JobPostingModelDetailResponse from(JobPosting jobPosting) {
+        return new JobPostingModelDetailResponse(
                 jobPosting.getId(),
-                jobPosting.getClientId(),
                 jobPosting.getTitle(),
                 jobPosting.getContent(),
                 jobPosting.getCategory(),
@@ -51,7 +52,8 @@ public record JobPostingResponse(
                 jobPosting.getPayment(),
                 jobPosting.getPayType(),
                 jobPosting.getShootDate(),
-                jobPosting.getCreatedDate()
+                jobPosting.getCreatedDate(),
+                false
         );
     }
 }
