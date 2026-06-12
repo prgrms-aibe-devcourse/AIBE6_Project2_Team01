@@ -4,101 +4,766 @@
  */
 
 export interface paths {
-    "/api/v1/contracts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * 계약서 임시 저장
-         * @description 계약 조건을 입력받아 DRAFT 상태의 계약서를 생성합니다.
-         */
-        post: operations["createContract"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
+  '/api/v1/jobs': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['create']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/contracts': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * 계약서 임시 저장
+     * @description 계약 조건을 입력받아 DRAFT 상태의 계약서를 생성합니다.
+     */
+    post: operations['createContract']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/auth/signup/model': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['registerModel']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/auth/signup/client': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['registerClient']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/auth/reissue': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['reissue']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/auth/logout': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['logout']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/auth/login': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['login']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/auth/email/verify/send': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['sendVerificationCode']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/auth/email/verify/confirm': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['confirmVerificationCode']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/jobs/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete: operations['delete']
+    options?: never
+    head?: never
+    patch: operations['update']
+    trace?: never
+  }
+  '/api/v1/admin/clients/{userId}/reject': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch: operations['rejectClient']
+    trace?: never
+  }
+  '/api/v1/admin/clients/{userId}/approve': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch: operations['approveClient']
+    trace?: never
+  }
+  '/api/v1/jobs/templates': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getTemplates']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/admin/clients/pending': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getPendingClients']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
-export type webhooks = Record<string, never>;
+export type webhooks = Record<string, never>
 export interface components {
-    schemas: {
-        /** @description 계약서 생성 요청 */
-        ContractCreateRequest: {
-            /** Format: int64 */
-            applicationId: number;
-            /** @enum {string} */
-            contractType: "TEMPLATE" | "FILE";
-            /** Format: date-time */
-            shootStartAt: string;
-            /** Format: date-time */
-            shootEndAt: string;
-            location: string;
-            payment: number;
-            /** @enum {string} */
-            payType: "CASH" | "SERVICE";
-            usageScope: string;
-            memo?: string;
-            pdfUrl?: string;
-        };
-        ContractResponse: {
-            /** Format: int64 */
-            id?: number;
-            /** Format: int64 */
-            applicationId?: number;
-            /** @enum {string} */
-            contractType?: "TEMPLATE" | "FILE";
-            /** Format: date-time */
-            shootStartAt?: string;
-            /** Format: date-time */
-            shootEndAt?: string;
-            location?: string;
-            payment?: number;
-            /** @enum {string} */
-            payType?: "CASH" | "SERVICE";
-            usageScope?: string;
-            memo?: string;
-            pdfUrl?: string;
-            signedPdfUrl?: string;
-            /** @enum {string} */
-            status?: "DRAFT" | "NOTIFIED" | "VIEWED" | "AGREED" | "REJECTED" | "CONFIRMED" | "CANCELLED";
-        };
-    };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+  schemas: {
+    JobPostingCreateRequest: {
+      title: string
+      content: string
+      category: string
+    }
+    ApiResponseJobPostingResponse: {
+      resultCode?: string
+      msg?: string
+      data?: components['schemas']['JobPostingResponse']
+    }
+    JobPostingResponse: {
+      /** Format: int64 */
+      id?: number
+      /** Format: int64 */
+      clientId?: number
+      title?: string
+      content?: string
+      category?: string
+      /** @enum {string} */
+      status?:
+        | 'RECRUITING'
+        | 'SHOOTING'
+        | 'COMPLETED'
+        | 'CANCELLED'
+        | 'ON_HOLD'
+        | 'CLOSED'
+      /** Format: date-time */
+      createdDate?: string
+    }
+    /** @description 계약서 생성 요청 */
+    ContractCreateRequest: {
+      /** Format: int64 */
+      applicationId: number
+      /** @enum {string} */
+      contractType: 'TEMPLATE' | 'FILE'
+      /** Format: date-time */
+      shootStartAt: string
+      /** Format: date-time */
+      shootEndAt: string
+      location: string
+      payment: number
+      /** @enum {string} */
+      payType: 'CASH' | 'SERVICE'
+      usageScope: string
+      memo?: string
+      pdfUrl?: string
+    }
+    ContractResponse: {
+      /** Format: int64 */
+      id?: number
+      /** Format: int64 */
+      applicationId?: number
+      /** @enum {string} */
+      contractType?: 'TEMPLATE' | 'FILE'
+      /** Format: date-time */
+      shootStartAt?: string
+      /** Format: date-time */
+      shootEndAt?: string
+      location?: string
+      payment?: number
+      /** @enum {string} */
+      payType?: 'CASH' | 'SERVICE'
+      usageScope?: string
+      memo?: string
+      pdfUrl?: string
+      signedPdfUrl?: string
+      /** @enum {string} */
+      status?:
+        | 'DRAFT'
+        | 'NOTIFIED'
+        | 'VIEWED'
+        | 'AGREED'
+        | 'REJECTED'
+        | 'CONFIRMED'
+        | 'CANCELLED'
+    }
+    ModelRegisterRequest: {
+      email: string
+      password: string
+      region: string
+      name: string
+      /** Format: int32 */
+      height?: number
+      /** Format: int32 */
+      weight?: number
+      /** Format: int32 */
+      age?: number
+      gender: boolean
+    }
+    ApiResponseVoid: {
+      resultCode?: string
+      msg?: string
+      data?: unknown
+    }
+    ClientRegisterRequest: {
+      email: string
+      password: string
+      region: string
+      companyName: string
+      companyNumber: string
+      /** @enum {string} */
+      clientType: 'INDIVIDUAL' | 'ORGANIZATION'
+    }
+    LoginRequest: {
+      email: string
+      password: string
+    }
+    ApiResponseLoginResponse: {
+      resultCode?: string
+      msg?: string
+      data?: components['schemas']['LoginResponse']
+    }
+    LoginResponse: {
+      item: components['schemas']['UserDto']
+    }
+    UserDto: {
+      /** Format: int64 */
+      id: number
+      /** Format: date-time */
+      createDate: string
+      /** Format: date-time */
+      modifyDate: string
+      /** @enum {string} */
+      role: 'MODEL' | 'CLIENT' | 'ADMIN'
+    }
+    EmailVerifyRequest: {
+      email: string
+    }
+    EmailVerifyConfirmRequest: {
+      email: string
+      code: string
+    }
+    JobPostingUpdateRequest: {
+      title: string
+      content: string
+      category: string
+    }
+    RejectRequest: {
+      reason: string
+    }
+    ApiResponseListJobPostingTemplateResponse: {
+      resultCode?: string
+      msg?: string
+      data?: components['schemas']['JobPostingTemplateResponse'][]
+    }
+    JobPostingTemplateResponse: {
+      /** Format: int64 */
+      id?: number
+      category?: string
+      title?: string
+      content?: string
+    }
+    ApiResponseListPendingClientResponse: {
+      resultCode?: string
+      msg?: string
+      data?: components['schemas']['PendingClientResponse'][]
+    }
+    PendingClientResponse: {
+      /** Format: int64 */
+      userId?: number
+      email?: string
+      companyName?: string
+      companyNumber?: string
+      /** @enum {string} */
+      clientType?: 'INDIVIDUAL' | 'ORGANIZATION'
+      region?: string
+      /** Format: date-time */
+      createdDate?: string
+    }
+  }
+  responses: never
+  parameters: never
+  requestBodies: never
+  headers: never
+  pathItems: never
 }
-export type $defs = Record<string, never>;
+export type $defs = Record<string, never>
 export interface operations {
-    createContract: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ContractCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ContractResponse"];
-                };
-            };
-        };
-    };
+  create: {
+    parameters: {
+      query: {
+        userId: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['JobPostingCreateRequest']
+      }
+    }
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ApiResponseJobPostingResponse']
+        }
+      }
+    }
+  }
+  createContract: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ContractCreateRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ContractResponse']
+        }
+      }
+    }
+  }
+  registerModel: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ModelRegisterRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ApiResponseVoid']
+        }
+      }
+    }
+  }
+  registerClient: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ClientRegisterRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ApiResponseVoid']
+        }
+      }
+    }
+  }
+  reissue: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ApiResponseVoid']
+        }
+      }
+    }
+  }
+  logout: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ApiResponseVoid']
+        }
+      }
+    }
+  }
+  login: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['LoginRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ApiResponseLoginResponse']
+        }
+      }
+    }
+  }
+  sendVerificationCode: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['EmailVerifyRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ApiResponseVoid']
+        }
+      }
+    }
+  }
+  confirmVerificationCode: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['EmailVerifyConfirmRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ApiResponseVoid']
+        }
+      }
+    }
+  }
+  delete: {
+    parameters: {
+      query: {
+        userId: number
+      }
+      header?: never
+      path: {
+        id: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ApiResponseVoid']
+        }
+      }
+    }
+  }
+  update: {
+    parameters: {
+      query: {
+        userId: number
+      }
+      header?: never
+      path: {
+        id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['JobPostingUpdateRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ApiResponseJobPostingResponse']
+        }
+      }
+    }
+  }
+  rejectClient: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        userId: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RejectRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ApiResponseVoid']
+        }
+      }
+    }
+  }
+  approveClient: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        userId: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ApiResponseVoid']
+        }
+      }
+    }
+  }
+  getTemplates: {
+    parameters: {
+      query: {
+        category: string
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ApiResponseListJobPostingTemplateResponse']
+        }
+      }
+    }
+  }
+  getPendingClients: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ApiResponseListPendingClientResponse']
+        }
+      }
+    }
+  }
 }
