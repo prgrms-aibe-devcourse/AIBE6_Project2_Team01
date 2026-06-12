@@ -39,3 +39,9 @@ out/
 ### env 파일 ###
 .env
 .env/**
+
+### Json 파일 ###
+gcs-key.json
+
+### 테스트 (사후 작성 — 현재 추적 제외) ###
+src/test/
