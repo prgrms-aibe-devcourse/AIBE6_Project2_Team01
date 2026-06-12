@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record JobPostingCreateRequest(
         @NotBlank(message = "제목은 필수입니다.")
@@ -52,6 +53,6 @@ public record JobPostingCreateRequest(
 
         PayType payType,
 
-        LocalDate shootDate
+        LocalDateTime shootDate
 ) {
 }

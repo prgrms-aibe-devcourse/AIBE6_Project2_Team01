@@ -8,7 +8,6 @@ import com.modle.domain.jobposting.entity.Region;
 import com.modle.domain.jobposting.entity.RequiredSex;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 // JOB-006: 모델 뷰 — 공고 정보 + 즐겨찾기 여부 (지원하기·즐겨찾기 버튼은 프론트에서 노출)
@@ -29,7 +28,7 @@ public record JobPostingModelDetailResponse(
         Integer minCareerMonths,
         BigDecimal payment,
         PayType payType,
-        LocalDate shootDate,
+        LocalDateTime shootDate,
         LocalDateTime createdDate,
         // TODO(즐겨찾기): 즐겨찾기 단위 구현 후 실제 값으로 교체
         boolean favorited

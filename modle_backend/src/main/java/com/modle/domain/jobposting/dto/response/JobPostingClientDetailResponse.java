@@ -8,7 +8,6 @@ import com.modle.domain.jobposting.entity.Region;
 import com.modle.domain.jobposting.entity.RequiredSex;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -31,7 +30,7 @@ public record JobPostingClientDetailResponse(
         Integer minCareerMonths,
         BigDecimal payment,
         PayType payType,
-        LocalDate shootDate,
+        LocalDateTime shootDate,
         LocalDateTime createdDate,
         // TODO(AI추천): AI 추천 단위 구현 후 실제 추천 모델 목록으로 교체
         List<Long> recommendedModelIds

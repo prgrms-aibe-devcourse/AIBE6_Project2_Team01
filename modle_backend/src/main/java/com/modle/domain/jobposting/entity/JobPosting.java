@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -77,7 +78,7 @@ public class JobPosting extends BaseEntity {
     private PayType payType;
 
     @Column
-    private LocalDate shootDate;
+    private LocalDateTime shootDate;
 
     @Builder
     private JobPosting(Long clientId, String title, String content, Category category, Region region,
@@ -86,7 +87,7 @@ public class JobPosting extends BaseEntity {
                        Integer heightMin, Integer heightMax,
                        Integer weightMin, Integer weightMax,
                        Integer minCareerMonths,
-                       BigDecimal payment, PayType payType, LocalDate shootDate) {
+                       BigDecimal payment, PayType payType, LocalDateTime shootDate) {
         this.clientId = clientId;
         this.title = title;
         this.content = content;
@@ -112,7 +113,7 @@ public class JobPosting extends BaseEntity {
                        Integer heightMin, Integer heightMax,
                        Integer weightMin, Integer weightMax,
                        Integer minCareerMonths,
-                       BigDecimal payment, PayType payType, LocalDate shootDate) {
+                       BigDecimal payment, PayType payType, LocalDateTime shootDate) {
         this.title = title;
         this.content = content;
         this.category = category;

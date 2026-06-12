@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record JobPostingUpdateRequest(
         @NotBlank String title,
@@ -46,6 +47,6 @@ public record JobPostingUpdateRequest(
 
         PayType payType,
 
-        LocalDate shootDate
+        LocalDateTime shootDate
 ) {
 }

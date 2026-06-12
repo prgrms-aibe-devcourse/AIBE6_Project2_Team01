@@ -8,7 +8,6 @@ import com.modle.domain.jobposting.entity.Region;
 import com.modle.domain.jobposting.entity.RequiredSex;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record JobPostingResponse(
@@ -29,7 +28,7 @@ public record JobPostingResponse(
         Integer minCareerMonths,
         BigDecimal payment,
         PayType payType,
-        LocalDate shootDate,
+        LocalDateTime shootDate,
         LocalDateTime createdDate
 ) {
     public static JobPostingResponse from(JobPosting jobPosting) {
