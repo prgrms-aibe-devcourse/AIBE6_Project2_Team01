@@ -19,6 +19,7 @@ public enum ErrorCode {
     // 이메일 인증
     EMAIL_CODE_NOT_FOUND(HttpStatus.BAD_REQUEST, "400-1", "인증 코드가 만료되었거나 존재하지 않습니다."),
     EMAIL_CODE_INVALID(HttpStatus.BAD_REQUEST, "400-2", "인증 코드가 올바르지 않습니다."),
+    INVALID_STATUS_CHANGE(HttpStatus.BAD_REQUEST, "400-3", "유효하지 않은 상태 변경입니다."),
     EMAIL_NOT_VERIFIED(HttpStatus.FORBIDDEN, "403-4", "이메일 인증이 완료되지 않았습니다."),
 
     // JWT

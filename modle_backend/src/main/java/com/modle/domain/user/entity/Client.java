@@ -42,12 +42,6 @@ public class Client extends BaseEntity {
     @Column(nullable = false)
     private int reviewCount = 0;
 
-    @Column
-    private LocalDateTime rejectedDate;
-
-    @Column(length = 500)
-    private String rejectReason;
-
     public static Client create(
             User user, ClientType clientType,
             String name, String number) {
@@ -57,10 +51,5 @@ public class Client extends BaseEntity {
         client.companyName = name;
         client.companyNumber = number;
         return client;
-    }
-
-    public void reject(String reason) {
-        this.rejectedDate = LocalDateTime.now();
-        this.rejectReason = reason;
     }
 }

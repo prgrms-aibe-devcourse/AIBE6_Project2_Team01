@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cascade;
 
 import java.time.LocalDateTime;
 
@@ -43,6 +44,18 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private int warningCount = 0;
 
+    @Column
+    private LocalDateTime rejectedDate;
+
+    @Column(length = 500)
+    private String rejectReason;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Client client;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Model model;
+
     public static User createLocal(
             String email, String password,
             String region, Role role) {
@@ -54,5 +67,14 @@ public class User extends BaseEntity {
         user.role = role;
         user.status = (role == Role.MODEL) ? UserStatus.ACTIVE : UserStatus.PENDING;
         return user;
+    }
+
+    public void reject(String reason) {
+        this.rejectedDate = LocalDateTime.now();
+        this.rejectReason = reason;
+    }
+
+    public void updateStatus(UserStatus userStatus) {
+        this.status = userStatus;
     }
 }
