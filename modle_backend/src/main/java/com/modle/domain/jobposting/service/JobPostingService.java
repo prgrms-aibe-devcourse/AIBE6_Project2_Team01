@@ -8,8 +8,10 @@ import com.modle.domain.jobposting.dto.response.JobPostingModelDetailResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingOtherDetailResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingTemplateResponse;
+import com.modle.domain.jobposting.entity.Category;
 import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.JobPostingStatus;
+import com.modle.domain.jobposting.entity.Region;
 import com.modle.domain.jobposting.entity.ViewerType;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
@@ -119,7 +121,9 @@ public class JobPostingService {
 
     // JOB-005: 지역·카테고리 필터를 적용한 공고 목록을 반환한다.
     public Page<JobPostingListResponse> getJobPostings(String region, String category, Pageable pageable) {
-        return jobPostingRepository.findByFilter(region, category, pageable)
+        Region regionEnum = (region != null && !region.isBlank()) ? Region.valueOf(region) : null;
+        Category categoryEnum = (category != null && !category.isBlank()) ? Category.valueOf(category) : null;
+        return jobPostingRepository.findByFilter(regionEnum, categoryEnum, pageable)
                 .map(JobPostingListResponse::from);
     }
 

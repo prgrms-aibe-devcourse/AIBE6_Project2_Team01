@@ -70,7 +70,7 @@ public class JobPostingController {
     public ApiResponse<Page<JobPostingListResponse>> getJobPostings(
             @RequestParam(required = false) String region,
             @RequestParam(required = false) String category,
-            @PageableDefault(size = 10, sort = "createDate", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable) {
         return ApiResponse.ok("공고 목록 조회 성공", jobPostingService.getJobPostings(region, category, pageable));
     }
 
