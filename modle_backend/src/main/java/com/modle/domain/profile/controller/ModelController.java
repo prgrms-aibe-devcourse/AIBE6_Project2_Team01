@@ -5,11 +5,15 @@ import com.modle.domain.profile.dto.request.ModelCreateReqBody;
 import com.modle.domain.profile.dto.request.ModelModifyReqBody;
 import com.modle.domain.profile.service.ModelService;
 import com.modle.domain.user.entity.Model;
+import com.modle.global.auth.SecurityUser;
+import com.modle.global.exception.CustomException;
+import com.modle.global.exception.ErrorCode;
 import com.modle.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,21 +39,26 @@ public class ModelController {
     @Transactional(readOnly = true)
     @GetMapping("/{id}")
     @Operation(summary = "단건 조회")
-    public ModelDto getItem(@PathVariable Long id) {
+    public RsData<ModelDto> getItem(@PathVariable Long id) {
         Model item = modelService.findById(id);
 
-        return new ModelDto(item);
+        return new RsData<>(
+                "200-1",
+                "조회 성공",
+                new ModelDto(item)
+        );
     }
     @PostMapping
     @Transactional
     @Operation(summary = "모델 프로필 생성")
     public RsData<ModelDto> create(
             @Valid // 유효성 검사
-            @RequestBody ModelCreateReqBody reqBody
+            @RequestBody ModelCreateReqBody reqBody,
+            @AuthenticationPrincipal SecurityUser currentUser
     ) {
 
         Model model = modelService.create(
-                null, // TODO: Resolve User from Security Context or request
+                null, // TODO: Resolve User from Security Context or request (needs UserRepository)
                 reqBody.name(),
                 reqBody.height(),
                 reqBody.weight(),
@@ -82,10 +91,17 @@ public class ModelController {
     @Operation(summary = "수정")
     public RsData<Void> modify(
             @PathVariable long id,
-            @Valid @RequestBody ModelModifyReqBody reqBody
+            @Valid @RequestBody ModelModifyReqBody reqBody,
+            @AuthenticationPrincipal SecurityUser currentUser
     ) {
 
         Model model = modelService.findById(id);
+
+        // 권한 검증: 현재 로그인한 사용자가 이 모델 프로필의 소유자인지 확인
+        if (currentUser == null || !model.getUser().getId().equals(currentUser.getId())) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
         modelService.update(
                 model,
                 reqBody.name(),
@@ -108,9 +124,15 @@ public class ModelController {
     @Transactional
     @Operation(summary = "삭제")
     public RsData<ModelDto> delete(
-            @PathVariable Long id
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser currentUser
     ) {
         Model model = modelService.findById(id);
+
+        // 권한 검증: 현재 로그인한 사용자가 이 모델 프로필의 소유자인지 확인
+        if (currentUser == null || !model.getUser().getId().equals(currentUser.getId())) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
 
         modelService.delete(model);
 
