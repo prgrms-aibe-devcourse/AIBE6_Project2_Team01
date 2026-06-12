@@ -100,6 +100,9 @@ public class InitData {
 
     @Transactional
     public void work4() {
+        if (userRepository.existsByEmail("model1@modle.com")) {
+            return;
+        }
         if (modelService.count() > 1) {
             return;
         }
