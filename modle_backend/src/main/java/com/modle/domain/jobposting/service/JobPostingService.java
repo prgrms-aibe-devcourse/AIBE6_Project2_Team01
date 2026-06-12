@@ -16,8 +16,6 @@ import com.modle.domain.jobposting.entity.ViewerType;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
 import com.modle.domain.jobposting.event.JobPostingCreatedEvent;
-import com.modle.domain.jobposting.exception.JobPostingNotEditableException;
-import com.modle.domain.jobposting.exception.JobPostingNotFoundException;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.jobposting.repository.JobPostingTemplateRepository;
 import lombok.RequiredArgsConstructor;
@@ -82,10 +80,10 @@ public class JobPostingService {
     @Transactional
     public JobPostingResponse updateJobPosting(Long jobPostingId, Long clientId, JobPostingUpdateRequest request) {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
-                .orElseThrow(() -> new JobPostingNotFoundException(jobPostingId));
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
         if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
-            throw new JobPostingNotEditableException(jobPostingId, jobPosting.getStatus());
+            throw new CustomException(ErrorCode.JOB_POSTING_NOT_EDITABLE);
         }
 
         if (!jobPosting.getClientId().equals(clientId)) {
@@ -106,10 +104,10 @@ public class JobPostingService {
     @Transactional
     public void deleteJobPosting(Long jobPostingId, Long clientId) {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
-                .orElseThrow(() -> new JobPostingNotFoundException(jobPostingId));
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
         if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
-            throw new JobPostingNotEditableException(jobPostingId, jobPosting.getStatus());
+            throw new CustomException(ErrorCode.JOB_POSTING_NOT_EDITABLE);
         }
 
         if (!jobPosting.getClientId().equals(clientId)) {
@@ -130,7 +128,7 @@ public class JobPostingService {
     // JOB-006~008: 뷰어 타입에 따라 다른 공고 상세 정보를 반환한다.
     public Object getJobPostingDetail(Long jobPostingId, ViewerType viewerType) {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
-                .orElseThrow(() -> new JobPostingNotFoundException(jobPostingId));
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
         return switch (viewerType) {
             case MODEL -> JobPostingModelDetailResponse.from(jobPosting);
