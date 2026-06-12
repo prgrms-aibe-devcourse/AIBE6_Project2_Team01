@@ -2,13 +2,19 @@ package com.modle.domain.jobposting.controller;
 
 import com.modle.domain.jobposting.dto.request.JobPostingCreateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
+import com.modle.domain.jobposting.dto.response.JobPostingListResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingTemplateResponse;
+import com.modle.domain.jobposting.entity.ViewerType;
 import com.modle.domain.jobposting.service.JobPostingService;
 // TODO(골격): 공통 응답 래퍼는 global/response 골격 머지 후 사용 가능. success 팩토리 시그니처는 골격 기준으로 정렬.
 import com.modle.global.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -69,5 +75,24 @@ public class JobPostingController {
             @RequestParam Long userId) {
         jobPostingService.deleteJobPosting(id, userId);
         return ApiResponse.success(null);
+    }
+
+    // JOB-005: 지역·카테고리 필터를 적용한 공고 목록 반환.
+    // TODO(인증): 인증 머지 후 역할별 접근 제한 적용
+    @GetMapping
+    public ApiResponse<Page<JobPostingListResponse>> getJobPostings(
+            @RequestParam(required = false) String region,
+            @RequestParam(required = false) String category,
+            @PageableDefault(size = 10, sort = "createDate", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ApiResponse.success(jobPostingService.getJobPostings(region, category, pageable));
+    }
+
+    // JOB-006~008: 뷰어 타입에 따라 공고 상세 반환.
+    // TODO(인증): 인증 머지 후 viewer 파라미터 제거 — JWT role + clientId로 서버 사이드 자동 결정
+    @GetMapping("/{id}")
+    public ApiResponse<Object> getJobPostingDetail(
+            @PathVariable Long id,
+            @RequestParam ViewerType viewer) {
+        return ApiResponse.success(jobPostingService.getJobPostingDetail(id, viewer));
     }
 }
