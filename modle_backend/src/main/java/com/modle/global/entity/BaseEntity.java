@@ -8,8 +8,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-@EntityListeners(AuditingEntityListener.class) // 생성일, 수정일 자동화
-@MappedSuperclass // 엔티티의 부모 클래스에는 이걸 달아야한다.
+@EntityListeners(AuditingEntityListener.class)
+@MappedSuperclass
 @Getter
 public class BaseEntity {
     @Id
@@ -17,8 +17,8 @@ public class BaseEntity {
     protected Long id;
 
     @CreatedDate
-    private LocalDateTime createDate;
+    private LocalDateTime createdDate;
 
     @LastModifiedDate
-    private LocalDateTime modifyDate;
+    private LocalDateTime modifiedDate;
 }

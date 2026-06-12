@@ -12,7 +12,7 @@ public record JobPostingResponse(
         String content,
         String category,
         JobPostingStatus status,
-        LocalDateTime createDate
+        LocalDateTime createdDate
 ) {
     public static JobPostingResponse from(JobPosting jobPosting) {
         return new JobPostingResponse(
@@ -22,7 +22,7 @@ public record JobPostingResponse(
                 jobPosting.getContent(),
                 jobPosting.getCategory(),
                 jobPosting.getStatus(),
-                jobPosting.getCreateDate()
+                jobPosting.getCreatedDate()
         );
     }
 }
