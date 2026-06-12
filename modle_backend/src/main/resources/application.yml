@@ -1,4 +1,14 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
+  cloud:
+    gcp:
+      storage:
+        # .env 파일의 GCP_PROJECT_ID 값을 주입
+        project-id: ${GCP_PROJECT_ID}
+        credentials:
+          # .env 파일의 GCS_CREDENTIALS_PATH 값을 주입
+          location: ${GCS_CREDENTIALS_PATH}
   datasource:
     url: jdbc:mysql://localhost:3306/modle?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: root
