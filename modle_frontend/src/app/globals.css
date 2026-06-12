@@ -1,3 +1,33 @@
 @import "tailwindcss";
 
-/* TODO: docs/design.md의 디자인 토큰을 @theme으로 등록한다 */
+@theme {
+  --color-canvas: #ffffff;
+  --color-canvas-soft: #fafafa;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-hairline: #e5e5e5;
+  --color-hairline-strong: #c4c4c4;
+  --color-ink: #111111;
+  --color-body: #4b4b4b;
+  --color-mute: #8a8a8a;
+  --color-primary: #111111;
+  --color-on-primary: #ffffff;
+  --color-primary-hover: #2a2a2a;
+  --color-success: #1a7f37;
+  --color-success-soft: #e8f3ec;
+  --color-warning: #9a6700;
+  --color-warning-soft: #f7efe0;
+  --color-error: #c93030;
+  --color-error-soft: #f9e9e9;
+}
+
+:root {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-canvas);
+}
