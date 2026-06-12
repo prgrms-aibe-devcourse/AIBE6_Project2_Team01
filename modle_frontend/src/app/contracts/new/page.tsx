@@ -66,7 +66,7 @@ export default function NewContractPage() {
     setMessage("");
 
     try {
-      const { response } = await client.POST("/api/contracts", {
+      const { response } = await client.POST("/api/v1/contracts", {
         body: {
           applicationId: Number(form.applicationId),
           contractType: form.contractType,
