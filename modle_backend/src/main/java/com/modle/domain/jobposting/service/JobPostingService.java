@@ -53,6 +53,17 @@ public class JobPostingService {
                 .category(request.category())
                 .region(request.region())
                 .status(JobPostingStatus.RECRUITING)
+                .requiredSex(request.requiredSex())
+                .ageMin(request.ageMin())
+                .ageMax(request.ageMax())
+                .heightMin(request.heightMin())
+                .heightMax(request.heightMax())
+                .weightMin(request.weightMin())
+                .weightMax(request.weightMax())
+                .minCareerMonths(request.minCareerMonths())
+                .payment(request.payment())
+                .payType(request.payType())
+                .shootDate(request.shootDate())
                 .build();
 
         JobPosting saved = jobPostingRepository.save(jobPosting);
@@ -74,7 +85,12 @@ public class JobPostingService {
         }
 
         // TODO(인증): 인증 머지 후 clientId == 토큰 userId 일치 검증 추가
-        jobPosting.update(request.title(), request.content(), request.category(), request.region());
+        jobPosting.update(request.title(), request.content(), request.category(), request.region(),
+                request.requiredSex(), request.ageMin(), request.ageMax(),
+                request.heightMin(), request.heightMax(),
+                request.weightMin(), request.weightMax(),
+                request.minCareerMonths(),
+                request.payment(), request.payType(), request.shootDate());
         return JobPostingResponse.from(jobPosting);
     }
 

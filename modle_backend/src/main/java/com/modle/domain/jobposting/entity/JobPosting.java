@@ -1,6 +1,5 @@
 package com.modle.domain.jobposting.entity;
 
-// TODO(골격): BaseEntity의 실제 패키지는 골격 담당이 확정한 위치를 따른다. 머지 후 import 정렬.
 import com.modle.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +11,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -30,31 +32,101 @@ public class JobPosting extends BaseEntity {
     @Column(nullable = false)
     private String content;
 
-    // 카테고리. 시트 확정 시 profile 도메인 Category 연계 여부 결정 (열린 질문)
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String category;
+    private Category category;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String region;
+    private Region region;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private JobPostingStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RequiredSex requiredSex;
+
+    @Column
+    private Integer ageMin;
+
+    @Column
+    private Integer ageMax;
+
+    @Column
+    private Integer heightMin;
+
+    @Column
+    private Integer heightMax;
+
+    @Column
+    private Integer weightMin;
+
+    @Column
+    private Integer weightMax;
+
+    @Column
+    private Integer minCareerMonths;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal payment;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private PayType payType;
+
+    @Column
+    private LocalDate shootDate;
+
     @Builder
-    private JobPosting(Long clientId, String title, String content, String category, String region, JobPostingStatus status) {
+    private JobPosting(Long clientId, String title, String content, Category category, Region region,
+                       JobPostingStatus status, RequiredSex requiredSex,
+                       Integer ageMin, Integer ageMax,
+                       Integer heightMin, Integer heightMax,
+                       Integer weightMin, Integer weightMax,
+                       Integer minCareerMonths,
+                       BigDecimal payment, PayType payType, LocalDate shootDate) {
         this.clientId = clientId;
         this.title = title;
         this.content = content;
         this.category = category;
         this.region = region;
         this.status = status;
+        this.requiredSex = requiredSex != null ? requiredSex : RequiredSex.ANY;
+        this.ageMin = ageMin;
+        this.ageMax = ageMax;
+        this.heightMin = heightMin;
+        this.heightMax = heightMax;
+        this.weightMin = weightMin;
+        this.weightMax = weightMax;
+        this.minCareerMonths = minCareerMonths;
+        this.payment = payment;
+        this.payType = payType;
+        this.shootDate = shootDate;
     }
 
-    public void update(String title, String content, String category, String region) {
+    public void update(String title, String content, Category category, Region region,
+                       RequiredSex requiredSex,
+                       Integer ageMin, Integer ageMax,
+                       Integer heightMin, Integer heightMax,
+                       Integer weightMin, Integer weightMax,
+                       Integer minCareerMonths,
+                       BigDecimal payment, PayType payType, LocalDate shootDate) {
         this.title = title;
         this.content = content;
         this.category = category;
         this.region = region;
+        this.requiredSex = requiredSex != null ? requiredSex : RequiredSex.ANY;
+        this.ageMin = ageMin;
+        this.ageMax = ageMax;
+        this.heightMin = heightMin;
+        this.heightMax = heightMax;
+        this.weightMin = weightMin;
+        this.weightMax = weightMax;
+        this.minCareerMonths = minCareerMonths;
+        this.payment = payment;
+        this.payType = payType;
+        this.shootDate = shootDate;
     }
 }

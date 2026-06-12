@@ -1,17 +1,27 @@
 package com.modle.domain.jobposting.dto.response;
 
+import com.modle.domain.jobposting.entity.Category;
 import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.JobPostingStatus;
+import com.modle.domain.jobposting.entity.PayType;
+import com.modle.domain.jobposting.entity.Region;
+import com.modle.domain.jobposting.entity.RequiredSex;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record JobPostingListResponse(
         Long id,
         String title,
-        String category,
-        String region,
+        Category category,
+        Region region,
         JobPostingStatus status,
-        LocalDateTime createDate
+        RequiredSex requiredSex,
+        BigDecimal payment,
+        PayType payType,
+        LocalDate shootDate,
+        LocalDateTime createdDate
 ) {
     public static JobPostingListResponse from(JobPosting jobPosting) {
         return new JobPostingListResponse(
@@ -20,7 +30,11 @@ public record JobPostingListResponse(
                 jobPosting.getCategory(),
                 jobPosting.getRegion(),
                 jobPosting.getStatus(),
-                jobPosting.getCreateDate()
+                jobPosting.getRequiredSex(),
+                jobPosting.getPayment(),
+                jobPosting.getPayType(),
+                jobPosting.getShootDate(),
+                jobPosting.getCreatedDate()
         );
     }
 }
