@@ -9,8 +9,10 @@ import com.modle.domain.jobposting.entity.RequiredSex;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
-public record JobPostingResponse(
+// JOB-007: 의뢰인 뷰 — 공고 정보 + AI 추천 모델 섹션 (수락 버튼 없음)
+public record JobPostingClientDetailResponse(
         Long id,
         Long clientId,
         String title,
@@ -29,10 +31,12 @@ public record JobPostingResponse(
         BigDecimal payment,
         PayType payType,
         LocalDateTime shootDate,
-        LocalDateTime createdDate
+        LocalDateTime createdDate,
+        // TODO(AI추천): AI 추천 단위 구현 후 실제 추천 모델 목록으로 교체
+        List<Long> recommendedModelIds
 ) {
-    public static JobPostingResponse from(JobPosting jobPosting) {
-        return new JobPostingResponse(
+    public static JobPostingClientDetailResponse from(JobPosting jobPosting) {
+        return new JobPostingClientDetailResponse(
                 jobPosting.getId(),
                 jobPosting.getClientId(),
                 jobPosting.getTitle(),
@@ -51,7 +55,8 @@ public record JobPostingResponse(
                 jobPosting.getPayment(),
                 jobPosting.getPayType(),
                 jobPosting.getShootDate(),
-                jobPosting.getCreatedDate()
+                jobPosting.getCreatedDate(),
+                List.of()
         );
     }
 }
