@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "ApiV1ContractController", description = "계약서 API 컨트롤러")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/contracts")
+@RequestMapping("/api/v1/contracts")
 public class ContractController {
     private final ContractService contractService;
 
