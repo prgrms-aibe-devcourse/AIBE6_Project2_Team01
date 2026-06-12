@@ -2,10 +2,15 @@ package com.modle.domain.jobposting.service;
 
 import com.modle.domain.jobposting.dto.request.JobPostingCreateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
+import com.modle.domain.jobposting.dto.response.JobPostingClientDetailResponse;
+import com.modle.domain.jobposting.dto.response.JobPostingListResponse;
+import com.modle.domain.jobposting.dto.response.JobPostingModelDetailResponse;
+import com.modle.domain.jobposting.dto.response.JobPostingOtherDetailResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingTemplateResponse;
 import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.JobPostingStatus;
+import com.modle.domain.jobposting.entity.ViewerType;
 import com.modle.domain.jobposting.event.JobPostingCreatedEvent;
 import com.modle.domain.jobposting.exception.JobPostingNotEditableException;
 import com.modle.domain.jobposting.exception.JobPostingNotFoundException;
@@ -13,6 +18,8 @@ import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.jobposting.repository.JobPostingTemplateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,5 +91,23 @@ public class JobPostingService {
 
         // TODO(인증): 인증 머지 후 clientId == 토큰 userId 일치 검증 추가
         jobPostingRepository.delete(jobPosting);
+    }
+
+    // JOB-005: 지역·카테고리 필터를 적용한 공고 목록을 반환한다.
+    public Page<JobPostingListResponse> getJobPostings(String region, String category, Pageable pageable) {
+        return jobPostingRepository.findByFilter(region, category, pageable)
+                .map(JobPostingListResponse::from);
+    }
+
+    // JOB-006~008: 뷰어 타입에 따라 다른 공고 상세 정보를 반환한다.
+    public Object getJobPostingDetail(Long jobPostingId, ViewerType viewerType) {
+        JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
+                .orElseThrow(() -> new JobPostingNotFoundException(jobPostingId));
+
+        return switch (viewerType) {
+            case MODEL -> JobPostingModelDetailResponse.from(jobPosting);
+            case CLIENT -> JobPostingClientDetailResponse.from(jobPosting);
+            case OTHER -> JobPostingOtherDetailResponse.from(jobPosting);
+        };
     }
 }
