@@ -1,26 +1,31 @@
 package com.modle.global.response;
 
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.NonNull;
 
-// TODO(골격): 골격 담당 머지 후 이 파일을 삭제하고 골격 버전으로 교체한다.
-@Getter
-public class ApiResponse<T> {
-
-    private final boolean success;
-    private final T data;
-    private final Object error;
-
-    private ApiResponse(boolean success, T data, Object error) {
-        this.success = success;
-        this.data = data;
-        this.error = error;
+public record ApiResponse<T>(
+        @NonNull String resultCode,
+        @JsonIgnore int statusCode,
+        @NonNull String msg,
+        T data
+) {
+    public ApiResponse(String resultCode, String msg) {
+        this(resultCode, msg, null);
     }
 
-    public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(true, data, null);
+    public ApiResponse(String resultCode, String msg, T data) {
+        this(resultCode, Integer.parseInt(resultCode.split("-", 2)[0]), msg, data);
     }
 
-    public static <T> ApiResponse<T> failure(Object error) {
-        return new ApiResponse<>(false, null, error);
+    public static <T> ApiResponse<T> ok(String msg, T data) {
+        return new ApiResponse<>("200-1", msg, data);
+    }
+
+    public static <T> ApiResponse<T> ok(String msg) {
+        return new ApiResponse<>("200-1", msg, null);
+    }
+
+    public static <T> ApiResponse<T> fail(String resultCode, String msg) {
+        return new ApiResponse<>(resultCode, msg, null);
     }
 }
