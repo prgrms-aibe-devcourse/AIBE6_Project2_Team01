@@ -50,8 +50,6 @@ public class AdminService {
         }
 
         user.reject(reason);
-
-        user.updateStatus(UserStatus.REJECTED);
         mailService.sendRejectionEmail(user.getEmail(), reason);
     }
 

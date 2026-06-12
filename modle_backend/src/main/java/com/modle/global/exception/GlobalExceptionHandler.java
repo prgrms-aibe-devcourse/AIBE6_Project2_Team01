@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
                 .orElse("입력값이 올바르지 않습니다.");
         return ResponseEntity
                 .badRequest()
-                .body(ApiResponse.fail("400-3", message));
+                .body(ApiResponse.fail("400-4", message));
     }
 
     // 요청 본문 파싱 실패 (JSON 형식 오류)

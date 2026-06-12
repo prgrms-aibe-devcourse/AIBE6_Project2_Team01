@@ -5,11 +5,8 @@ import com.modle.domain.user.entity.type.Role;
 import com.modle.domain.user.entity.type.UserStatus;
 import com.modle.global.entity.BaseEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Cascade;
 
 import java.time.LocalDateTime;
 
@@ -70,6 +67,7 @@ public class User extends BaseEntity {
     }
 
     public void reject(String reason) {
+        this.status = UserStatus.REJECTED;
         this.rejectedDate = LocalDateTime.now();
         this.rejectReason = reason;
     }

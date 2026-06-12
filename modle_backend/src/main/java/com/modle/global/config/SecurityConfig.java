@@ -50,7 +50,7 @@ public class SecurityConfig {
                                 "/api/v1/auth/email/verify/send",
                                 "/api/v1/auth/email/verify/confirm",
                                 "/api/v1/auth/login",
-                                "api/v1/auth/reissue"
+                                "/api/v1/auth/reissue"
                         ).permitAll()
                         // 관리자만
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")

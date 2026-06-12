@@ -2,7 +2,6 @@ package com.modle.global.scheduler;
 
 import com.modle.domain.user.entity.User;
 import com.modle.domain.user.entity.type.UserStatus;
-import com.modle.domain.user.repository.ClientRepository;
 import com.modle.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

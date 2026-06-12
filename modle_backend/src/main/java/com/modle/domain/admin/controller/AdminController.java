@@ -4,20 +4,12 @@ import com.modle.domain.admin.dto.request.RejectRequest;
 import com.modle.domain.admin.dto.response.PendingClientResponse;
 import com.modle.domain.admin.service.AdminService;
 import com.modle.domain.user.entity.Client;
-import com.modle.domain.user.entity.User;
-import com.modle.domain.user.entity.type.UserStatus;
-import com.modle.domain.user.repository.ClientRepository;
-import com.modle.domain.user.repository.UserRepository;
 import com.modle.global.response.ApiResponse;
-import com.modle.infra.mail.MailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
