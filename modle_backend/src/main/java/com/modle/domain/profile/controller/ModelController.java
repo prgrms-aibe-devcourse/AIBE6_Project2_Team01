@@ -50,6 +50,7 @@ public class ModelController {
 
         Model model = modelService.create(
                 reqBody.name(),
+                reqBody.region(),
                 reqBody.age(),
                 reqBody.height(),
                 reqBody.weight(),
@@ -77,6 +78,7 @@ public class ModelController {
         Model model = modelService.findById(id);
         modelService.update(
                 model,
+                reqBody.region(),
                 reqBody.age(),
                 reqBody.height(),
                 reqBody.weight(),

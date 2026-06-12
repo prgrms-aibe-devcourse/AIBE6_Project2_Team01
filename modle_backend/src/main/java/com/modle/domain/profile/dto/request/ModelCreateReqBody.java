@@ -7,6 +7,7 @@ public record ModelCreateReqBody (
         @NotBlank
         @Size(min = 2, max = 20)
         String name,
+        String region,
         @NotBlank
         int age,
         @NotBlank

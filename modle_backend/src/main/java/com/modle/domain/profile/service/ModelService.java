@@ -22,6 +22,7 @@ public class ModelService {
     }
     public Model create(
             String name,
+            String region,
             int age,
             int height,
             int weight,
@@ -33,6 +34,7 @@ public class ModelService {
     ){
         Model model = new Model(
                 name,
+                region,
                 age,
                 height,
                 weight,
@@ -47,6 +49,7 @@ public class ModelService {
 
     public void update(
             Model model,
+            String region,
             @NotBlank int age,
             @NotBlank int height,
             @NotBlank int weight,
@@ -55,7 +58,7 @@ public class ModelService {
             double avg_rating,
             int review_count,
             int user_id) {
-        model.modify(age, height, weight, introduction,
+        model.modify(region, age, height, weight, introduction,
                 profile_image_url, avg_rating, review_count, user_id);
     }
 
