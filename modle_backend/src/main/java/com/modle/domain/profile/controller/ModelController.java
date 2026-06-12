@@ -93,7 +93,9 @@ public class ModelController {
                 "%d번 게시글이 수정되었습니다.".formatted(id)
         );
     }
-
+    @DeleteMapping("/{id}")
+    @Transactional
+    @Operation(summary = "삭제")
     public RsData<ModelDto> delete(
             @PathVariable Long id
     ) {
