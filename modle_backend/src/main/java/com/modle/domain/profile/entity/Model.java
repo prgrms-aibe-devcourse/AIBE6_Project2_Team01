@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 @Getter
 public class Model extends BaseEntity {
     private String name;
+    private String region;
     private int age;
     private int height;
     private int weight;
@@ -47,6 +48,7 @@ public class Model extends BaseEntity {
 
     public Model(
             String  name,
+            String region,
             int age,
             int height,
             int weight,
@@ -57,6 +59,7 @@ public class Model extends BaseEntity {
             int user_id
     ){
         this.name = name;
+        this.region = region;
         this.age = age;
         this.height = height;
         this.weight = weight;
@@ -67,6 +70,7 @@ public class Model extends BaseEntity {
         this.user_id = user_id;
     }
     public void modify(
+            String region,
             int age,
             int height,
             int weight,
@@ -76,6 +80,7 @@ public class Model extends BaseEntity {
             int review_count,
             int user_id
     ){
+        this.region = region;
         this.age = age;
         this.height = height;
         this.weight = weight;
