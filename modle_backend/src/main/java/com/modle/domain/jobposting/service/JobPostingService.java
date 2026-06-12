@@ -2,26 +2,17 @@ package com.modle.domain.jobposting.service;
 
 import com.modle.domain.jobposting.dto.request.JobPostingCreateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
-import com.modle.domain.jobposting.dto.response.JobPostingClientDetailResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingListResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingModelDetailResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingOtherDetailResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingTemplateResponse;
-import com.modle.domain.jobposting.entity.Category;
 import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.JobPostingStatus;
-import com.modle.domain.jobposting.entity.Region;
-import com.modle.domain.jobposting.entity.ViewerType;
-import com.modle.global.exception.CustomException;
-import com.modle.global.exception.ErrorCode;
 import com.modle.domain.jobposting.event.JobPostingCreatedEvent;
+import com.modle.domain.jobposting.exception.JobPostingNotEditableException;
+import com.modle.domain.jobposting.exception.JobPostingNotFoundException;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.jobposting.repository.JobPostingTemplateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,19 +44,7 @@ public class JobPostingService {
                 .title(request.title())
                 .content(request.content())
                 .category(request.category())
-                .region(request.region())
                 .status(JobPostingStatus.RECRUITING)
-                .requiredSex(request.requiredSex())
-                .ageMin(request.ageMin())
-                .ageMax(request.ageMax())
-                .heightMin(request.heightMin())
-                .heightMax(request.heightMax())
-                .weightMin(request.weightMin())
-                .weightMax(request.weightMax())
-                .minCareerMonths(request.minCareerMonths())
-                .payment(request.payment())
-                .payType(request.payType())
-                .shootDate(request.shootDate())
                 .build();
 
         JobPosting saved = jobPostingRepository.save(jobPosting);
@@ -80,22 +59,14 @@ public class JobPostingService {
     @Transactional
     public JobPostingResponse updateJobPosting(Long jobPostingId, Long clientId, JobPostingUpdateRequest request) {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
-                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
+                .orElseThrow(() -> new JobPostingNotFoundException(jobPostingId));
 
         if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
-            throw new CustomException(ErrorCode.JOB_POSTING_NOT_EDITABLE);
+            throw new JobPostingNotEditableException(jobPostingId, jobPosting.getStatus());
         }
 
-        if (!jobPosting.getClientId().equals(clientId)) {
-            throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
-        }
-
-        jobPosting.update(request.title(), request.content(), request.category(), request.region(),
-                request.requiredSex(), request.ageMin(), request.ageMax(),
-                request.heightMin(), request.heightMax(),
-                request.weightMin(), request.weightMax(),
-                request.minCareerMonths(),
-                request.payment(), request.payType(), request.shootDate());
+        // TODO(인증): 인증 머지 후 clientId == 토큰 userId 일치 검증 추가
+        jobPosting.update(request.title(), request.content(), request.category());
         return JobPostingResponse.from(jobPosting);
     }
 
@@ -104,36 +75,13 @@ public class JobPostingService {
     @Transactional
     public void deleteJobPosting(Long jobPostingId, Long clientId) {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
-                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
+                .orElseThrow(() -> new JobPostingNotFoundException(jobPostingId));
 
         if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
-            throw new CustomException(ErrorCode.JOB_POSTING_NOT_EDITABLE);
+            throw new JobPostingNotEditableException(jobPostingId, jobPosting.getStatus());
         }
 
-        if (!jobPosting.getClientId().equals(clientId)) {
-            throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
-        }
-
+        // TODO(인증): 인증 머지 후 clientId == 토큰 userId 일치 검증 추가
         jobPostingRepository.delete(jobPosting);
-    }
-
-    // JOB-005: 지역·카테고리 필터를 적용한 공고 목록을 반환한다.
-    public Page<JobPostingListResponse> getJobPostings(String region, String category, Pageable pageable) {
-        Region regionEnum = (region != null && !region.isBlank()) ? Region.valueOf(region) : null;
-        Category categoryEnum = (category != null && !category.isBlank()) ? Category.valueOf(category) : null;
-        return jobPostingRepository.findByFilter(regionEnum, categoryEnum, pageable)
-                .map(JobPostingListResponse::from);
-    }
-
-    // JOB-006~008: 뷰어 타입에 따라 다른 공고 상세 정보를 반환한다.
-    public Object getJobPostingDetail(Long jobPostingId, ViewerType viewerType) {
-        JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
-                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
-
-        return switch (viewerType) {
-            case MODEL -> JobPostingModelDetailResponse.from(jobPosting);
-            case CLIENT -> JobPostingClientDetailResponse.from(jobPosting);
-            case OTHER -> JobPostingOtherDetailResponse.from(jobPosting);
-        };
     }
 }
