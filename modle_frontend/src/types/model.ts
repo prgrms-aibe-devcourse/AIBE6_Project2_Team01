@@ -10,6 +10,9 @@ export interface Model {
   age?: number;
   height?: number;
   weight?: number;
+  gender?: boolean;
+  field?: string;
+  tags?: string[];
   introduction?: string;
 }
 
