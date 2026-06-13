@@ -1,4 +1,4 @@
-import { ModelListResponse } from '@/types/model';
+import { ModelListResponse, Model } from '@/types/model';
 import { apiFetch } from './client';
 
 export async function getModels(params: Record<string, string>): Promise<ModelListResponse> {
