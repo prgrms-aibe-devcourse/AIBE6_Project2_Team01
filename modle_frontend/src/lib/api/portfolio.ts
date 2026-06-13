@@ -1,5 +1,5 @@
-import { client } from './client';
 import { Portfolio } from '@/types/model';
+import { client } from './client';
 
 // 1. 여러 장 업로드 함수
 export const uploadPortfolioImages = async (files: File[]): Promise<Portfolio[]> => {
