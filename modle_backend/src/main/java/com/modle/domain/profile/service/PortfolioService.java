@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class PortfolioService {
@@ -16,13 +19,19 @@ public class PortfolioService {
     private final GcsService gcsService;
     // 포트폴리오 추가 로직
     @Transactional
-    public Portfolio addPortfolio(Model model, MultipartFile file) throws IOException {
-        // 1. GCS에 실제 파일 업로드 후 구글 스토리지 URL 반환받기
-        String imgUrl = gcsService.uploadImage(file);
+    public List<Portfolio> addPortfolios(Model model, List<MultipartFile> files) throws IOException {
+        List<Portfolio> savedPortfolios = new ArrayList<>();
 
-        // 2. DB에 포트폴리오 엔티티 생성 및 저장
-        Portfolio portfolio = new Portfolio(model, imgUrl);
-        return portfolioRepository.save(portfolio);
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) continue; // 빈 파일 방어 로직
+
+            // GCS 업로드 후 DB 저장
+            String imgUrl = gcsService.uploadImage(file);
+            Portfolio portfolio = new Portfolio(model, imgUrl);
+            savedPortfolios.add(portfolioRepository.save(portfolio));
+        }
+
+        return savedPortfolios;
     }
     // 포트폴리오 삭제 로직
     @Transactional
