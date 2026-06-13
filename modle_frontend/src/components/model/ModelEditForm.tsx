@@ -83,7 +83,14 @@ export function ModelEditForm({ initialData }: Props) {
     setFormData(prev => ({ ...prev, tags: (prev.tags || []).filter(t => t !== tagToRemove) }));
   };
 
-  const CATEGORIES = ['패션', '뷰티', '피트니스', '라이프스타일', '스트릿', '광고'];
+  const CATEGORY_OPTIONS = [
+    { label: '헤어', value: 'HAIR' },
+    { label: '메이크업', value: 'MAKEUP' },
+    { label: '손/부분', value: 'HAND' },
+    { label: '피팅', value: 'FITTING' },
+    { label: '의류', value: 'CLOTHING' },
+    { label: '기타', value: 'ETC' },
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,6 +109,7 @@ export function ModelEditForm({ initialData }: Props) {
       const finalFormData = { // gcs img url을 포함한 데이터 완성
         ...formData,
         profileImageUrl: finalImageUrl,
+        categories: formData.field ? formData.field.split(',').filter(Boolean) : [], // 콤마 문자열을 배열로 변환하여 전송
       };
       await updateMyModel(finalFormData);
       alert('프로필이 성공적으로 수정되었습니다.');
@@ -227,20 +235,20 @@ export function ModelEditForm({ initialData }: Props) {
       <div>
         <label className="block text-xs font-bold text-black mb-3 uppercase tracking-wider">카테고리 (Category)</label>
         <div className="flex flex-wrap gap-2">
-          {CATEGORIES.map(cat => {
-            const isSelected = (formData.field || '').split(',').includes(cat);
+          {CATEGORY_OPTIONS.map(cat => {
+            const isSelected = (formData.field || '').split(',').includes(cat.value);
             return (
               <button
-                key={cat}
+                key={cat.value}
                 type="button"
-                onClick={() => handleFieldToggle(cat)}
+                onClick={() => handleFieldToggle(cat.value)}
                 className={`px-6 py-2 text-xs font-bold tracking-wider uppercase transition-colors border ${
                   isSelected 
                     ? 'bg-black text-white border-black' 
                     : 'bg-white text-gray-500 border-gray-300 hover:border-black hover:text-black'
                 }`}
               >
-                {cat}
+                {cat.label}
               </button>
             );
           })}
