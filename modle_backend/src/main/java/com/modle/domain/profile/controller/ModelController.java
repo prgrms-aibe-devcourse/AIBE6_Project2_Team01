@@ -8,6 +8,7 @@ import com.modle.domain.user.entity.Model;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
+import com.modle.global.gcs.GcsService;
 import com.modle.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,6 +26,7 @@ import java.util.List;
 @Tag(name = "ModelController", description = "API 모델 컨트롤러")
 public class ModelController {
         private final ModelService modelService;
+        private final GcsService gcsService;
 
         @Transactional(readOnly = true)
         @GetMapping
@@ -76,18 +78,25 @@ public class ModelController {
                         @AuthenticationPrincipal SecurityUser currentUser) {
                 Model model;
                 model = modelService.findByUserId(currentUser.getId());
-                modelService.update(
-                                model,
-                                reqBody.name(),
-                                reqBody.height(),
-                                reqBody.weight(),
-                                reqBody.gender(),
-                                reqBody.age(),
-                                reqBody.field(),
-                                reqBody.tags(),
-                                reqBody.introduction(),
-                                reqBody.profileImageUrl());
+                // 기존 이미지 URL과 새로 들어온 이미지 URL 비교
+                String oldImageUrl = model.getProfileImageUrl();
+                String newImageUrl = reqBody.profileImageUrl();
 
+                // 새 이미지로 변경되었거나, 프로필 이미지를 삭제(null)한 경우 기존 GCS 파일 삭제
+                if (oldImageUrl != null && !oldImageUrl.equals(newImageUrl)) {
+                        gcsService.deleteImage(oldImageUrl);
+                }
+                modelService.update(
+                        model,
+                        reqBody.name(),
+                        reqBody.height(),
+                        reqBody.weight(),
+                        reqBody.gender(),
+                        reqBody.age(),
+                        reqBody.field(),
+                        reqBody.tags(),
+                        reqBody.introduction(),
+                        newImageUrl);
                 return new RsData<>(
                                 "200-1",
                                 "내 프로필이 수정되었습니다.");
