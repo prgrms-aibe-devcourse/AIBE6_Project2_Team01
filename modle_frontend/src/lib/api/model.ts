@@ -2,8 +2,11 @@ import { Model, ModelListResponse } from '@/types/model';
 import { client } from './client';
 
 export async function getModels(params: Record<string, string>): Promise<ModelListResponse> {
-  const query = new URLSearchParams(params).toString();
-  const { data, error } = await client.GET(`/api/v1/models?${query}` as any, {});
+  const { data, error } = await client.GET('/api/v1/models', {
+    params: {
+      query: params as any
+    }
+  });
   
   if (error) {
     throw new Error((error as any).msg || '모델 목록을 불러오는데 실패했습니다.');
@@ -38,7 +41,11 @@ export async function getModels(params: Record<string, string>): Promise<ModelLi
 }
 
 export async function getModel(id: string | number): Promise<Model> {
-  const { data, error } = await client.GET(`/api/v1/models/${id}` as any, {});
+  const { data, error } = await client.GET('/api/v1/models/{id}', {
+    params: {
+      path: { id: String(id) }
+    }
+  });
   
   if (error) {
     throw new Error((error as any).msg || '모델 정보를 불러오는데 실패했습니다.');
@@ -66,7 +73,7 @@ export async function getModel(id: string | number): Promise<Model> {
 
 
 export async function getMyModel(customHeaders?: HeadersInit): Promise<Model> {
-  const { data, error } = await client.GET(`/api/v1/models/my` as any, {
+  const { data, error } = await client.GET('/api/v1/models/my', {
     headers: customHeaders as any
   });
   
@@ -108,8 +115,8 @@ export async function updateMyModel(modelData: Partial<Model>): Promise<void> {
     profileImageUrl: modelData.profileImageUrl
   };
 
-  const { error } = await (client as any).PUT(`/api/v1/models/my`, {
-    body: payload
+  const { error } = await client.PUT('/api/v1/models/my', {
+    body: payload as any
   });
   
   if (error) {
