@@ -1,9 +1,14 @@
 package com.modle.domain.user.entity;
 
+import com.modle.domain.profile.entity.ModelCategory;
+import com.modle.domain.profile.entity.ModelTag;
 import com.modle.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "model")
@@ -29,11 +34,14 @@ public class Model extends BaseEntity {
     @Column(nullable = false)
     private int age;
 
-    @Column(length = 100)
-    private String field;
+    // 태그 매핑 리스트
+    @OneToMany(mappedBy = "model", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ModelTag> modelTags = new ArrayList<>();
 
-    @Column(length = 255)
-    private String tags;
+    // 카테고리 매핑 리스트
+    @OneToMany(mappedBy = "model", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ModelCategory> modelCategories = new ArrayList<>();
+
 
     @Column(columnDefinition = "TEXT")
     private String introduction;
@@ -60,15 +68,12 @@ public class Model extends BaseEntity {
     }
 
     public void update(String name, int height, int weight, boolean gender,
-                       int age, String field, String tags,
-                       String introduction, String profileImageUrl) {
+                       int age, String introduction, String profileImageUrl) {
         this.name = name;
         this.height = height;
         this.weight = weight;
         this.gender = gender;
         this.age = age;
-        this.field = field;
-        this.tags = tags;
         this.introduction = introduction;
         this.profileImageUrl = profileImageUrl;
     }

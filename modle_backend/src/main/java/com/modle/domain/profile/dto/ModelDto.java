@@ -4,6 +4,7 @@ import com.modle.domain.user.entity.Model;
 import org.springframework.lang.NonNull;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record ModelDto(
         @NonNull long id,
@@ -14,14 +15,15 @@ public record ModelDto(
         @NonNull int weight,
         @NonNull boolean gender,
         @NonNull int age,
-        String field,
-        String tags,
+        List<String> categories,
+        List<String> tags,
+
         String introduction,
         String profileImageUrl,
         @NonNull double avgRating,
         @NonNull int reviewCount
 ) {
-    public ModelDto(Model model){
+    public ModelDto(Model model) {
         this(
                 model.getId(),
                 model.getCreatedDate(),
@@ -31,8 +33,17 @@ public record ModelDto(
                 model.getWeight(),
                 model.isGender(),
                 model.getAge(),
-                model.getField(),
-                model.getTags(),
+
+                //  연관관계 엔티티에서 문자열 이름만 추출해서 List로 반환
+                model.getModelCategories() != null ?
+                        model.getModelCategories().stream()
+                        .map(mc -> mc.getCategory().name())
+                        .toList() : List.of(),
+
+                model.getModelTags() != null ?
+                        model.getModelTags().stream()
+                        .map(mt -> mt.getTag().getName())
+                        .toList() : List.of(),
                 model.getIntroduction(),
                 model.getProfileImageUrl(),
                 model.getAvgRating(),

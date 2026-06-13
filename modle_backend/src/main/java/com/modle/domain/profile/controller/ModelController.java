@@ -93,7 +93,7 @@ public class ModelController {
                         reqBody.weight(),
                         reqBody.gender(),
                         reqBody.age(),
-                        reqBody.field(),
+                        reqBody.categories(),
                         reqBody.tags(),
                         reqBody.introduction(),
                         newImageUrl);
