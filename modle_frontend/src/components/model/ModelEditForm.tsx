@@ -25,6 +25,20 @@ export function ModelEditForm({ initialData, isMyProfile = false }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [previewUrl, setPreviewUrl] = useState<string>(initialData.profileImageUrl || '');
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // 미리보기 생성
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewUrl(objectUrl);
+      
+      // TODO: 실제 백엔드 연동 시, 여기서 폼 데이터에 File 객체를 저장하거나
+      // S3/서버에 업로드 후 반환받은 URL을 formData.profileImageUrl에 저장해야 합니다.
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as any;
     
@@ -49,7 +63,7 @@ export function ModelEditForm({ initialData, isMyProfile = false }: Props) {
       } else {
         await updateModel(initialData.id, formData);
       }
-      alert('프로필이 성공적으로 수정되었습니다.');
+      alert('프로필이 성공적으로 수정되었습니다.\n(참고: 이미지 업로드는 프론트엔드 UI만 적용된 상태입니다)');
       
       if (isMyProfile) {
         router.push('/my/profile'); // TODO: Create /my/profile page if it doesn't exist
@@ -71,6 +85,31 @@ export function ModelEditForm({ initialData, isMyProfile = false }: Props) {
           {error}
         </div>
       )}
+
+      {/* 프로필 이미지 업로드 영역 */}
+      <div className="flex flex-col items-center justify-center mb-8">
+        <div className="relative group cursor-pointer">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+          />
+          <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-hairline-strong bg-canvas-soft flex items-center justify-center relative">
+            {previewUrl ? (
+              <img src={previewUrl} alt="프로필 미리보기" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-mute text-sm">이미지 없음</span>
+            )}
+            
+            {/* 호버 시 나타나는 오버레이 */}
+            <div className="absolute inset-0 bg-ink/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <span className="text-on-primary text-sm font-medium">변경하기</span>
+            </div>
+          </div>
+        </div>
+        <p className="text-mute text-xs mt-2">프로필 이미지를 클릭하여 변경하세요</p>
+      </div>
 
       <div>
         <label className="block text-sm font-medium text-ink mb-1">이름</label>
@@ -146,18 +185,6 @@ export function ModelEditForm({ initialData, isMyProfile = false }: Props) {
           <option value="피트니스">피트니스</option>
           <option value="라이프스타일">라이프스타일</option>
         </select>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-ink mb-1">프로필 이미지 URL</label>
-        <input
-          type="url"
-          name="profileImageUrl"
-          value={formData.profileImageUrl || ''}
-          onChange={handleChange}
-          placeholder="https://..."
-          className="w-full px-4 py-2 border border-hairline-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-        />
       </div>
 
       <div>

@@ -21,6 +21,7 @@ export default async function MyProfileEditPage() {
       </main>
     );
   } catch (error) {
+    console.error("내 프로필 로딩 실패:", error);
     // If model is not found or API fails, render 404 or redirect to login
     notFound();
   }
