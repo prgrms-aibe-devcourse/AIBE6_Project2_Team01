@@ -15,16 +15,16 @@ export function MyProfileContainer({ initialData }: Props) {
   const [activeTab, setActiveTab] = useState('portfolio'); // 목업처럼 포트폴리오를 기본으로
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] pb-20">
-      {/* 1. 상단 그라데이션 배너 및 프로필 헤더 */}
-      <div className="bg-gradient-to-r from-[#E9F0FE] to-[#F1F0FF] pt-12 pb-8">
+    <div className="min-h-screen bg-[#F8F9FA] pb-20 text-black">
+      {/* 1. 상단 배너 및 프로필 헤더 */}
+      <div className="bg-white pt-12 pb-8 border-b border-gray-200">
         <div className="max-w-[1200px] mx-auto px-6">
           <ProfileHeader data={initialData} />
         </div>
       </div>
 
       {/* 2. 탭 네비게이션 */}
-      <div className="bg-white border-b border-hairline sticky top-0 z-10">
+      <div className="bg-white border-b border-gray-300 sticky top-0 z-10">
         <div className="max-w-[1200px] mx-auto px-6">
           <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
         </div>
@@ -37,7 +37,7 @@ export function MyProfileContainer({ initialData }: Props) {
         
         {/* 임시 처리 (나머지 탭) */}
         {['applications', 'favorites', 'contracts'].includes(activeTab) && (
-          <div className="py-20 text-center text-body-md text-body">
+          <div className="py-20 text-center text-sm text-gray-500">
             아직 준비 중인 탭입니다.
           </div>
         )}
