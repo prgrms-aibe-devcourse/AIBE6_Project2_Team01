@@ -24,7 +24,7 @@ public class PortfolioController {
     private final ModelService modelService; // 내 모델 정보 조회를 위해 사용
 
 
-    
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public RsData<List<PortfolioDto>> uploadPortfolios(
             @RequestParam("files") List<MultipartFile> files, // ⭐ List로 받기
