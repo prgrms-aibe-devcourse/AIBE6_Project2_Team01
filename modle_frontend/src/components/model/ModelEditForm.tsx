@@ -7,10 +7,9 @@ import { updateModel, updateMyModel } from '@/lib/api/model';
 
 interface Props {
   initialData: Model;
-  isMyProfile?: boolean;
 }
 
-export function ModelEditForm({ initialData, isMyProfile = false }: Props) {
+export function ModelEditForm({ initialData }: Props) {
   const router = useRouter();
   const [formData, setFormData] = useState<Partial<Model>>({
     name: initialData.name,
@@ -58,18 +57,10 @@ export function ModelEditForm({ initialData, isMyProfile = false }: Props) {
     setIsLoading(true);
 
     try {
-      if (isMyProfile) {
-        await updateMyModel(formData);
-      } else {
-        await updateModel(initialData.id, formData);
-      }
+      await updateMyModel(formData);
       alert('프로필이 성공적으로 수정되었습니다.\n(참고: 이미지 업로드는 프론트엔드 UI만 적용된 상태입니다)');
       
-      if (isMyProfile) {
-        router.push('/my/profile'); // TODO: Create /my/profile page if it doesn't exist
-      } else {
-        router.push(`/models/${initialData.id}`);
-      }
+      router.push('/my/profile'); // TODO: Create /my/profile page if it doesn't exist
       router.refresh();
     } catch (err: any) {
       setError(err.message || '프로필 수정에 실패했습니다.');
