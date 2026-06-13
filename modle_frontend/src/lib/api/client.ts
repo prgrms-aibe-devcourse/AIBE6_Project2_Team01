@@ -1,3 +1,37 @@
+// src/lib/api/client.ts
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+
+export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+  const result = await response.json();
+
+  if (result && typeof result === 'object' && 'resultCode' in result) {
+    if (!result.resultCode.startsWith('20')) {
+      throw new Error(result.msg || 'API 호출 실패');
+    }
+    return result.data as T;
+  }
+
+  if (result && typeof result === 'object' && 'success' in result) {
+    if (!result.success) {
+      throw new Error(result.error?.message || 'API 호출 실패');
+    }
+    return result.data as T;
+  }
+
+  if (!response.ok) {
+    throw new Error(result.message || result.error || 'API 호출 실패');
+  }
+
+  return result as T;
+}
 
 import createClient from "openapi-fetch";
 import type { paths } from "./schema";
