@@ -1,4 +1,8 @@
 // src/types/model.ts
+export interface Portfolio {
+  id: number;
+  imgUrl: string;
+}
 export interface Model {
   id: number;
   name: string;
@@ -14,6 +18,7 @@ export interface Model {
   field?: string;
   tags?: string[];
   introduction?: string;
+  portfolios?: Portfolio[];
 }
 
 export interface ModelListResponse {
