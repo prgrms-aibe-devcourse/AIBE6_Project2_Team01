@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { updateMyModel } from '@/lib/api/model';
 import { Model } from '@/types/model';
-import { updateModel, updateMyModel } from '@/lib/api/model';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 interface Props {
   initialData: Model;

@@ -1,6 +1,7 @@
 import { getMyModel } from '@/lib/api/model';
 import { ModelEditForm } from '@/components/model/ModelEditForm';
 import { notFound } from 'next/navigation';
+import { cookies } from 'next/headers';
 
 export const metadata = {
   title: '내 프로필 수정 | 모들',
@@ -8,7 +9,9 @@ export const metadata = {
 
 export default async function MyProfileEditPage() {
   try {
-    const modelData = await getMyModel();
+    const cookieStore = await cookies();
+    const cookieString = cookieStore.toString();
+    const modelData = await getMyModel({ Cookie: cookieString });
     
     return (
       <main className="max-w-[1200px] mx-auto px-6 py-12">
