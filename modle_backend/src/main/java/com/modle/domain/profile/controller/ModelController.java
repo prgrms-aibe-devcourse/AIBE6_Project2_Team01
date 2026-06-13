@@ -75,12 +75,7 @@ public class ModelController {
                         @Valid @RequestBody ModelModifyReqBody reqBody,
                         @AuthenticationPrincipal SecurityUser currentUser) {
                 Model model;
-                if (currentUser == null) {
-                        model = modelService.findByUserId(9L); // 개발 환경 임시 하드코딩
-                } else {
-                        model = modelService.findByUserId(currentUser.getId());
-                }
-
+                model = modelService.findByUserId(currentUser.getId());
                 modelService.update(
                                 model,
                                 reqBody.name(),
