@@ -1,4 +1,4 @@
-import { apiFetch } from './client';
+import { client } from './client';
 import { Portfolio } from '@/types/model';
 
 // 1. 여러 장 업로드 함수
@@ -9,19 +9,25 @@ export const uploadPortfolioImages = async (files: File[]): Promise<Portfolio[]>
   files.forEach((file) => {
     formData.append('files', file); 
   });
-  const response = await apiFetch<Portfolio[]>('/api/v1/portfolios', {
-    method: 'POST',
-    body: formData,
+  
+  const { data, error } = await client.POST('/api/v1/portfolios' as any, {
+    body: formData as any,
   });
   
-  return response; 
+  if (error) {
+    throw new Error((error as any).msg || '포트폴리오 업로드에 실패했습니다.');
+  }
+  
+  return (data as any).data as Portfolio[]; 
 };
 
 // 2. 개별 사진 삭제 함수
 export const deletePortfolioImage = async (portfolioId: number) => {
-  const response = await apiFetch(`/api/v1/portfolios/${portfolioId}`, {
-    method: 'DELETE',
-  });
+  const { data, error } = await client.DELETE(`/api/v1/portfolios/${portfolioId}` as any, {});
   
-  return response;
+  if (error) {
+    throw new Error((error as any).msg || '포트폴리오 삭제에 실패했습니다.');
+  }
+  
+  return (data as any).data;
 };

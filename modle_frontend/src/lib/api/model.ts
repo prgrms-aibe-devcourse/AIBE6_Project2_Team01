@@ -1,12 +1,18 @@
 import { ModelListResponse, Model } from '@/types/model';
-import { apiFetch } from './client';
+import { client } from './client';
 
 export async function getModels(params: Record<string, string>): Promise<ModelListResponse> {
   const query = new URLSearchParams(params).toString();
-  const data = await apiFetch<any>(`/api/v1/models?${query}`);
+  const { data, error } = await client.GET(`/api/v1/models?${query}` as any, {});
   
-  if (Array.isArray(data)) {
-    const models = data.map((item: any) => ({
+  if (error) {
+    throw new Error((error as any).msg || '모델 목록을 불러오는데 실패했습니다.');
+  }
+
+  const responseData = (data as any).data;
+  
+  if (Array.isArray(responseData)) {
+    const models = responseData.map((item: any) => ({
       id: item.id,
       name: item.name || '이름 없음',
       region: item.region || '지역 미상',
@@ -23,19 +29,22 @@ export async function getModels(params: Record<string, string>): Promise<ModelLi
 
     return {
       models,
-      totalElements: data.length,
+      totalElements: responseData.length,
       hasNext: false
     };
   }
   
-  return data as ModelListResponse;
+  return responseData as ModelListResponse;
 }
 
 export async function getModel(id: string | number): Promise<Model> {
-  const data = await apiFetch<any>(`/api/v1/models/${id}`);
+  const { data, error } = await client.GET(`/api/v1/models/${id}` as any, {});
   
-  // Back-end returns RsData<ModelDto> now. client.ts unpacks RsData and returns data.
-  const item = data;
+  if (error) {
+    throw new Error((error as any).msg || '모델 정보를 불러오는데 실패했습니다.');
+  }
+  
+  const item = (data as any).data;
   
   return {
     id: item.id,
@@ -57,11 +66,15 @@ export async function getModel(id: string | number): Promise<Model> {
 
 
 export async function getMyModel(customHeaders?: HeadersInit): Promise<Model> {
-  const data = await apiFetch<any>(`/api/v1/models/my`, {
-    headers: customHeaders
+  const { data, error } = await client.GET(`/api/v1/models/my` as any, {
+    headers: customHeaders as any
   });
   
-  const item = data;
+  if (error) {
+    throw new Error((error as any).msg || '내 모델 정보를 불러오는데 실패했습니다.');
+  }
+  
+  const item = (data as any).data;
   
   return {
     id: item.id,
@@ -95,8 +108,12 @@ export async function updateMyModel(modelData: Partial<Model>): Promise<void> {
     profileImageUrl: modelData.profileImageUrl
   };
 
-  await apiFetch<void>(`/api/v1/models/my`, {
-    method: 'PUT',
-    body: JSON.stringify(payload)
+  const { error } = await client.PUT(`/api/v1/models/my` as any, {
+    body: payload as any
   });
+  
+  if (error) {
+    throw new Error((error as any).msg || '내 모델 정보를 수정하는데 실패했습니다.');
+  }
 }
+
