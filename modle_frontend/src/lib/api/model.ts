@@ -49,7 +49,6 @@ export async function getModel(id: string | number): Promise<Model> {
     height: item.height,
     weight: item.weight,
     gender: item.gender,
-    field: item.field,
     tags: item.tags || [],
     introduction: item.introduction || '',
     portfolios: item.portfolios || []
