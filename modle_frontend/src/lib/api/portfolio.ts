@@ -21,9 +21,9 @@ export const uploadPortfolioImages = async (files: File[]): Promise<Portfolio[]>
 };
 
 export const deletePortfolioImage = async (portfolioId: number) => {
-  const { data, error } = await client.DELETE('/api/v1/portfolios/{portfolioId}' as any, {
+  const { data, error } = await client.DELETE('/api/v1/portfolios/{id}', {
     params: {
-      path: { portfolioId }
+      path: { id: Number(portfolioId) }
     }
   });
   

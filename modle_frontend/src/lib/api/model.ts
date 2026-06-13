@@ -43,7 +43,7 @@ export async function getModels(params: Record<string, string>): Promise<ModelLi
 export async function getModel(id: string | number): Promise<Model> {
   const { data, error } = await client.GET('/api/v1/models/{id}', {
     params: {
-      path: { id: String(id) }
+      path: { id: Number(id) }
     }
   });
   

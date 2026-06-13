@@ -7,7 +7,7 @@ export async function uploadImage(file: File): Promise<string> {
   formData.append('file', file);
   
   // client.POST가 알아서 멀티파트 폼 데이터로 보내줌
-  const { data, error } = await client.POST('/api/v1/images/upload' as any, {
+  const { data, error } = await client.POST('/api/v1/images/upload', {
     body: formData as any,
   });
   
