@@ -55,6 +55,10 @@ public class Model extends BaseEntity {
     @Column(nullable = false)
     private int reviewCount = 0;
 
+    // 카테고리 매핑 리스트 아래쪽에 추가해 주세요.
+    @OneToMany(mappedBy = "model", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<com.modle.domain.profile.entity.Portfolio> portfolios = new ArrayList<>();
+
     public static Model create(User user, String name, int height,
                                int weight, boolean gender, int age) {
         Model model = new Model();
