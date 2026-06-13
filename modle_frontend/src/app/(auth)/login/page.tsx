@@ -2,22 +2,36 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import type { ReactNode, SubmitEvent } from "react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { client } from "@/lib/api/client";
 import { getErrorMessage } from "@/lib/api/error";
+import { GOOGLE_OAUTH_URL } from "@/lib/auth/oauth";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
   const { login } = useAuth();
+  const searchParams = useSearchParams();
+
+  const oauthError = searchParams.get("error");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
-  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"idle" | "submitting" | "error">(
+    oauthError ? "error" : "idle",
+  );
+  const [message, setMessage] = useState(oauthError ?? "");
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -28,7 +42,7 @@ export default function LoginPage() {
       body: { email, password },
     });
 
-    if (error || !result?.data) {
+    if (error || !result?.data || !result.data.item.role) {
       setStatus("error");
       setMessage(getErrorMessage(error, "로그인에 실패했습니다."));
       return;
@@ -85,6 +99,19 @@ export default function LoginPage() {
             </p>
           ) : null}
         </form>
+
+        <div className="mt-6 flex items-center gap-3">
+          <span className="h-px flex-1 bg-hairline" />
+          <span className="text-[13px] leading-5 text-mute">또는</span>
+          <span className="h-px flex-1 bg-hairline" />
+        </div>
+
+        <a
+          href={GOOGLE_OAUTH_URL}
+          className="mt-4 flex h-11 w-full items-center justify-center rounded-md border border-hairline-strong bg-surface px-4 text-[15px] font-semibold leading-6 text-ink transition hover:border-ink"
+        >
+          Google로 로그인
+        </a>
 
         <p className="mt-6 text-center text-[13px] leading-5 text-mute">
           계정이 없으신가요?{" "}
