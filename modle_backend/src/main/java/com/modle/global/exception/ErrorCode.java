@@ -23,6 +23,9 @@ public enum ErrorCode {
     INVALID_STATUS_CHANGE(HttpStatus.BAD_REQUEST, "400-3", "유효하지 않은 상태 변경입니다."),
     EMAIL_NOT_VERIFIED(HttpStatus.FORBIDDEN, "403-4", "이메일 인증이 완료되지 않았습니다."),
 
+    // 입력값 검증
+    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "400-5", "필수 입력값이 누락되었습니다."),
+
     // JWT
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "401-2", "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "401-3", "만료된 토큰입니다."),

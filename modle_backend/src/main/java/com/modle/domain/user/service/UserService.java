@@ -1,5 +1,6 @@
 package com.modle.domain.user.service;
 
+import com.modle.domain.user.dto.request.AdditionalInfoRequest;
 import com.modle.domain.user.dto.request.ClientRegisterRequest;
 import com.modle.domain.user.dto.request.ModelRegisterRequest;
 import com.modle.domain.user.entity.User;
@@ -126,5 +127,39 @@ public class UserService {
     public User findById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    @Transactional
+    public void completeSignup(Long userId, AdditionalInfoRequest request) {
+        // 유저가 있는지 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 상태가 미완료인지 체크
+        if (user.getStatus() != UserStatus.INCOMPLETE) {
+            throw new CustomException(ErrorCode.INVALID_STATUS_CHANGE);
+        }
+
+        // 유저 DB 갱신
+        user.completeOAuthSignup(request.role(), request.region());
+
+        // 역할에 맞춰 객체 생성
+        if (request.role() == Role.MODEL) {
+            if (request.name() == null || request.height() == null ||
+                    request.weight() == null || request.age() == null || request.gender() == null) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+            }
+            Model model = Model.create(user, request.name(), request.height(),
+                    request.weight(), request.gender(), request.age());
+            modelRepository.save(model);
+        } else if (request.role() == Role.CLIENT) {
+            if (request.companyName() == null || request.companyNumber() == null
+                    || request.clientType() == null) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+            }
+            Client client = Client.create(user, request.clientType(),
+                    request.companyName(), request.companyNumber());
+            clientRepository.save(client);
+        }
     }
 }

@@ -75,6 +75,12 @@ public class User extends BaseEntity {
         return user;
     }
 
+    public void completeOAuthSignup(Role role, String region) {
+        this.role = role;
+        this.region = region;
+        this.status = (role == Role.MODEL) ? UserStatus.ACTIVE : UserStatus.PENDING;
+    }
+
     public void reject(String reason) {
         this.status = UserStatus.REJECTED;
         this.rejectedDate = LocalDateTime.now();
