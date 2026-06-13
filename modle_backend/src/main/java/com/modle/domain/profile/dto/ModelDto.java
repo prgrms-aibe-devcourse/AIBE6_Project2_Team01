@@ -21,7 +21,8 @@ public record ModelDto(
         String introduction,
         String profileImageUrl,
         @NonNull double avgRating,
-        @NonNull int reviewCount
+        @NonNull int reviewCount,
+        List<PortfolioDto> portfolios
 ) {
     public ModelDto(Model model) {
         this(
@@ -47,7 +48,11 @@ public record ModelDto(
                 model.getIntroduction(),
                 model.getProfileImageUrl(),
                 model.getAvgRating(),
-                model.getReviewCount()
+                model.getReviewCount(),
+                model.getPortfolios() != null ?
+                        model.getPortfolios().stream()
+                        .map(PortfolioDto::new)
+                        .toList() : List.of()
         );
     }
 }
