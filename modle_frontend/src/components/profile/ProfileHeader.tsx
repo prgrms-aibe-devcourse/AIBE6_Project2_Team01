@@ -20,6 +20,9 @@ export function ProfileHeader({ data }: Props) {
           alt="Profile Image"
           fill
           className="object-cover rounded-full border-4 border-white shadow-sm bg-white"
+          onError={(e) => {
+            e.currentTarget.srcset = '/images/default-avatar.png';
+          }}
         />
         <Link href="/my/profile/edit">
           <div className="absolute bottom-2 right-2 w-10 h-10 bg-primary hover:bg-primary-hover text-white rounded-full flex items-center justify-center shadow-md transition-colors cursor-pointer">

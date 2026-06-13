@@ -105,7 +105,14 @@ export function ModelEditForm({ initialData }: Props) {
           />
           <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-hairline-strong bg-canvas-soft flex items-center justify-center relative">
             {previewUrl ? (
-              <img src={previewUrl} alt="프로필 미리보기" className="w-full h-full object-cover" />
+              <img 
+                src={previewUrl} 
+                alt="프로필 미리보기" 
+                className="w-full h-full object-cover" 
+                onError={(e) => {
+                  e.currentTarget.src = '/images/default-avatar.png';
+                }}
+              />
             ) : (
               <span className="text-mute text-sm">이미지 없음</span>
             )}
