@@ -22,10 +22,10 @@ public class User extends BaseEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column
     private Role role;
 
-    @Column(nullable = false)
+    @Column
     private String region;
 
     @Enumerated(EnumType.STRING)
@@ -63,6 +63,15 @@ public class User extends BaseEntity {
         user.provider = Provider.LOCAL;
         user.role = role;
         user.status = (role == Role.MODEL) ? UserStatus.ACTIVE : UserStatus.PENDING;
+        return user;
+    }
+
+    public static User createOAuth(String email, Provider provider, String providerId) {
+        User user = new User();
+        user.email = email;
+        user.provider = provider;
+        user.providerId = providerId;
+        user.status = UserStatus.INCOMPLETE;
         return user;
     }
 
