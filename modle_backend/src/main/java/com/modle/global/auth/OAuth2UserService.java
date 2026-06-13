@@ -3,6 +3,8 @@ package com.modle.global.auth;
 import com.modle.domain.user.entity.User;
 import com.modle.domain.user.entity.type.Provider;
 import com.modle.domain.user.repository.UserRepository;
+import com.modle.global.exception.CustomException;
+import com.modle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -28,8 +30,15 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         String providerId = oAuth2User.getAttribute("sub");
         String email = oAuth2User.getAttribute("email");
 
-        // DB에서 유저 조회 or 신규 생성
+        // 기존 유저 조회
         User user = userRepository.findByEmail(email)
+                .map(existingUser -> {
+                    // 이미 이메일(LOCAL)로 가입된 계정이면 차단
+                    if (existingUser.getProvider() == Provider.LOCAL) {
+                        throw new CustomException(ErrorCode.OAUTH_EMAIL_ALREADY_EXISTS);
+                    }
+                    return existingUser;
+                })
                 .orElseGet(() -> createOAuthUser(email, provider, providerId));
 
         return new OAuth2SecurityUser(user, oAuth2User.getAttributes());

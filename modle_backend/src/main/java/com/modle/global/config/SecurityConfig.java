@@ -2,6 +2,7 @@ package com.modle.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.modle.global.auth.JwtAuthenticationFilter;
+import com.modle.global.auth.OAuth2FailureHandler;
 import com.modle.global.auth.OAuth2SuccessHandler;
 import com.modle.global.auth.OAuth2UserService;
 import com.modle.global.response.ApiResponse;
@@ -31,6 +32,7 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
     private final OAuth2UserService oAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -63,11 +65,13 @@ public class SecurityConfig {
                         // 나머지 인증 필요
                         .anyRequest().authenticated()
                 )
+                // OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oAuth2UserService)
                         )
                         .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler)
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
