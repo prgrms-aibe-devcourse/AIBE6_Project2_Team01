@@ -17,6 +17,9 @@ export function MyProfileView({ data }: Props) {
             fill
             className="object-cover rounded-full shadow-sm"
             sizes="(max-width: 768px) 128px, 160px"
+            onError={(e) => {
+              e.currentTarget.srcset = '/images/default-avatar.png';
+            }}
           />
         </div>
         
