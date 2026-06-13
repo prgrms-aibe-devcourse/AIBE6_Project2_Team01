@@ -1,7 +1,5 @@
 package com.modle.global.init;
 
-import com.modle.domain.profile.entity.Portfolio;
-import com.modle.domain.profile.repository.PortfolioRepository;
 import com.modle.domain.profile.service.ModelService;
 import com.modle.domain.user.entity.Client;
 import com.modle.domain.user.entity.Model;
@@ -35,7 +33,6 @@ public class InitData {
     private final ClientRepository clientRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final ModelService modelService;
-    private final PortfolioRepository portfolioRepository;
 
     @Bean
     public ApplicationRunner initDataApplicationRunner() {
@@ -118,10 +115,6 @@ public class InitData {
         Model model1 = modelService.create(user1, "홍길동", 180, 75, true, 25);
         modelService.update(model1, "홍길동", 180, 75, true, 25, List.of("FASHION"), List.of("tag1"), "안녕하세요, 홍길동입니다.",
                 "https://example.com/profile1.jpg");
-        
-        portfolioRepository.save(new Portfolio(model1, "https://picsum.photos/seed/model1_1/600/800"));
-        portfolioRepository.save(new Portfolio(model1, "https://picsum.photos/seed/model1_2/600/800"));
-        portfolioRepository.save(new Portfolio(model1, "https://picsum.photos/seed/model1_3/600/800"));
 
         User user2 = User.createLocal(
                 "model2@modle.com",
@@ -133,8 +126,6 @@ public class InitData {
         modelService.update(model2, "김철수", 175, 68, true, 30, List.of("HAIR"), List.of("tag2"), "안녕하세요, 김철수입니다.",
                 "https://example.com/profile2.jpg");
 
-        portfolioRepository.save(new Portfolio(model2, "https://picsum.photos/seed/model2_1/600/800"));
-        portfolioRepository.save(new Portfolio(model2, "https://picsum.photos/seed/model2_2/600/800"));
         User user3 = User.createLocal(
                 "model3@modle.com",
                 passwordEncoder.encode("model1234"),
