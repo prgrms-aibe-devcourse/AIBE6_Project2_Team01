@@ -117,19 +117,19 @@ public class ModelController {
                                 reqBody.weight(),
                                 reqBody.gender(),
                                 reqBody.age());
-
+                String newImageUrl = reqBody.profileImageUrl();
                 // Update optional fields
                 modelService.update(
-                                model,
-                                reqBody.name(),
-                                reqBody.height(),
-                                reqBody.weight(),
-                                reqBody.gender(),
-                                reqBody.age(),
-                                reqBody.field(),
-                                reqBody.tags(),
-                                reqBody.introduction(),
-                                reqBody.profileImageUrl());
+                        model,
+                        reqBody.name(),
+                        reqBody.height(),
+                        reqBody.weight(),
+                        reqBody.gender(),
+                        reqBody.age(),
+                        reqBody.categories(),
+                        reqBody.tags(),
+                        reqBody.introduction(),
+                        newImageUrl);
 
                 return new RsData<>(
                                 "201-1",
