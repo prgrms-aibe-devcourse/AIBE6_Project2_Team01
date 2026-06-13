@@ -31,12 +31,16 @@ public class ModelController {
         @Transactional(readOnly = true)
         @GetMapping
         @Operation(summary = "다건 조회")
-        public List<ModelDto> getItems() {
+        public RsData<List<ModelDto>> getItems() {
                 List<Model> items = modelService.getList();
-                return items
+                List<ModelDto> dtoList = items
                                 .stream()
                                 .map(ModelDto::new) // modelDto 변환
                                 .toList();
+                return new RsData<>(
+                                "200-1",
+                                "조회 성공",
+                                dtoList);
         }
 
         @Transactional(readOnly = true)
