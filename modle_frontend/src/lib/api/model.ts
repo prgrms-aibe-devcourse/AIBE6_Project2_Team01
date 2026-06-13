@@ -1,4 +1,4 @@
-import { ModelListResponse, Model } from '@/types/model';
+import { Model, ModelListResponse } from '@/types/model';
 import { client } from './client';
 
 export async function getModels(params: Record<string, string>): Promise<ModelListResponse> {
@@ -108,8 +108,8 @@ export async function updateMyModel(modelData: Partial<Model>): Promise<void> {
     profileImageUrl: modelData.profileImageUrl
   };
 
-  const { error } = await client.PUT(`/api/v1/models/my` as any, {
-    body: payload as any
+  const { error } = await (client as any).PUT(`/api/v1/models/my`, {
+    body: payload
   });
   
   if (error) {
