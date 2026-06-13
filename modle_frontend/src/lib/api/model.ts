@@ -87,8 +87,8 @@ export async function updateMyModel(modelData: Partial<Model>): Promise<void> {
     weight: modelData.weight,
     gender: modelData.gender,
     age: modelData.age,
-    field: modelData.field,
-    tags: modelData.tags ? modelData.tags.join(',') : '',
+    categories: modelData.categories || [],
+    tags: modelData.tags || [],
     introduction: modelData.introduction,
     profileImageUrl: modelData.profileImageUrl
   };
