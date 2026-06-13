@@ -1,0 +1,42 @@
+package com.modle.domain.profile.service;
+
+import com.modle.domain.profile.entity.Portfolio;
+import com.modle.domain.profile.repository.PortfolioRepository;
+import com.modle.domain.user.entity.Model;
+import com.modle.global.gcs.GcsService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+@Service
+@RequiredArgsConstructor
+public class PortfolioService {
+    private final PortfolioRepository portfolioRepository;
+    private final GcsService gcsService;
+    // 포트폴리오 추가 로직
+    @Transactional
+    public Portfolio addPortfolio(Model model, MultipartFile file) throws IOException {
+        // 1. GCS에 실제 파일 업로드 후 구글 스토리지 URL 반환받기
+        String imgUrl = gcsService.uploadImage(file);
+
+        // 2. DB에 포트폴리오 엔티티 생성 및 저장
+        Portfolio portfolio = new Portfolio(model, imgUrl);
+        return portfolioRepository.save(portfolio);
+    }
+    // 포트폴리오 삭제 로직
+    @Transactional
+    public void deletePortfolio(Long portfolioId, Model currentModel) {
+        Portfolio portfolio = portfolioRepository.findById(portfolioId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
+        // 권한 체크: 다른 사람의 포트폴리오를 지울 수 없도록 방어
+        if (!portfolio.getModel().getId().equals(currentModel.getId())) {
+            throw new IllegalArgumentException("삭제 권한이 없습니다.");
+        }
+        // 1. GCS 스토리지에서 실제 이미지 파일 삭제
+        gcsService.deleteImage(portfolio.getImgUrl());
+
+        // 2. DB에서 포트폴리오 데이터 삭제
+        portfolioRepository.delete(portfolio);
+    }
+}
