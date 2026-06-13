@@ -53,9 +53,11 @@ public class ModelController {
         @GetMapping("/my")
         @Operation(summary = "내 프로필 단건 조회")
         public RsData<ModelDto> getMyItem(@AuthenticationPrincipal SecurityUser currentUser) {
+
+
                 Model item;
                 if (currentUser == null) {
-                        item = modelService.findByUserId(9L); // 개발 환경 임시 하드코딩
+                      throw new RuntimeException("로그인한 유저만 가능합니다.");
                 } else {
                         item = modelService.findByUserId(currentUser.getId());
                 }
