@@ -33,7 +33,7 @@ export function MyProfileContainer({ initialData }: Props) {
       {/* 3. 메인 컨텐츠 영역 */}
       <div className="max-w-[1200px] mx-auto px-6 py-10">
         {activeTab === 'profile' && <MyProfileView data={initialData} />}
-        {activeTab === 'portfolio' && <PortfolioGallery modelId={initialData.id} />}
+        {activeTab === 'portfolio' && <PortfolioGallery modelId={initialData.id} initialPortfolios={initialData.portfolios} />}
         
         {/* 임시 처리 (나머지 탭) */}
         {['applications', 'favorites', 'contracts'].includes(activeTab) && (
