@@ -55,8 +55,10 @@ export async function getModel(id: string | number): Promise<Model> {
 }
 
 
-export async function getMyModel(): Promise<Model> {
-  const data = await apiFetch<any>(`/api/v1/models/my`);
+export async function getMyModel(customHeaders?: HeadersInit): Promise<Model> {
+  const data = await apiFetch<any>(`/api/v1/models/my`, {
+    headers: customHeaders
+  });
   
   const item = data;
   
