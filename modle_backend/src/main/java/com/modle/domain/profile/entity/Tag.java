@@ -6,13 +6,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 //id	BIGINT PK	고유 식별자
 //name	VARCHAR(50)	태그명
-//type	ENUM	MODEL / CLIENT
+//type	ENUM	REGION / STYLE / BRAND / ETC (태그 분류 필드 추가)
 //is_default	TINYINT(1)	플랫폼 기본 태그 여부
 @Entity
 @Getter
+@Setter
+@NoArgsConstructor
+
 public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
