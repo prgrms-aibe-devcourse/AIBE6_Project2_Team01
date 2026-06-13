@@ -13,11 +13,12 @@ export async function getModels(params: Record<string, string>): Promise<ModelLi
       rating: item.avgRating || 0,
       reviewCount: item.reviewCount || 0,
       profileImageUrl: item.profileImageUrl || '',
-      categories: [], // default empty array
+      categories: item.categories || [],
       age: item.age,
       height: item.height,
       weight: item.weight,
-      introduction: item.introduction || ''
+      introduction: item.introduction || '',
+      portfolios: item.portfolios || []
     }));
 
     return {
@@ -43,14 +44,15 @@ export async function getModel(id: string | number): Promise<Model> {
     rating: item.avgRating || 0,
     reviewCount: item.reviewCount || 0,
     profileImageUrl: item.profileImageUrl || '',
-    categories: item.tags ? (typeof item.tags === 'string' ? item.tags.split(',').filter(Boolean) : item.tags) : [],
+    categories: item.categories || [],
     age: item.age,
     height: item.height,
     weight: item.weight,
     gender: item.gender,
     field: item.field,
-    tags: item.tags ? (typeof item.tags === 'string' ? item.tags.split(',').filter(Boolean) : item.tags) : [],
-    introduction: item.introduction || ''
+    tags: item.tags || [],
+    introduction: item.introduction || '',
+    portfolios: item.portfolios || []
   };
 }
 
@@ -69,14 +71,15 @@ export async function getMyModel(customHeaders?: HeadersInit): Promise<Model> {
     rating: item.avgRating || 0,
     reviewCount: item.reviewCount || 0,
     profileImageUrl: item.profileImageUrl || '',
-    categories: item.tags ? (typeof item.tags === 'string' ? item.tags.split(',').filter(Boolean) : item.tags) : [],
+    categories: item.categories || [],
     age: item.age,
     height: item.height,
     weight: item.weight,
     gender: item.gender,
     field: item.field,
-    tags: item.tags ? (typeof item.tags === 'string' ? item.tags.split(',').filter(Boolean) : item.tags) : [],
-    introduction: item.introduction || ''
+    tags: item.tags || [],
+    introduction: item.introduction || '',
+    portfolios: item.portfolios || []
   };
 }
 
