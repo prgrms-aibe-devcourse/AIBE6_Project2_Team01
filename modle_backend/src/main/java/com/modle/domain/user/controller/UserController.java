@@ -122,6 +122,23 @@ public class UserController {
             @AuthenticationPrincipal SecurityUser securityUser
     ) {
         userService.completeSignup(securityUser.getId(), request);
+
+        // 완료 후 갱신된 role로 토큰 재발급
+        User user = userService.findById(securityUser.getId());
+
+        String accessToken = userService.genAccessToken(user);
+        String refreshToken = userService.genRefreshToken(user);
+        rq.setCookie("accessToken", accessToken, 60 * 30);
+        rq.setCookie("refreshToken", refreshToken);
+
         return new ApiResponse<>("200-1", "추가 정보 입력이 완료되었습니다.");
+    }
+
+    @GetMapping("/me")
+    public ApiResponse<UserDto> me(
+            @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        User user = userService.findById(securityUser.getId());
+        return new ApiResponse<>("200-1", "내 정보 조회 성공", new UserDto(user));
     }
 }

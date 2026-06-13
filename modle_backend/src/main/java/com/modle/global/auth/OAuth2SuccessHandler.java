@@ -12,6 +12,8 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Component
 @RequiredArgsConstructor
@@ -35,6 +37,21 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             String tempToken = authTokenService.genAccessToken(user);
             rq.setCookie("accessToken", tempToken, 60 * 30);
             response.sendRedirect("http://localhost:3000/signup/additional");
+            return;
+        }
+
+        // status 검증
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            String message = URLEncoder.encode(
+                    switch (user.getStatus()) {
+                        case PENDING -> "승인 대기 중인 계정입니다.";
+                        case REJECTED -> "가입이 반려된 계정입니다.";
+                        case SUSPENDED -> "정지된 계정입니다.";
+                        case WITHDRAWN -> "탈퇴한 계정입니다.";
+                        default -> "로그인할 수 없는 계정입니다.";
+                    }, StandardCharsets.UTF_8
+            );
+            response.sendRedirect("http://localhost:3000/login?error=" + message);
             return;
         }
 
