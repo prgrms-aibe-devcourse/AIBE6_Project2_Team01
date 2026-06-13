@@ -58,7 +58,7 @@ export function ModelEditForm({ initialData }: Props) {
 
     try {
       await updateMyModel(formData);
-      alert('프로필이 성공적으로 수정되었습니다.\n(참고: 이미지 업로드는 프론트엔드 UI만 적용된 상태입니다)');
+      alert('프로필이 성공적으로 수정되었습니다.');
       
       router.push('/my/profile'); // TODO: Create /my/profile page if it doesn't exist
       router.refresh();
