@@ -43,13 +43,13 @@ export async function getModel(id: string | number): Promise<Model> {
     rating: item.avgRating || 0,
     reviewCount: item.reviewCount || 0,
     profileImageUrl: item.profileImageUrl || '',
-    categories: item.tags || [],
+    categories: item.tags ? (typeof item.tags === 'string' ? item.tags.split(',').filter(Boolean) : item.tags) : [],
     age: item.age,
     height: item.height,
     weight: item.weight,
     gender: item.gender,
     field: item.field,
-    tags: item.tags || [],
+    tags: item.tags ? (typeof item.tags === 'string' ? item.tags.split(',').filter(Boolean) : item.tags) : [],
     introduction: item.introduction || ''
   };
 }
@@ -69,13 +69,13 @@ export async function getMyModel(customHeaders?: HeadersInit): Promise<Model> {
     rating: item.avgRating || 0,
     reviewCount: item.reviewCount || 0,
     profileImageUrl: item.profileImageUrl || '',
-    categories: item.tags || [],
+    categories: item.tags ? (typeof item.tags === 'string' ? item.tags.split(',').filter(Boolean) : item.tags) : [],
     age: item.age,
     height: item.height,
     weight: item.weight,
     gender: item.gender,
     field: item.field,
-    tags: item.tags || [],
+    tags: item.tags ? (typeof item.tags === 'string' ? item.tags.split(',').filter(Boolean) : item.tags) : [],
     introduction: item.introduction || ''
   };
 }

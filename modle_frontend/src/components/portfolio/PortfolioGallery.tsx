@@ -13,12 +13,12 @@ export function PortfolioGallery({ modelId }: Props) {
 
   return (
     <div className="animate-in fade-in duration-300">
-      <div className="flex justify-between items-end mb-6">
+      <div className="flex justify-between items-end mb-6 border-b border-black pb-4 text-black">
         <div>
-          <h2 className="text-title-lg font-bold text-ink mb-1">나의 포트폴리오</h2>
-          <p className="text-sm text-body">최신순으로 정렬된 {mockPortfolios.length}개의 작품</p>
+          <h2 className="text-xl font-black text-black mb-1 uppercase tracking-widest">나의 포트폴리오</h2>
+          <p className="text-xs text-gray-500 tracking-wide">최신순으로 정렬된 {mockPortfolios.length}개의 작품</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-md transition-colors shadow-sm">
+        <button className="flex items-center gap-2 px-6 py-2 bg-black border border-black hover:bg-gray-900 text-white text-xs font-bold uppercase tracking-widest transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -30,7 +30,7 @@ export function PortfolioGallery({ modelId }: Props) {
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-10">
         {mockPortfolios.map((item) => (
-          <div key={item.id} className="relative aspect-[3/4] rounded-xl overflow-hidden group bg-surface shadow-sm border border-hairline">
+          <div key={item.id} className="relative aspect-[3/4] rounded-none overflow-hidden group bg-gray-50 border border-gray-200">
             <Image
               src={item.url}
               alt={`포트폴리오 ${item.id}`}
@@ -56,8 +56,8 @@ export function PortfolioGallery({ modelId }: Props) {
       </div>
 
       <div className="flex justify-center">
-        <button className="px-8 py-2 bg-white border border-hairline hover:bg-surface text-ink text-sm font-medium rounded-full transition-colors shadow-sm">
-          더 보기
+        <button className="px-8 py-3 bg-white border border-black hover:bg-gray-50 text-black text-xs font-bold uppercase tracking-widest transition-colors">
+          더 보기 (MORE)
         </button>
       </div>
     </div>

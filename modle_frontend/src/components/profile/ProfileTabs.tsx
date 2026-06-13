@@ -19,12 +19,12 @@ export function ProfileTabs({ activeTab, onTabChange }: Props) {
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
           className={`whitespace-nowrap px-6 py-4 text-sm font-semibold transition-colors relative ${
-            activeTab === tab.id ? 'text-ink' : 'text-body hover:text-ink'
+            activeTab === tab.id ? 'text-black' : 'text-gray-500 hover:text-black'
           }`}
         >
           {tab.label}
           {activeTab === tab.id && (
-            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-ink" />
+            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />
           )}
         </button>
       ))}
