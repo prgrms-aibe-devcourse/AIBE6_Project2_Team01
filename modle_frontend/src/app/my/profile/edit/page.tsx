@@ -17,7 +17,7 @@ export default async function MyProfileEditPage() {
           <p className="text-body-lg text-body mt-2">프로필 정보를 최신 상태로 유지하세요.</p>
         </header>
 
-        <ModelEditForm initialData={modelData} isMyProfile={true} />
+        <ModelEditForm initialData={modelData} />
       </main>
     );
   } catch (error) {

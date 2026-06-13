@@ -1,5 +1,5 @@
-import { apiFetch } from './client';
 import { ModelListResponse } from '@/types/model';
+import { apiFetch } from './client';
 
 export async function getModels(params: Record<string, string>): Promise<ModelListResponse> {
   const query = new URLSearchParams(params).toString();
@@ -54,24 +54,6 @@ export async function getModel(id: string | number): Promise<Model> {
   };
 }
 
-export async function updateModel(id: string | number, modelData: Partial<Model>): Promise<void> {
-  const payload = {
-    name: modelData.name,
-    height: modelData.height,
-    weight: modelData.weight,
-    gender: modelData.gender,
-    age: modelData.age,
-    field: modelData.field,
-    tags: modelData.tags || [],
-    introduction: modelData.introduction,
-    profileImageUrl: modelData.profileImageUrl
-  };
-
-  await apiFetch<void>(`/api/v1/models/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(payload)
-  });
-}
 
 export async function getMyModel(): Promise<Model> {
   const data = await apiFetch<any>(`/api/v1/models/my`);
@@ -104,7 +86,7 @@ export async function updateMyModel(modelData: Partial<Model>): Promise<void> {
     gender: modelData.gender,
     age: modelData.age,
     field: modelData.field,
-    tags: modelData.tags || [],
+    tags: modelData.tags ? modelData.tags.join(',') : '',
     introduction: modelData.introduction,
     profileImageUrl: modelData.profileImageUrl
   };
