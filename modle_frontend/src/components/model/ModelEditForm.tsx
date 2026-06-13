@@ -1,5 +1,6 @@
 'use client';
 
+import { uploadImage } from '@/lib/api/image';
 import { updateMyModel } from '@/lib/api/model';
 import { Model } from '@/types/model';
 import { useRouter } from 'next/navigation';
@@ -21,20 +22,24 @@ export function ModelEditForm({ initialData }: Props) {
     introduction: initialData.introduction || '',
     profileImageUrl: initialData.profileImageUrl || ''
   });
+
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [previewUrl, setPreviewUrl] = useState<string>(initialData.profileImageUrl || '');
 
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+
+  
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+   const file = e.target.files?.[0];
     if (file) {
-      // 미리보기 생성
       const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
-      
-      // TODO: 실제 백엔드 연동 시, 여기서 폼 데이터에 File 객체를 저장하거나
-      // S3/서버에 업로드 후 반환받은 URL을 formData.profileImageUrl에 저장해야 합니다.
+      setPreviewUrl(objectUrl); // 기존 코드 (화면 미리보기용)
+      setSelectedFile(file);    // 나중에 백엔드로 보내기 위해 File 객체를 쥐고 있음
     }
   };
 
@@ -57,7 +62,19 @@ export function ModelEditForm({ initialData }: Props) {
     setIsLoading(true);
 
     try {
-      await updateMyModel(formData);
+      let finalImageUrl = formData.profileImageUrl; // 기존 이미지 유지
+     
+      if (selectedFile) {
+        // 1. 이미지를 먼저 GCS로 보내기
+        const uploadedUrl = await uploadImage(selectedFile);
+        // 2. 성공하면 백엔드에서 받아온 구글 스토리지 URL로 교체
+        finalImageUrl = uploadedUrl; 
+      }
+      const finalFormData = { // gcs img url을 포함한 데이터 완성
+        ...formData,
+        profileImageUrl: finalImageUrl,
+      };
+      await updateMyModel(finalFormData);
       alert('프로필이 성공적으로 수정되었습니다.');
       
       router.push('/my/profile'); // TODO: Create /my/profile page if it doesn't exist
