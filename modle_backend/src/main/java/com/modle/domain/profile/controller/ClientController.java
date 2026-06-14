@@ -9,7 +9,7 @@ import com.modle.global.auth.SecurityUser;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
 import com.modle.global.gcs.GcsService;
-import com.modle.global.rsData.RsData;
+import com.modle.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -31,7 +31,7 @@ public class ClientController {
     @Transactional(readOnly = true)
     @GetMapping
     @Operation(summary = "다건 조회")
-    public RsData<List<ClientDto>> getItems() {
+    public ApiResponse<List<ClientDto>> getItems() {
 
         List<Client> items = clientService.getList();
 
@@ -40,7 +40,7 @@ public class ClientController {
                 .stream()
                 .map(ClientDto::new) // modelDto 변환
                 .toList();
-        return new RsData<List<ClientDto>>(
+        return new ApiResponse<List<ClientDto>>(
                 "200-1",
                 "조회 성공",
                 dtoList);
@@ -49,10 +49,10 @@ public class ClientController {
     @Transactional(readOnly = true)
     @GetMapping("/{id}")
     @Operation(summary = "단건 조회")
-    public RsData<ClientDto> getItem(@PathVariable Long id) {
+    public ApiResponse<ClientDto> getItem(@PathVariable Long id) {
         Client item = clientService.findById(id);
 
-        return new RsData<>(
+        return new ApiResponse<>(
                 "200-1",
                 "조회 성공",
                 new ClientDto(item));
@@ -61,7 +61,7 @@ public class ClientController {
     @Transactional(readOnly = true)
     @GetMapping("/my")
     @Operation(summary = "내 프로필 단건 조회")
-    public RsData<ClientDto> getMyItem(@AuthenticationPrincipal SecurityUser currentUser) {
+    public ApiResponse<ClientDto> getMyItem(@AuthenticationPrincipal SecurityUser currentUser) {
 
 
         Client item;
@@ -71,7 +71,7 @@ public class ClientController {
             item = clientService.findByUserId(currentUser.getId());
         }
 
-        return new RsData<>(
+        return new ApiResponse<>(
                 "200-1",
                 "조회 성공",
                 new ClientDto(item));
@@ -80,7 +80,7 @@ public class ClientController {
     @PutMapping("/my")
     @Transactional
     @Operation(summary = "내 프로필 수정")
-    public RsData<Void> modifyMyItem(
+    public ApiResponse<Void> modifyMyItem(
             @Valid @RequestBody ClientModifyReqBody reqBody,
             @AuthenticationPrincipal SecurityUser currentUser) {
         Client client;
@@ -100,7 +100,7 @@ public class ClientController {
                 reqBody.introduction(),
                 newImageUrl
         );
-        return new RsData<>(
+        return new ApiResponse<>(
                 "200-1",
                 "내 프로필이 수정되었습니다.");
     }
@@ -110,7 +110,7 @@ public class ClientController {
     @DeleteMapping("/{id}")
     @Transactional
     @Operation(summary = "삭제")
-    public RsData<ClientDto> delete(
+    public ApiResponse<ClientDto> delete(
             @PathVariable Long id,
             @AuthenticationPrincipal SecurityUser currentUser) {
         Client client = clientService.findById(id);
@@ -122,7 +122,7 @@ public class ClientController {
 
         clientService.delete(client);
 
-        return new RsData<>(
+        return new ApiResponse<>(
                 "200-1",
                 "%d번 모델 프로필이 삭제되었습니다.".formatted(id),
                 new ClientDto(client));
