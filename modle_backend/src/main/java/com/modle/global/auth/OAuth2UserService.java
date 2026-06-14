@@ -12,6 +12,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class OAuth2UserService extends DefaultOAuth2UserService {
@@ -27,8 +29,24 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         Provider provider = Provider.valueOf(registrationId.toUpperCase());
 
         // 필요한 유저 정보 추출
-        String providerId = oAuth2User.getAttribute("sub");
-        String email = oAuth2User.getAttribute("email");
+        String providerId;
+        String email;
+
+        if (provider == Provider.KAKAO) {
+            // 카카오: 최상위 id, kakao_account.email
+            Long kakaoId = oAuth2User.getAttribute("id");
+            providerId = String.valueOf(kakaoId);
+
+            Map<String, Object> kakaoAccount = oAuth2User.getAttribute("kakao_account");
+            if (kakaoAccount == null || kakaoAccount.get("email") == null) {
+                throw new OAuth2AuthenticationException("카카오 이메일 동의가 필요합니다.");
+            }
+            email = (String) kakaoAccount.get("email");
+        } else {
+            // 구글: sub, email
+            providerId = oAuth2User.getAttribute("sub");
+            email = oAuth2User.getAttribute("email");
+        }
 
         // 기존 유저 조회
         User user = userRepository.findByEmail(email)
