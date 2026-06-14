@@ -35,6 +35,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -65,7 +66,8 @@ class MessageServiceTest {
         );
         given(messageRepository.save(any(Message.class)))
                 .willAnswer(invocation -> invocation.getArgument(0));
-        given(messageRepository.findById(30L)).willReturn(Optional.of(createMessage(2L, 1L)));
+        given(messageRepository.findById(30L))
+                .willReturn(Optional.of(createMessage(2L, 1L, 20L, 10L)));
         doReturn(createUser(1L, Role.CLIENT)).when(userService).findById(1L);
         doReturn(createUser(2L, Role.MODEL)).when(userService).findById(2L);
 
@@ -156,6 +158,21 @@ class MessageServiceTest {
     }
 
     @Test
+    void sendMessage_부모쪽지와다른문맥으로답신_예외발생() {
+        // given
+        SendMessageRequest request = new SendMessageRequest(2L, 21L, 10L, 30L, "답신");
+        given(messageRepository.findById(30L))
+                .willReturn(Optional.of(createMessage(2L, 1L, 20L, 10L)));
+        doReturn(createUser(1L, Role.CLIENT)).when(userService).findById(1L);
+        doReturn(createUser(2L, Role.MODEL)).when(userService).findById(2L);
+
+        // when, then
+        assertThatThrownBy(() -> messageService.sendMessage(1L, request))
+                .isInstanceOf(InvalidParentMessageException.class);
+        verify(messageRepository, never()).save(any(Message.class));
+    }
+
+    @Test
     void sendMessage_모델최초발송_예외발생() {
         // given
         SendMessageRequest request = new SendMessageRequest(2L, null, null, null, "최초 쪽지");
@@ -186,10 +203,40 @@ class MessageServiceTest {
         assertThat(response.parentMessageId()).isEqualTo(30L);
     }
 
+    @Test
+    void markConversationAsRead_같은상대와문맥의받은쪽지만읽음처리() {
+        // given
+        Message first = createMessage(2L, 1L, 20L, 10L);
+        Message second = createMessage(2L, 1L, 20L, 10L);
+        given(messageRepository.findUnreadConversationMessages(1L, 2L, 20L, 10L))
+                .willReturn(List.of(first, second));
+
+        // when
+        int updatedCount = messageService.markConversationAsRead(1L, 2L, 20L, 10L);
+
+        // then
+        assertThat(updatedCount).isEqualTo(2);
+        assertThat(first.isRead()).isTrue();
+        assertThat(second.isRead()).isTrue();
+        verify(messageRepository, times(1))
+                .findUnreadConversationMessages(1L, 2L, 20L, 10L);
+    }
+
     private Message createMessage(Long senderId, Long receiverId) {
+        return createMessage(senderId, receiverId, null, null);
+    }
+
+    private Message createMessage(
+            Long senderId,
+            Long receiverId,
+            Long applicationId,
+            Long postId
+    ) {
         return Message.builder()
                 .senderId(senderId)
                 .receiverId(receiverId)
+                .applicationId(applicationId)
+                .postId(postId)
                 .content("내용")
                 .senderType(SenderType.USER)
                 .build();

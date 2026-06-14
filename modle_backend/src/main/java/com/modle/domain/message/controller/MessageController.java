@@ -1,6 +1,7 @@
 package com.modle.domain.message.controller;
 
 import com.modle.domain.message.dto.request.SendMessageRequest;
+import com.modle.domain.message.dto.request.ReadConversationRequest;
 import com.modle.domain.message.dto.response.MessageResponse;
 import com.modle.domain.message.dto.response.MessagePageResponse;
 import com.modle.domain.message.service.MessageService;
@@ -51,5 +52,18 @@ public class MessageController {
             @PathVariable Long id
     ) {
         return messageService.markAsRead(user.getId(), id);
+    }
+
+    @PatchMapping("/read")
+    public int markConversationAsRead(
+            @AuthenticationPrincipal SecurityUser user,
+            @Valid @RequestBody ReadConversationRequest request
+    ) {
+        return messageService.markConversationAsRead(
+                user.getId(),
+                request.participantId(),
+                request.applicationId(),
+                request.postId()
+        );
     }
 }

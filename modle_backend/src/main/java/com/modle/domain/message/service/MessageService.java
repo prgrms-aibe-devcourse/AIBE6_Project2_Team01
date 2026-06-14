@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -44,6 +45,8 @@ public class MessageService {
         Message parentMessage = validateParentMessage(
                 senderId,
                 request.receiverId(),
+                request.applicationId(),
+                request.postId(),
                 request.parentMessageId()
         );
         validateModelReply(sender.getRole(), senderId, parentMessage);
@@ -74,7 +77,7 @@ public class MessageService {
             String content
     ) {
         validateDifferentUsers(senderId, receiverId);
-        validateParentMessage(senderId, receiverId, parentMessageId);
+        validateParentMessage(senderId, receiverId, applicationId, postId, parentMessageId);
 
         Message message = Message.builder()
                 .senderId(senderId)
@@ -140,13 +143,36 @@ public class MessageService {
         return MessageResponse.from(message);
     }
 
+    @Transactional
+    public int markConversationAsRead(
+            Long userId,
+            Long participantId,
+            Long applicationId,
+            Long postId
+    ) {
+        List<Message> unreadMessages = messageRepository.findUnreadConversationMessages(
+                userId,
+                participantId,
+                applicationId,
+                postId
+        );
+        unreadMessages.forEach(Message::markAsRead);
+        return unreadMessages.size();
+    }
+
     private void validateDifferentUsers(Long senderId, Long receiverId) {
         if (senderId.equals(receiverId)) {
             throw new SelfMessageNotAllowedException();
         }
     }
 
-    private Message validateParentMessage(Long senderId, Long receiverId, Long parentMessageId) {
+    private Message validateParentMessage(
+            Long senderId,
+            Long receiverId,
+            Long applicationId,
+            Long postId,
+            Long parentMessageId
+    ) {
         if (parentMessageId == null) {
             return null;
         }
@@ -160,7 +186,11 @@ public class MessageService {
                         || parentMessage.getSenderId().equals(receiverId)
                         && parentMessage.getReceiverId().equals(senderId);
 
-        if (!sameConversation) {
+        boolean sameContext =
+                Objects.equals(parentMessage.getApplicationId(), applicationId)
+                        && Objects.equals(parentMessage.getPostId(), postId);
+
+        if (!sameConversation || !sameContext) {
             throw new InvalidParentMessageException();
         }
 
