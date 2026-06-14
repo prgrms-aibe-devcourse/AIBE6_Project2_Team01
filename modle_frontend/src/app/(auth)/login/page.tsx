@@ -36,7 +36,8 @@ export default function LoginPage() {
 
     login({ id: result.data.item.id, role: result.data.item.role });
     setStatus("idle");
-    router.push("/");
+    const next = new URLSearchParams(window.location.search).get("next");
+    router.push(next?.startsWith("/") && !next.startsWith("//") ? next : "/");
   };
 
   return (

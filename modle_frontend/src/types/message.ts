@@ -23,9 +23,13 @@ export interface MessageItem {
 }
 
 export interface MessageThread {
-  id: number;
+  id: string;
+  participantId: number;
+  applicationId: number | null;
+  postId: number | null;
   participantName: string;
   participantRole: string;
+  participantProfileImageUrl: string | null;
   preview: string;
   time: string;
   unreadCount: number;

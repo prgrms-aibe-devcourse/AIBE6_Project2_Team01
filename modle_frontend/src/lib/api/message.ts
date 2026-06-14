@@ -94,10 +94,22 @@ export async function sendMessage(
   return toMessageItem(await response.json());
 }
 
-export async function markAsRead(messageId: number): Promise<void> {
-  const response = await fetch(`/api/v1/messages/${messageId}/read`, {
+export async function markConversationAsRead(
+  participantId: number,
+  applicationId: number | null,
+  postId: number | null,
+): Promise<void> {
+  const response = await fetch("/api/v1/messages/read", {
     method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
     credentials: "include",
+    body: JSON.stringify({
+      participantId,
+      applicationId,
+      postId,
+    }),
   });
 
   if (!response.ok) {

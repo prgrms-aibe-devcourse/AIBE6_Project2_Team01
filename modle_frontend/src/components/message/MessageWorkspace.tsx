@@ -1,10 +1,22 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { getInbox, markAsRead, sendMessage } from "@/lib/api/message";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { getInbox, markConversationAsRead, sendMessage } from "@/lib/api/message";
 import type { MessageItem, MessageParticipant, MessageThread } from "@/types/message";
 
 const POLLING_INTERVAL_MS = 30_000;
+const MAX_MESSAGE_LENGTH = 2_000;
+
+function getThreadId(
+  participantId: number,
+  applicationId: number | null,
+  postId: number | null,
+): string {
+  return `${participantId}:${applicationId ?? "none"}:${postId ?? "none"}`;
+}
 
 function getRoleLabel(role: MessageParticipant["role"]): string {
   return {
@@ -19,31 +31,39 @@ function buildThreads(
   currentUserId: number,
   participants: MessageParticipant[],
 ): MessageThread[] {
-  const grouped = new Map<number, MessageItem[]>();
+  const grouped = new Map<string, MessageItem[]>();
   const participantMap = new Map(participants.map((participant) => [participant.id, participant]));
 
   for (const message of messages) {
     const participantId =
       message.senderId === currentUserId ? message.receiverId : message.senderId;
-    grouped.set(participantId, [...(grouped.get(participantId) ?? []), message]);
+    const threadId = getThreadId(participantId, message.applicationId, message.postId);
+    grouped.set(threadId, [...(grouped.get(threadId) ?? []), message]);
   }
 
   return [...grouped.entries()]
-    .map(([participantId, unsortedMessages]) => {
+    .map(([threadId, unsortedMessages]) => {
       const threadMessages = [...unsortedMessages].sort(
         (a, b) =>
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       );
       const lastMessage = threadMessages.at(-1)!;
+      const participantId =
+        lastMessage.senderId === currentUserId ? lastMessage.receiverId : lastMessage.senderId;
       const participant = participantMap.get(participantId) ?? {
         name: `사용자 ${participantId}`,
         role: "MODEL" as const,
+        profileImageUrl: null,
       };
 
       return {
-        id: participantId,
+        id: threadId,
+        participantId,
+        applicationId: lastMessage.applicationId,
+        postId: lastMessage.postId,
         participantName: participant.name,
         participantRole: getRoleLabel(participant.role),
+        participantProfileImageUrl: participant.profileImageUrl,
         preview: lastMessage.content,
         time: new Intl.DateTimeFormat("ko-KR", {
           month: "numeric",
@@ -63,11 +83,14 @@ function buildThreads(
 }
 
 export function MessageWorkspace() {
+  const router = useRouter();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [threads, setThreads] = useState<MessageThread[]>([]);
   const [currentUser, setCurrentUser] = useState<MessageParticipant | null>(null);
   const [participants, setParticipants] = useState<MessageParticipant[]>([]);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [content, setContent] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -76,8 +99,27 @@ export function MessageWorkspace() {
     () => threads.find((thread) => thread.id === selectedId) ?? threads[0] ?? null,
     [selectedId, threads],
   );
+  const visibleThreads = useMemo(() => {
+    const query = searchQuery.trim().toLocaleLowerCase("ko-KR");
+    if (!query) return threads;
+    return threads.filter(
+      (thread) =>
+        thread.participantName.toLocaleLowerCase("ko-KR").includes(query) ||
+        thread.messages.some((message) =>
+          message.content.toLocaleLowerCase("ko-KR").includes(query),
+        ),
+    );
+  }, [searchQuery, threads]);
 
   useEffect(() => {
+    if (!isAuthLoading && !user) {
+      router.replace("/login?next=/messages");
+    }
+  }, [isAuthLoading, router, user]);
+
+  useEffect(() => {
+    if (isAuthLoading || !user) return;
+
     async function loadMessages() {
       try {
         const inbox = await getInbox();
@@ -102,39 +144,57 @@ export function MessageWorkspace() {
     const pollingId = window.setInterval(loadMessages, POLLING_INTERVAL_MS);
 
     return () => window.clearInterval(pollingId);
+  }, [isAuthLoading, user]);
+
+  const selectThread = useCallback((id: string) => {
+    setSelectedId(id);
   }, []);
 
-  const selectThread = useCallback(async (id: number) => {
-    if (!currentUser) return;
-    setSelectedId(id);
-    const selected = threads.find((thread) => thread.id === id);
+  useEffect(() => {
+    if (!currentUser || !selectedThread) return;
+    const currentUserId = currentUser.id;
     const unreadMessages =
-      selected?.messages.filter(
-        (message) => message.receiverId === currentUser.id && !message.isRead,
-      ) ?? [];
-
-    try {
-      await Promise.all(unreadMessages.map((message) => markAsRead(message.id)));
-      setThreads((current) =>
-        current.map((thread) =>
-          thread.id === id
-            ? {
-                ...thread,
-                unreadCount: 0,
-                messages: thread.messages.map((message) =>
-                  message.receiverId === currentUser.id
-                    ? { ...message, isRead: true, readAt: new Date().toISOString() }
-                    : message,
-                ),
-              }
-            : thread,
-        ),
+      selectedThread.messages.filter(
+        (message) => message.receiverId === currentUserId && !message.isRead,
       );
-      setError(null);
-    } catch (requestError) {
-      setError((requestError as Error).message);
+    if (unreadMessages.length === 0) return;
+
+    let cancelled = false;
+    async function readSelectedConversation() {
+      try {
+        await markConversationAsRead(
+          selectedThread.participantId,
+          selectedThread.applicationId,
+          selectedThread.postId,
+        );
+        if (cancelled) return;
+        setThreads((current) =>
+          current.map((thread) =>
+            thread.id === selectedThread.id
+              ? {
+                  ...thread,
+                  unreadCount: 0,
+                  messages: thread.messages.map((message) =>
+                    message.receiverId === currentUserId
+                      ? { ...message, isRead: true, readAt: new Date().toISOString() }
+                      : message,
+                  ),
+                }
+              : thread,
+          ),
+        );
+        setError(null);
+      } catch (requestError) {
+        if (cancelled) return;
+        setError((requestError as Error).message);
+      }
     }
-  }, [currentUser, threads]);
+
+    void readSelectedConversation();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser, selectedThread]);
 
   async function submitMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -144,7 +204,7 @@ export function MessageWorkspace() {
     setSending(true);
     try {
       const saved = await sendMessage(
-        selectedThread.id,
+        selectedThread.participantId,
         trimmed,
         selectedThread.messages.at(-1)?.applicationId ?? null,
         selectedThread.messages.at(-1)?.postId ?? null,
@@ -167,7 +227,7 @@ export function MessageWorkspace() {
     }
   }
 
-  if (loading) {
+  if (isAuthLoading || !user || loading) {
     return <main className="grid min-h-screen place-items-center">쪽지함을 불러오는 중입니다.</main>;
   }
 
@@ -184,22 +244,6 @@ export function MessageWorkspace() {
 
   return (
     <main className="min-h-screen bg-[var(--canvas-soft)]">
-      <header className="flex h-16 items-center justify-between border-b border-[var(--hairline)] bg-[var(--canvas)] px-6">
-        <div className="flex items-center gap-8">
-          <strong className="text-xl tracking-[-0.04em]">MODLE</strong>
-          <nav className="hidden gap-6 text-sm text-[var(--body)] md:flex">
-            <span>공고 찾기</span>
-            <span>모델 찾기</span>
-            <span className="font-semibold text-[var(--ink)]">쪽지</span>
-          </nav>
-        </div>
-        <div className="flex items-center gap-3 text-sm">
-          <span className="hidden text-[var(--body)] sm:inline">{currentUser?.name}</span>
-          <div className="grid size-9 place-items-center rounded-full bg-[var(--ink)] text-xs font-semibold text-white">
-            {currentUser?.name.slice(0, 2)}
-          </div>
-        </div>
-      </header>
       {error && (
         <div className="border-b border-[var(--hairline)] bg-[var(--canvas)] px-6 py-3 text-center text-sm text-red-700">
           {error}
@@ -221,11 +265,13 @@ export function MessageWorkspace() {
             <input
               className="h-11 w-full rounded-md border border-[var(--hairline)] bg-[var(--canvas-soft)] px-3 text-sm outline-none placeholder:text-[var(--mute)] focus:border-[var(--hairline-strong)]"
               placeholder="이름 또는 내용 검색"
+              onChange={(event) => setSearchQuery(event.target.value)}
+              value={searchQuery}
             />
           </div>
 
           <div>
-            {threads.map((thread) => (
+            {visibleThreads.map((thread) => (
               <button
                 key={thread.id}
                 className={`relative w-full border-b border-[var(--hairline)] px-6 py-5 text-left transition-colors hover:bg-[var(--canvas-soft)] ${
@@ -258,23 +304,28 @@ export function MessageWorkspace() {
           <div className="flex h-[88px] items-center justify-between border-b border-[var(--hairline)] px-6">
             <div>
               <div className="flex items-center gap-2">
+                {selectedThread.participantProfileImageUrl && (
+                  <Image
+                    alt={`${selectedThread.participantName} 프로필`}
+                    className="size-9 rounded-full object-cover"
+                    height={36}
+                    src={selectedThread.participantProfileImageUrl}
+                    unoptimized
+                    width={36}
+                  />
+                )}
                 <h2 className="text-lg font-semibold">{selectedThread.participantName}</h2>
                 <span className="rounded-full border border-[var(--hairline)] px-2 py-0.5 text-xs text-[var(--body)]">
                   {selectedThread.participantRole}
                 </span>
               </div>
-              <p className="mt-1 text-xs text-[var(--mute)]">사용자 #{selectedThread.id}</p>
+              <p className="mt-1 text-xs text-[var(--mute)]">
+                사용자 #{selectedThread.participantId}
+              </p>
             </div>
           </div>
 
           <div className="flex flex-1 flex-col gap-5 overflow-y-auto bg-[var(--canvas-soft)] p-6">
-            <div className="mx-auto rounded-full border border-[var(--hairline)] bg-[var(--surface)] px-3 py-1 text-xs text-[var(--mute)]">
-              {new Intl.DateTimeFormat("ko-KR", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              }).format(new Date(selectedThread.messages[0].createdAt))}
-            </div>
             {selectedThread.messages.length === 0 ? (
               <div className="grid flex-1 place-items-center text-center">
                 <div>
@@ -283,32 +334,47 @@ export function MessageWorkspace() {
                 </div>
               </div>
             ) : (
-              selectedThread.messages.map((message) => {
+              selectedThread.messages.map((message, index) => {
                 const mine = message.senderId === currentUser?.id;
+                const messageDate = new Date(message.createdAt);
+                const previousDate =
+                  index > 0 ? new Date(selectedThread.messages[index - 1].createdAt) : null;
+                const showDate =
+                  !previousDate || messageDate.toDateString() !== previousDate.toDateString();
                 return (
-                  <article
-                    key={message.id}
-                    className={`flex max-w-[76%] flex-col ${mine ? "ml-auto items-end" : "items-start"}`}
-                  >
-                    <div
-                      className={`rounded-xl px-4 py-3 text-[15px] leading-6 ${
-                        mine
-                          ? "bg-[var(--primary)] text-[var(--on-primary)]"
-                          : "border border-[var(--hairline)] bg-[var(--surface)] text-[var(--ink)]"
-                      }`}
-                    >
-                      {message.content}
-                    </div>
-                    <div className="mt-1.5 flex items-center gap-2 text-xs text-[var(--mute)]">
-                      {mine && <span>{message.isRead ? "읽음" : "전송됨"}</span>}
-                      <time>
+                  <div className="contents" key={message.id}>
+                    {showDate && (
+                      <div className="mx-auto rounded-full border border-[var(--hairline)] bg-[var(--surface)] px-3 py-1 text-xs text-[var(--mute)]">
                         {new Intl.DateTimeFormat("ko-KR", {
-                          hour: "numeric",
-                          minute: "2-digit",
-                        }).format(new Date(message.createdAt))}
-                      </time>
-                    </div>
-                  </article>
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }).format(messageDate)}
+                      </div>
+                    )}
+                    <article
+                      className={`flex max-w-[76%] flex-col ${mine ? "ml-auto items-end" : "items-start"}`}
+                    >
+                      <div
+                        className={`rounded-xl px-4 py-3 text-[15px] leading-6 ${
+                          mine
+                            ? "bg-[var(--primary)] text-[var(--on-primary)]"
+                            : "border border-[var(--hairline)] bg-[var(--surface)] text-[var(--ink)]"
+                        }`}
+                      >
+                        {message.content}
+                      </div>
+                      <div className="mt-1.5 flex items-center gap-2 text-xs text-[var(--mute)]">
+                        {mine && <span>{message.isRead ? "읽음" : "전송됨"}</span>}
+                        <time>
+                          {new Intl.DateTimeFormat("ko-KR", {
+                            hour: "numeric",
+                            minute: "2-digit",
+                          }).format(new Date(message.createdAt))}
+                        </time>
+                      </div>
+                    </article>
+                  </div>
                 );
               })
             )}
@@ -334,6 +400,7 @@ export function MessageWorkspace() {
               <textarea
                 className="min-h-24 flex-1 resize-none rounded-md border border-[var(--hairline)] bg-[var(--canvas-soft)] p-3 text-[15px] leading-6 outline-none placeholder:text-[var(--mute)] focus:border-[var(--hairline-strong)]"
                 onChange={(event) => setContent(event.target.value)}
+                maxLength={MAX_MESSAGE_LENGTH}
                 placeholder="쪽지 내용을 입력하세요."
                 value={content}
               />
@@ -345,6 +412,9 @@ export function MessageWorkspace() {
                 {sending ? "전송 중" : "보내기"}
               </button>
             </div>
+            <p className="mt-2 text-right text-xs text-[var(--mute)]">
+              {content.length.toLocaleString()} / {MAX_MESSAGE_LENGTH.toLocaleString()}
+            </p>
           </form>
         </section>
 
