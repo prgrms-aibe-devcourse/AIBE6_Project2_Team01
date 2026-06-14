@@ -1,9 +1,11 @@
-'use client'
-
+import { DetailLookbook } from '@/components/model/detail/DetailLookbook';
+import { ProfileGallery } from '@/components/model/detail/ProfileGallery';
 import { getModel } from '@/lib/api/model';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
+export const metadata = {
+  title: '모델 상세 | 모들',
+};
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -14,115 +16,122 @@ export default async function ModelDetailPage({ params }: PageProps) {
 
   try {
     const modelData = await getModel(id);
-    
+
+    const specs = [
+      modelData.region ? `REGION ${modelData.region}` : null,
+      modelData.age ? `AGE ${modelData.age}` : null,
+      modelData.height ? `HEIGHT ${modelData.height}` : null,
+      modelData.weight ? `WEIGHT ${modelData.weight}` : null,
+      modelData.gender !== undefined ? `GENDER ${modelData.gender ? 'MALE' : 'FEMALE'}` : null,
+    ].filter(Boolean);
+
     return (
-      <main className="max-w-[1200px] mx-auto px-6 py-12">
-        <div className="bg-white border-t-2 border-black pt-10 text-black">
-          {/* 상단 프로필 기본 정보 */}
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10">
-            <div className="relative w-48 h-48 md:w-64 md:h-64 shrink-0">
-              <Image
-                src={modelData.profileImageUrl || '/images/default-avatar.png'}
-                alt={`${modelData.name} 프로필 이미지`}
-                fill
-                className="object-cover border border-gray-200 bg-gray-50"
-                sizes="(max-width: 768px) 192px, 256px"
-                onError={(e) => {
-                  e.currentTarget.srcset = '/images/default-avatar.png';
-                }}
-              />
+      <main className="w-full bg-white text-black pb-32 font-sans selection:bg-black selection:text-white">
+        <div className="max-w-[1000px] mx-auto px-4 md:px-6 pt-6 md:pt-10">
+          
+          <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
+            
+            <div className="w-full md:w-[45%] lg:w-[40%] max-w-[450px] mx-auto md:mx-0">
+               <ProfileGallery 
+                 portfolios={modelData.portfolios || []} 
+                 mainFallback={modelData.profileImageUrl || '/images/default-avatar.png'} 
+               />
+            </div>
+
+            <div className="w-full md:w-[55%] lg:w-[60%] flex flex-col">
+               
+               <div className="text-sm font-bold text-gray-500 mb-1 underline underline-offset-4 cursor-pointer hover:text-black transition-colors w-fit">
+                  {modelData.categories && modelData.categories.length > 0 
+                    ? modelData.categories.join(' / ') 
+                    : 'KOREAN MODEL'}
+               </div>
+               
+               <h1 className="text-2xl md:text-3xl font-extrabold text-black mt-3 mb-4 tracking-tight">
+                  {modelData.name} <span className="font-normal text-gray-400 text-lg ml-1">({modelData.gender ? '남성' : '여성'})</span>
+               </h1>
+               
+               <div className="flex items-center gap-4 text-sm font-medium border-b border-gray-100 pb-6 mb-6">
+                 <div className="flex items-center gap-1">
+                   <span className="text-yellow-400 text-lg">★</span>
+                   <span className="text-black font-bold">{modelData.rating?.toFixed(1) || '0.0'}</span>
+                 </div>
+                 <div className="w-px h-3 bg-gray-300"></div>
+                 <span className="text-blue-600 underline cursor-pointer hover:text-blue-800">
+                   후기 {modelData.reviewCount || 0}개
+                 </span>
+                 <div className="w-px h-3 bg-gray-300"></div>
+                 <span className="text-gray-400">모델 번호: {modelData.id}</span>
+               </div>
+
+               <div className="flex flex-col gap-3 text-sm tracking-wide">
+                  <div className="flex">
+                     <span className="w-24 text-gray-500">활동 지역</span>
+                     <span className="text-black font-semibold">{modelData.region || '미상'}</span>
+                  </div>
+                  <div className="flex">
+                     <span className="w-24 text-gray-500">나이</span>
+                     <span className="text-black font-semibold">{modelData.age ? `${modelData.age}세` : '미상'}</span>
+                  </div>
+                  <div className="flex">
+                     <span className="w-24 text-gray-500">키 (HEIGHT)</span>
+                     <span className="text-black font-semibold">{modelData.height ? `${modelData.height}cm` : '미상'}</span>
+                  </div>
+                  <div className="flex">
+                     <span className="w-24 text-gray-500">몸무게 (WEIGHT)</span>
+                     <span className="text-black font-semibold">{modelData.weight ? `${modelData.weight}kg` : '미상'}</span>
+                  </div>
+                  <div className="flex items-start mt-1">
+                     <span className="w-24 text-gray-500 mt-1">관련 태그</span>
+                     <div className="flex flex-wrap gap-1.5 flex-1">
+                        {modelData.tags?.map((tag, idx) => (
+                          <span key={idx} className="bg-gray-100 text-gray-600 px-2 py-0.5 text-xs rounded hover:bg-gray-200 cursor-pointer">
+                            #{tag.trim()}
+                          </span>
+                        ))}
+                     </div>
+                  </div>
+               </div>
+
+               <div className="mt-8 md:mt-auto pt-8 flex gap-2">
+                  <button className="flex-[1] bg-white border border-gray-300 hover:border-black text-black font-bold py-4 text-center transition-colors">
+                    ♡ 관심 모델
+                  </button>
+                  <button className="flex-[2] bg-black hover:bg-gray-800 text-white font-bold py-4 text-center transition-colors">
+                    섭외 문의하기
+                  </button>
+               </div>
+            </div>
+          </div>
+
+          <div className="mt-20 md:mt-24">
+            
+            <div className="flex border-b border-gray-200 sticky top-0 bg-white z-10">
+              <div className="flex-1 text-center py-4 border-b-[3px] border-black font-bold text-black cursor-pointer">
+                상세정보
+              </div>
+              <div className="flex-1 text-center py-4 font-medium text-gray-400 hover:text-black cursor-pointer transition-colors">
+                리뷰 ({modelData.reviewCount || 0})
+              </div>
+              <div className="flex-1 text-center py-4 font-medium text-gray-400 hover:text-black cursor-pointer transition-colors">
+                Q&A (0)
+              </div>
+            </div>
+
+            <div className="max-w-[800px] mx-auto mt-12 flex flex-col items-center gap-4 md:gap-8 pb-20">
+              
+              <div className="text-center text-gray-800 leading-loose whitespace-pre-wrap mb-10 text-sm md:text-base px-4 font-medium">
+                 {modelData.introduction || '작성된 모델 소개글이 없습니다.'}
+              </div>
+
+              <DetailLookbook portfolios={modelData.portfolios || []} />
             </div>
             
-            <div className="flex flex-col items-center md:items-start flex-grow w-full">
-              <div className="flex justify-between items-start w-full">
-                <div>
-                  <h1 className="text-4xl md:text-5xl text-black font-black mb-2 tracking-tighter uppercase">{modelData.name}</h1>
-                  <p className="text-gray-500 mb-6 font-medium text-lg">{modelData.region || '지역 미상'}</p>
-                </div>
-                {/* 평점 및 리뷰 수 표시 */}
-                <div className="text-right flex flex-col items-end">
-                  <div className="flex items-center gap-1 mb-1">
-                    <span className="text-yellow-400 text-2xl">★</span>
-                    <span className="text-2xl font-bold">{modelData.rating.toFixed(1)}</span>
-                  </div>
-                  <span className="text-sm text-gray-500 underline cursor-pointer">리뷰 {modelData.reviewCount}개</span>
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-6">
-                <span className="px-4 py-2 border border-black bg-white text-black text-sm font-bold uppercase tracking-widest">
-                  {modelData.gender ? '남성' : '여성'}
-                </span>
-                <span className="px-4 py-2 border border-black bg-white text-black text-sm font-bold uppercase tracking-widest">
-                  {modelData.age ? `${modelData.age}세` : '나이 미상'}
-                </span>
-                <span className="px-4 py-2 border border-black bg-white text-black text-sm font-bold uppercase tracking-widest">
-                  {modelData.height ? `${modelData.height}cm` : '키 미상'}
-                </span>
-                <span className="px-4 py-2 border border-black bg-white text-black text-sm font-bold uppercase tracking-widest">
-                  {modelData.weight ? `${modelData.weight}kg` : '몸무게 미상'}
-                </span>
-              </div>
-              
-              {modelData.categories && modelData.categories.length > 0 && (
-                <div className="mt-4 w-full">
-                  <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-2 border-b border-gray-200 pb-1">활동 카테고리</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {modelData.categories.map((category, idx) => (
-                      <span key={idx} className="text-black font-semibold bg-gray-100 px-3 py-1 rounded-full text-sm">
-                        {category}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <hr className="border-hairline mb-8 border-gray-300" />
-
-          {/* 소개글 영역 */}
-          <div className="mb-12">
-            <h3 className="text-2xl text-black font-black mb-6 uppercase tracking-widest border-b-2 border-black pb-3">소개글 (ABOUT ME)</h3>
-            <div className="bg-gray-50 border border-gray-200 p-8 text-black text-base font-medium leading-relaxed whitespace-pre-wrap rounded-lg">
-              {modelData.introduction || '아직 작성된 소개글이 없습니다.'}
-            </div>
-          </div>
-
-          {/* 태그 영역 */}
-          <div className="mb-12">
-            <h3 className="text-2xl text-black font-black mb-6 uppercase tracking-widest border-b-2 border-black pb-3">태그 (TAGS)</h3>
-            {modelData.tags && modelData.tags.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {modelData.tags.map((tag, index) => (
-                  <span 
-                    key={index} 
-                    className="px-4 py-2 bg-black text-white text-sm font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors cursor-pointer"
-                  >
-                    #{tag.trim()}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm font-medium text-gray-500">등록된 태그가 없습니다.</p>
-            )}
-          </div>
-
-          {/* 액션 버튼 영역 */}
-          <div className="flex gap-4 mt-8 pt-8 border-t border-gray-200">
-            <button className="flex-1 py-4 bg-white border-2 border-black text-black font-bold text-lg uppercase tracking-widest hover:bg-gray-50 transition-colors">
-              관심 등록 (Like)
-            </button>
-            <button className="flex-1 py-4 bg-black text-white font-bold text-lg uppercase tracking-widest hover:bg-gray-800 transition-colors">
-              섭외 문의 (Contact)
-            </button>
           </div>
 
         </div>
       </main>
     );
   } catch (error) {
-    // If model is not found or API fails, render 404
     notFound();
   }
 }
