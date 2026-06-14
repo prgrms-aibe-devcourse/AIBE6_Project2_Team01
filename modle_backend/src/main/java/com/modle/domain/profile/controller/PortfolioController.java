@@ -6,7 +6,7 @@ import com.modle.domain.profile.service.ModelService;
 import com.modle.domain.profile.service.PortfolioService;
 import com.modle.domain.user.entity.Model;
 import com.modle.global.auth.SecurityUser;
-import com.modle.global.rsData.RsData;
+import com.modle.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,7 +26,7 @@ public class PortfolioController {
 
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public RsData<List<PortfolioDto>> uploadPortfolios(
+    public ApiResponse<List<PortfolioDto>> uploadPortfolios(
             @RequestParam("files") List<MultipartFile> files, // ⭐ List로 받기
             @AuthenticationPrincipal SecurityUser currentUser) throws IOException {
 
@@ -38,7 +38,7 @@ public class PortfolioController {
         List<PortfolioDto> portfolioDtos = portfolios.stream()
                 .map(PortfolioDto::new)
                 .toList();
-        return new RsData<>(
+        return new ApiResponse<>(
                 "201-1",
                 files.size() + "장의 포트폴리오 이미지가 추가되었습니다.",
                 portfolioDtos
@@ -46,14 +46,14 @@ public class PortfolioController {
     }
     // [삭제] 특정 포트폴리오 지우기
     @DeleteMapping("/{id}")
-    public RsData<Void> deletePortfolio(
+    public ApiResponse<Void> deletePortfolio(
             @PathVariable Long id,
             @AuthenticationPrincipal SecurityUser currentUser) {
 
         Model model = modelService.findByUserId(currentUser.getId());
 
         portfolioService.deletePortfolio(id, model);
-        return new RsData<>(
+        return new ApiResponse<>(
                 "200-1",
                 "포트폴리오 이미지가 삭제되었습니다."
         );

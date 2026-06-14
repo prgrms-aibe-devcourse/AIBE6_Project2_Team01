@@ -9,7 +9,7 @@ import com.modle.global.auth.SecurityUser;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
 import com.modle.global.gcs.GcsService;
-import com.modle.global.rsData.RsData;
+import com.modle.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -31,13 +31,13 @@ public class ModelController {
         @Transactional(readOnly = true)
         @GetMapping
         @Operation(summary = "다건 조회")
-        public RsData<List<ModelDto>> getItems() {
+        public ApiResponse<List<ModelDto>> getItems() {
                 List<Model> items = modelService.getList();
                 List<ModelDto> dtoList = items
                                 .stream()
                                 .map(ModelDto::new) // modelDto 변환
                                 .toList();
-                return new RsData<>(
+                return new ApiResponse<>(
                                 "200-1",
                                 "조회 성공",
                                 dtoList);
@@ -46,10 +46,10 @@ public class ModelController {
         @Transactional(readOnly = true)
         @GetMapping("/{id}")
         @Operation(summary = "단건 조회")
-        public RsData<ModelDto> getItem(@PathVariable Long id) {
+        public ApiResponse<ModelDto> getItem(@PathVariable Long id) {
                 Model item = modelService.findById(id);
 
-                return new RsData<>(
+                return new ApiResponse<>(
                                 "200-1",
                                 "조회 성공",
                                 new ModelDto(item));
@@ -58,7 +58,7 @@ public class ModelController {
         @Transactional(readOnly = true)
         @GetMapping("/my")
         @Operation(summary = "내 프로필 단건 조회")
-        public RsData<ModelDto> getMyItem(@AuthenticationPrincipal SecurityUser currentUser) {
+        public ApiResponse<ModelDto> getMyItem(@AuthenticationPrincipal SecurityUser currentUser) {
 
 
                 Model item;
@@ -68,16 +68,17 @@ public class ModelController {
                         item = modelService.findByUserId(currentUser.getId());
                 }
 
-                return new RsData<>(
+                return new ApiResponse<>(
                                 "200-1",
                                 "조회 성공",
                                 new ModelDto(item));
+
         }
 
         @PutMapping("/my")
         @Transactional
         @Operation(summary = "내 프로필 수정")
-        public RsData<Void> modifyMyItem(
+        public ApiResponse<Void> modifyMyItem(
                         @Valid @RequestBody ModelModifyReqBody reqBody,
                         @AuthenticationPrincipal SecurityUser currentUser) {
                 Model model;
@@ -101,7 +102,7 @@ public class ModelController {
                         reqBody.tags(),
                         reqBody.introduction(),
                         newImageUrl);
-                return new RsData<>(
+                return new ApiResponse<>(
                                 "200-1",
                                 "내 프로필이 수정되었습니다.");
         }
@@ -109,7 +110,7 @@ public class ModelController {
         @PostMapping
         @Transactional
         @Operation(summary = "모델 프로필 생성")
-        public RsData<ModelDto> create(
+        public ApiResponse<ModelDto> create(
                         @Valid // 유효성 검사
                         @RequestBody ModelCreateReqBody reqBody,
                         @AuthenticationPrincipal SecurityUser currentUser) {
@@ -135,7 +136,7 @@ public class ModelController {
                         reqBody.introduction(),
                         newImageUrl);
 
-                return new RsData<>(
+                return new ApiResponse<>(
                                 "201-1",
                                 "모델 프로필이 생성되었습니다.",
                                 new ModelDto(model));
@@ -144,7 +145,7 @@ public class ModelController {
         // @PutMapping("/{id}")
         // @Transactional
         // @Operation(summary = "수정")
-        // public RsData<Void> modify(
+        // public ApiResponse<Void> modify(
         // @PathVariable long id,
         // @Valid @RequestBody ModelModifyReqBody reqBody,
         // @AuthenticationPrincipal SecurityUser currentUser
@@ -171,7 +172,7 @@ public class ModelController {
         // reqBody.profileImageUrl()
         // );
         //
-        // return new RsData<>(
+        // return new ApiResponse<>(
         // "200-1",
         // "%d번 게시글이 수정되었습니다.".formatted(id)
         // );
@@ -179,7 +180,7 @@ public class ModelController {
         @DeleteMapping("/{id}")
         @Transactional
         @Operation(summary = "삭제")
-        public RsData<ModelDto> delete(
+        public ApiResponse<ModelDto> delete(
                         @PathVariable Long id,
                         @AuthenticationPrincipal SecurityUser currentUser) {
                 Model model = modelService.findById(id);
@@ -191,7 +192,7 @@ public class ModelController {
 
                 modelService.delete(model);
 
-                return new RsData<>(
+                return new ApiResponse<>(
                                 "200-1",
                                 "%d번 모델 프로필이 삭제되었습니다.".formatted(id),
                                 new ModelDto(model));
