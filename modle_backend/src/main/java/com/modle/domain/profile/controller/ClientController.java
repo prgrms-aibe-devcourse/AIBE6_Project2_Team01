@@ -115,7 +115,7 @@ public class ClientController {
             @AuthenticationPrincipal SecurityUser currentUser) {
         Client client = clientService.findById(id);
 
-        // 권한 검증: 현재 로그인한 사용자가 이 모델 프로필의 소유자인지 확인
+        // 권한 검증: 현재 로그인한 사용자가 이 client 프로필의 소유자인지 확인
         if (currentUser == null || !client.getUser().getId().equals(currentUser.getId())) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
