@@ -1,0 +1,44 @@
+<h2>필터 배치 방식 선택</h2>
+<p class="subtitle">리스트 페이지의 필터 영역을 어디에 배치할까요?</p>
+
+<div class="options">
+  <div class="option" data-choice="topbar" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>상단 필터바 (Top Bar)</h3>
+      <div class="mockup" style="width: 300px; margin-top: 10px;">
+        <div style="height: 40px; border: 1px solid #e5e5e5; display: flex; align-items: center; padding: 0 10px; gap: 8px; background: #fafafa;">
+          <div style="width: 60px; height: 20px; background: #eee; border-radius: 4px;"></div>
+          <div style="width: 60px; height: 20px; background: #eee; border-radius: 4px;"></div>
+          <div style="flex-grow: 1;"></div>
+          <div style="width: 80px; height: 20px; background: #ddd; border-radius: 4px;"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; padding: 8px;">
+          <div style="aspect-ratio: 3/4; background: #eee; border-radius: 4px;"></div>
+          <div style="aspect-ratio: 3/4; background: #eee; border-radius: 4px;"></div>
+          <div style="aspect-ratio: 3/4; background: #eee; border-radius: 4px;"></div>
+        </div>
+      </div>
+      <p style="margin-top: 10px;">그리드 공간을 넓게 활용하며 모바일 대응이 쉽습니다.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="sidebar" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>좌측 사이드바 (Sidebar)</h3>
+      <div class="mockup" style="width: 300px; margin-top: 10px; display: flex;">
+        <div style="width: 80px; border: 1px solid #e5e5e5; background: #fafafa; padding: 8px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="height: 15px; background: #ddd; border-radius: 2px;"></div>
+          <div style="height: 15px; background: #eee; border-radius: 2px;"></div>
+          <div style="height: 15px; background: #eee; border-radius: 2px;"></div>
+        </div>
+        <div style="flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 8px;">
+          <div style="aspect-ratio: 3/4; background: #eee; border-radius: 4px;"></div>
+          <div style="aspect-ratio: 3/4; background: #eee; border-radius: 4px;"></div>
+        </div>
+      </div>
+      <p style="margin-top: 10px;">많은 필터 조건을 체계적으로 보여주기에 유리합니다.</p>
+    </div>
+  </div>
+</div>

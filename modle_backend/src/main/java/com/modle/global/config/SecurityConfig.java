@@ -58,10 +58,20 @@ public class SecurityConfig {
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/reissue"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/models",
+                                "/api/v1/models/**",
+                                "/api/v1/models/my"
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.PUT,
+                                "/api/v1/models/my"
+                        ).permitAll()
                         // SSO 관련 인증 없이 허용
                         .requestMatchers("/login/oauth2/**", "/oauth2/**").permitAll()
                         // 관리자만
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        // Swagger UI 및 API Docs 허용
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // 나머지 인증 필요
                         .anyRequest().authenticated()
                 )
