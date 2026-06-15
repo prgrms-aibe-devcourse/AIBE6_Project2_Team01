@@ -113,19 +113,30 @@ export function MessageWorkspace() {
   useEffect(() => {
     if (isAuthLoading || !user) return;
     async function load() {
+      const recipientId = Number(new URLSearchParams(window.location.search).get("recipientId"));
+      const draft =
+        user.role === "CLIENT" && Number.isFinite(recipientId) && recipientId > 0
+          ? draftThread(recipientId, null)
+          : null;
+
       try {
         const inbox = await getInbox();
         const loadedThreads = buildThreads(inbox);
-        const recipientId = Number(new URLSearchParams(window.location.search).get("recipientId"));
-        if (user?.role === "CLIENT" && Number.isFinite(recipientId) && recipientId > 0) {
-          loadedThreads.unshift(draftThread(recipientId, null));
-        }
+        if (draft) loadedThreads.unshift(draft);
         setCurrentUser(inbox.currentUser);
         setThreads(loadedThreads);
         setSelectedId((current) => current ?? loadedThreads[0]?.id ?? null);
-        if (user?.role === "CLIENT") setJobs(await getMyRecruitingJobs());
+        if (user.role === "CLIENT") {
+          getMyRecruitingJobs()
+            .then(setJobs)
+            .catch((requestError) => setError((requestError as Error).message));
+        }
         setError(null);
       } catch (requestError) {
+        if (draft) {
+          setThreads([draft]);
+          setSelectedId(draft.id);
+        }
         setError((requestError as Error).message);
       } finally {
         setLoading(false);
@@ -208,7 +219,14 @@ export function MessageWorkspace() {
     return <main className="grid min-h-screen place-items-center">쪽지함을 불러오는 중입니다.</main>;
   }
   if (!selectedThread) {
-    return <main className="grid min-h-screen place-items-center">표시할 대화가 없습니다.</main>;
+    return (
+      <main className="grid min-h-screen place-items-center text-center">
+        <div>
+          <p>표시할 대화가 없습니다.</p>
+          {error && <p className="mt-2 text-sm text-red-700">{error}</p>}
+        </div>
+      </main>
+    );
   }
 
   return (
