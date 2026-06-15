@@ -1,7 +1,7 @@
 import { Model, ModelListResponse } from '@/types/model';
 import { client } from './client';
 
-export async function getModels(params: Record<string, string>): Promise<ModelListResponse> {
+export async function getModels(params: Record<string, string | string[] | undefined>): Promise<ModelListResponse> {
   const { data, error } = await client.GET('/api/v1/models', {
     params: {
       query: params as never

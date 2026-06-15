@@ -90,4 +90,7 @@ public class User extends BaseEntity {
     public void updateStatus(UserStatus userStatus) {
         this.status = userStatus;
     }
+    public void updateRegion(String region) {
+        this.region = region;
+    }
 }

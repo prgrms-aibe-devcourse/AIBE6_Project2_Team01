@@ -3,7 +3,7 @@ import { ModelGrid } from '@/components/model/ModelGrid';
 import { getModels } from '@/lib/api/model';
 
 interface PageProps {
-  searchParams: Promise<{ [key: string]: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function ModelsPage({ searchParams }: PageProps) {

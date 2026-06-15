@@ -79,8 +79,11 @@ public class ModelService {
             List<String> categories,
             List<String> tags,
             String introduction,
-            String profileImageUrl) {
+            String profileImageUrl,
+            String region
+        ) {
         model.update(name, height, weight, gender, age, introduction, profileImageUrl);
+        model.getUser().updateRegion(region);
         // 2. 태그(Tag) 처리 (ModelTag)
         model.getModelTags().clear(); // 기존 태그 매핑 싹 비우기
         if (tags != null) {
