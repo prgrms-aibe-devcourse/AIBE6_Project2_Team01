@@ -37,21 +37,19 @@ class MessageControllerTest {
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(messageController)
                 .setCustomArgumentResolvers(authenticationPrincipalResolver(user))
                 .build();
-        given(messageService.markConversationAsRead(1L, 2L, 20L, null)).willReturn(3);
+        given(messageService.markConversationAsRead(1L, 100L)).willReturn(3);
 
         mockMvc.perform(patch("/api/v1/messages/read")
                         .contentType("application/json")
                         .content("""
                                 {
-                                  "participantId": 2,
-                                  "applicationId": 20,
-                                  "postId": null
+                                  "conversationId": 100
                                 }
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(content().json("3"));
 
-        verify(messageService).markConversationAsRead(1L, 2L, 20L, null);
+        verify(messageService).markConversationAsRead(1L, 100L);
     }
 
     private HandlerMethodArgumentResolver authenticationPrincipalResolver(SecurityUser user) {

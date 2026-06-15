@@ -1,27 +1,26 @@
 package com.modle.domain.message.service;
 
+import com.modle.domain.message.dto.request.CreateConversationRequest;
 import com.modle.domain.message.dto.request.SendMessageRequest;
-import com.modle.domain.message.dto.response.MessagePageResponse;
 import com.modle.domain.message.dto.response.MessageResponse;
 import com.modle.domain.message.entity.Message;
-import com.modle.domain.message.entity.SenderType;
-import com.modle.domain.message.exception.MessageAccessDeniedException;
-import com.modle.domain.message.exception.InvalidParentMessageException;
-import com.modle.domain.message.exception.ModelInitialMessageNotAllowedException;
-import com.modle.domain.message.exception.SelfMessageNotAllowedException;
+import com.modle.domain.message.entity.MessageConversation;
+import com.modle.domain.message.repository.MessageConversationRepository;
 import com.modle.domain.message.repository.MessageRepository;
-import com.modle.domain.user.entity.Client;
-import com.modle.domain.user.entity.Model;
+import com.modle.domain.jobposting.repository.JobPostingRepository;
+import com.modle.domain.jobposting.entity.JobPosting;
+import com.modle.domain.jobposting.entity.JobPostingStatus;
 import com.modle.domain.user.entity.User;
 import com.modle.domain.user.entity.type.Role;
 import com.modle.domain.user.service.UserService;
+import com.modle.global.exception.CustomException;
+import com.modle.global.exception.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,13 +28,10 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,216 +41,138 @@ class MessageServiceTest {
     private MessageRepository messageRepository;
 
     @Mock
+    private MessageConversationRepository conversationRepository;
+
+    @Mock
     private UserService userService;
+
+    @Mock
+    private JobPostingRepository jobPostingRepository;
 
     private MessageService messageService;
 
     @BeforeEach
     void setUp() {
-        messageService = new MessageService(messageRepository, userService);
+        messageService = new MessageService(
+                messageRepository,
+                conversationRepository,
+                userService,
+                jobPostingRepository
+        );
     }
 
     @Test
-    void sendMessage_정상요청_쪽지저장() {
-        // given
-        SendMessageRequest request = new SendMessageRequest(
-                2L,
-                20L,
-                10L,
-                30L,
-                "촬영 제안드립니다."
+    void createConversation_클라이언트가모델대상대화방생성() {
+        User client = user(1L, Role.CLIENT);
+        User model = user(2L, Role.MODEL);
+        given(userService.findById(1L)).willReturn(client);
+        given(userService.findById(2L)).willReturn(model);
+        JobPosting posting = mock(JobPosting.class);
+        given(posting.getClientId()).willReturn(1L);
+        given(posting.getStatus()).willReturn(JobPostingStatus.RECRUITING);
+        given(jobPostingRepository.findById(10L)).willReturn(Optional.of(posting));
+        given(conversationRepository.save(any(MessageConversation.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        var response = messageService.createConversation(
+                1L,
+                new CreateConversationRequest(2L, 10L, null)
         );
+
+        assertThat(response.clientId()).isEqualTo(1L);
+        assertThat(response.modelId()).isEqualTo(2L);
+        assertThat(response.postId()).isEqualTo(10L);
+        verify(conversationRepository).save(any(MessageConversation.class));
+    }
+
+    @Test
+    void createConversation_모델이대화방생성_예외발생() {
+        User model = user(1L, Role.MODEL);
+        User client = user(2L, Role.CLIENT);
+        given(userService.findById(1L)).willReturn(model);
+        given(userService.findById(2L)).willReturn(client);
+
+        assertThatThrownBy(() -> messageService.createConversation(
+                1L,
+                new CreateConversationRequest(2L, null, null)
+        ))
+                .isInstanceOf(CustomException.class)
+                .extracting(exception -> ((CustomException) exception).getErrorCode())
+                .isEqualTo(ErrorCode.MESSAGE_CONVERSATION_CREATE_FORBIDDEN);
+
+        verify(conversationRepository, never()).save(any());
+    }
+
+    @Test
+    void sendMessage_대화방참여자가쪽지전송() {
+        MessageConversation conversation = conversation(100L, 1L, 2L);
+        given(conversationRepository.findById(100L)).willReturn(Optional.of(conversation));
         given(messageRepository.save(any(Message.class)))
                 .willAnswer(invocation -> invocation.getArgument(0));
-        given(messageRepository.findById(30L))
-                .willReturn(Optional.of(createMessage(2L, 1L, 20L, 10L)));
-        doReturn(createUser(1L, Role.CLIENT)).when(userService).findById(1L);
-        doReturn(createUser(2L, Role.MODEL)).when(userService).findById(2L);
 
-        // when
-        MessageResponse response = messageService.sendMessage(1L, request);
+        MessageResponse response = messageService.sendMessage(
+                1L,
+                new SendMessageRequest(100L, null, "촬영 제안드립니다.")
+        );
 
-        // then
+        assertThat(response.conversationId()).isEqualTo(100L);
         assertThat(response.senderId()).isEqualTo(1L);
         assertThat(response.receiverId()).isEqualTo(2L);
-        assertThat(response.applicationId()).isEqualTo(20L);
-        assertThat(response.postId()).isEqualTo(10L);
-        assertThat(response.parentMessageId()).isEqualTo(30L);
         assertThat(response.content()).isEqualTo("촬영 제안드립니다.");
-        assertThat(response.senderType()).isEqualTo(SenderType.USER);
-        assertThat(response.read()).isFalse();
-        verify(messageRepository).save(any(Message.class));
     }
 
     @Test
-    void sendMessage_자기자신에게발송_예외발생() {
-        // given
-        SendMessageRequest request = new SendMessageRequest(1L, null, null, null, "내용");
-        doReturn(createUser(1L, Role.CLIENT)).when(userService).findById(1L);
+    void sendMessage_대화방비참여자_예외발생() {
+        given(conversationRepository.findById(100L))
+                .willReturn(Optional.of(conversation(100L, 1L, 2L)));
 
-        // when, then
-        assertThatThrownBy(() -> messageService.sendMessage(1L, request))
-                .isInstanceOf(SelfMessageNotAllowedException.class);
-        verify(messageRepository, never()).save(any(Message.class));
+        assertThatThrownBy(() -> messageService.sendMessage(
+                3L,
+                new SendMessageRequest(100L, null, "내용")
+        ))
+                .isInstanceOf(CustomException.class)
+                .extracting(exception -> ((CustomException) exception).getErrorCode())
+                .isEqualTo(ErrorCode.MESSAGE_ACCESS_DENIED);
     }
 
     @Test
-    void getInbox_읽음필터없음_보낸쪽지와받은쪽지조회() {
-        // given
-        PageRequest pageable = PageRequest.of(0, 20);
-        Message message = createMessage(1L, 2L);
-        given(messageRepository.findBySenderIdOrReceiverIdOrderByCreatedAtDesc(1L, 1L, pageable))
-                .willReturn(new PageImpl<>(List.of(message), pageable, 1));
-        doReturn(List.of(createUser(1L, Role.CLIENT), createUser(2L, Role.MODEL)))
-                .when(userService).findAllByIds(anyCollection());
-
-        // when
-        MessagePageResponse response = messageService.getInbox(1L, null, pageable);
-
-        // then
-        assertThat(response.totalElements()).isEqualTo(1);
-        assertThat(response.content().getFirst().senderId()).isEqualTo(1L);
-        assertThat(response.currentUser().id()).isEqualTo(1L);
-        assertThat(response.participants().getFirst().id()).isEqualTo(2L);
-    }
-
-    @Test
-    void markAsRead_수신자요청_읽음처리() {
-        // given
-        Message message = createMessage(1L, 2L);
-        given(messageRepository.findById(10L)).willReturn(Optional.of(message));
-
-        // when
-        MessageResponse response = messageService.markAsRead(2L, 10L);
-
-        // then
-        assertThat(response.read()).isTrue();
-        assertThat(response.readAt()).isNotNull();
-    }
-
-    @Test
-    void markAsRead_수신자가아님_예외발생() {
-        // given
-        Message message = createMessage(1L, 2L);
-        given(messageRepository.findById(10L)).willReturn(Optional.of(message));
-
-        // when, then
-        assertThatThrownBy(() -> messageService.markAsRead(3L, 10L))
-                .isInstanceOf(MessageAccessDeniedException.class);
-    }
-
-    @Test
-    void sendMessage_다른대화쪽지에답신_예외발생() {
-        // given
-        SendMessageRequest request = new SendMessageRequest(2L, null, null, 30L, "답신");
-        given(messageRepository.findById(30L)).willReturn(Optional.of(createMessage(3L, 4L)));
-        doReturn(createUser(1L, Role.CLIENT)).when(userService).findById(1L);
-        doReturn(createUser(2L, Role.MODEL)).when(userService).findById(2L);
-
-        // when, then
-        assertThatThrownBy(() -> messageService.sendMessage(1L, request))
-                .isInstanceOf(InvalidParentMessageException.class);
-        verify(messageRepository, never()).save(any(Message.class));
-    }
-
-    @Test
-    void sendMessage_부모쪽지와다른문맥으로답신_예외발생() {
-        // given
-        SendMessageRequest request = new SendMessageRequest(2L, 21L, 10L, 30L, "답신");
-        given(messageRepository.findById(30L))
-                .willReturn(Optional.of(createMessage(2L, 1L, 20L, 10L)));
-        doReturn(createUser(1L, Role.CLIENT)).when(userService).findById(1L);
-        doReturn(createUser(2L, Role.MODEL)).when(userService).findById(2L);
-
-        // when, then
-        assertThatThrownBy(() -> messageService.sendMessage(1L, request))
-                .isInstanceOf(InvalidParentMessageException.class);
-        verify(messageRepository, never()).save(any(Message.class));
-    }
-
-    @Test
-    void sendMessage_모델최초발송_예외발생() {
-        // given
-        SendMessageRequest request = new SendMessageRequest(2L, null, null, null, "최초 쪽지");
-        doReturn(createUser(1L, Role.MODEL)).when(userService).findById(1L);
-        doReturn(createUser(2L, Role.CLIENT)).when(userService).findById(2L);
-
-        // when, then
-        assertThatThrownBy(() -> messageService.sendMessage(1L, request))
-                .isInstanceOf(ModelInitialMessageNotAllowedException.class);
-        verify(messageRepository, never()).save(any(Message.class));
-    }
-
-    @Test
-    void sendMessage_모델이받은쪽지에답신_쪽지저장() {
-        // given
-        SendMessageRequest request = new SendMessageRequest(2L, null, null, 30L, "답신");
-        doReturn(createUser(1L, Role.MODEL)).when(userService).findById(1L);
-        doReturn(createUser(2L, Role.CLIENT)).when(userService).findById(2L);
-        given(messageRepository.findById(30L)).willReturn(Optional.of(createMessage(2L, 1L)));
-        given(messageRepository.save(any(Message.class)))
-                .willAnswer(invocation -> invocation.getArgument(0));
-
-        // when
-        MessageResponse response = messageService.sendMessage(1L, request);
-
-        // then
-        assertThat(response.senderId()).isEqualTo(1L);
-        assertThat(response.parentMessageId()).isEqualTo(30L);
-    }
-
-    @Test
-    void markConversationAsRead_같은상대와문맥의받은쪽지만읽음처리() {
-        // given
-        Message first = createMessage(2L, 1L, 20L, 10L);
-        Message second = createMessage(2L, 1L, 20L, 10L);
-        given(messageRepository.findUnreadConversationMessages(1L, 2L, 20L, 10L))
+    void markConversationAsRead_대화방의받은쪽지만일괄처리() {
+        MessageConversation conversation = conversation(100L, 1L, 2L);
+        Message first = message(100L, 2L, 1L);
+        Message second = message(100L, 2L, 1L);
+        given(conversationRepository.findById(100L)).willReturn(Optional.of(conversation));
+        given(messageRepository.findByConversationIdAndReceiverIdAndReadFalse(100L, 1L))
                 .willReturn(List.of(first, second));
 
-        // when
-        int updatedCount = messageService.markConversationAsRead(1L, 2L, 20L, 10L);
+        int count = messageService.markConversationAsRead(1L, 100L);
 
-        // then
-        assertThat(updatedCount).isEqualTo(2);
+        assertThat(count).isEqualTo(2);
         assertThat(first.isRead()).isTrue();
         assertThat(second.isRead()).isTrue();
-        verify(messageRepository, times(1))
-                .findUnreadConversationMessages(1L, 2L, 20L, 10L);
     }
 
-    private Message createMessage(Long senderId, Long receiverId) {
-        return createMessage(senderId, receiverId, null, null);
-    }
-
-    private Message createMessage(
-            Long senderId,
-            Long receiverId,
-            Long applicationId,
-            Long postId
-    ) {
-        return Message.builder()
-                .senderId(senderId)
-                .receiverId(receiverId)
-                .applicationId(applicationId)
-                .postId(postId)
-                .content("내용")
-                .senderType(SenderType.USER)
-                .build();
-    }
-
-    private User createUser(Long id, Role role) {
+    private User user(Long id, Role role) {
         User user = mock(User.class);
         lenient().when(user.getId()).thenReturn(id);
         lenient().when(user.getRole()).thenReturn(role);
-        if (role == Role.MODEL) {
-            Model model = mock(Model.class);
-            lenient().when(model.getName()).thenReturn("모델 " + id);
-            lenient().when(user.getModel()).thenReturn(model);
-        } else if (role == Role.CLIENT) {
-            Client client = mock(Client.class);
-            lenient().when(client.getCompanyName()).thenReturn("의뢰인 " + id);
-            lenient().when(user.getClient()).thenReturn(client);
-        }
         return user;
+    }
+
+    private MessageConversation conversation(Long id, Long clientId, Long modelId) {
+        MessageConversation conversation = MessageConversation.builder()
+                .clientId(clientId)
+                .modelId(modelId)
+                .build();
+        ReflectionTestUtils.setField(conversation, "id", id);
+        return conversation;
+    }
+
+    private Message message(Long conversationId, Long senderId, Long receiverId) {
+        return Message.builder()
+                .conversationId(conversationId)
+                .senderId(senderId)
+                .receiverId(receiverId)
+                .content("내용")
+                .build();
     }
 }

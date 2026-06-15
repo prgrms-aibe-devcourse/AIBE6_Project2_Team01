@@ -7,10 +7,9 @@ import java.time.OffsetDateTime;
 
 public record MessageResponse(
         Long id,
+        Long conversationId,
         Long senderId,
         Long receiverId,
-        Long applicationId,
-        Long postId,
         Long parentMessageId,
         String content,
         SenderType senderType,
@@ -22,10 +21,9 @@ public record MessageResponse(
     public static MessageResponse from(Message message) {
         return new MessageResponse(
                 message.getId(),
+                message.getConversationId(),
                 message.getSenderId(),
                 message.getReceiverId(),
-                message.getApplicationId(),
-                message.getPostId(),
                 message.getParentMessageId(),
                 message.getContent(),
                 message.getSenderType(),

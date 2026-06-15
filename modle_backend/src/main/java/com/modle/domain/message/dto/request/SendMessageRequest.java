@@ -5,12 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record SendMessageRequest(
-        @NotNull(message = "수신자 ID는 필수입니다.")
-        Long receiverId,
-
-        Long applicationId,
-
-        Long postId,
+        @NotNull(message = "대화방 ID는 필수입니다.")
+        Long conversationId,
 
         Long parentMessageId,
 

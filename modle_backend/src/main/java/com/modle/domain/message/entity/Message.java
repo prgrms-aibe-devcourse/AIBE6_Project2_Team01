@@ -22,6 +22,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Table(
         name = "message",
         indexes = {
+                @Index(name = "idx_message_conversation_created", columnList = "conversation_id, created_at"),
                 @Index(name = "idx_message_sender_created", columnList = "sender_id, created_at"),
                 @Index(name = "idx_message_receiver_created", columnList = "receiver_id, created_at"),
                 @Index(name = "idx_message_receiver_read", columnList = "receiver_id, is_read")
@@ -35,15 +36,14 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column
+    private Long conversationId;
+
     @Column(nullable = false)
     private Long senderId;
 
     @Column(nullable = false)
     private Long receiverId;
-
-    private Long applicationId;
-
-    private Long postId;
 
     private Long parentMessageId;
 
@@ -67,16 +67,14 @@ public class Message {
     private Message(
             Long senderId,
             Long receiverId,
-            Long applicationId,
-            Long postId,
+            Long conversationId,
             Long parentMessageId,
             String content,
             SenderType senderType
     ) {
         this.senderId = senderId;
         this.receiverId = receiverId;
-        this.applicationId = applicationId;
-        this.postId = postId;
+        this.conversationId = conversationId;
         this.parentMessageId = parentMessageId;
         this.content = content;
         this.senderType = senderType;

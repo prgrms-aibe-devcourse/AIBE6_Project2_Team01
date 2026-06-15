@@ -1,20 +1,24 @@
 package com.modle.domain.message.service;
 
+import com.modle.domain.jobposting.entity.JobPosting;
+import com.modle.domain.jobposting.entity.JobPostingStatus;
+import com.modle.domain.jobposting.repository.JobPostingRepository;
+import com.modle.domain.message.dto.request.CreateConversationRequest;
 import com.modle.domain.message.dto.request.SendMessageRequest;
+import com.modle.domain.message.dto.response.MessageConversationResponse;
 import com.modle.domain.message.dto.response.MessagePageResponse;
 import com.modle.domain.message.dto.response.MessageParticipantResponse;
 import com.modle.domain.message.dto.response.MessageResponse;
 import com.modle.domain.message.entity.Message;
+import com.modle.domain.message.entity.MessageConversation;
 import com.modle.domain.message.entity.SenderType;
-import com.modle.domain.message.exception.MessageAccessDeniedException;
-import com.modle.domain.message.exception.MessageNotFoundException;
-import com.modle.domain.message.exception.InvalidParentMessageException;
-import com.modle.domain.message.exception.ModelInitialMessageNotAllowedException;
-import com.modle.domain.message.exception.SelfMessageNotAllowedException;
+import com.modle.domain.message.repository.MessageConversationRepository;
 import com.modle.domain.message.repository.MessageRepository;
 import com.modle.domain.user.entity.User;
 import com.modle.domain.user.entity.type.Role;
 import com.modle.domain.user.service.UserService;
+import com.modle.global.exception.CustomException;
+import com.modle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,27 +38,49 @@ import java.util.stream.Collectors;
 public class MessageService {
 
     private final MessageRepository messageRepository;
+    private final MessageConversationRepository conversationRepository;
     private final UserService userService;
+    private final JobPostingRepository jobPostingRepository;
+
+    @Transactional
+    public MessageConversationResponse createConversation(
+            Long creatorId,
+            CreateConversationRequest request
+    ) {
+        User creator = userService.findById(creatorId);
+        User receiver = userService.findById(request.receiverId());
+
+        if (creator.getRole() != Role.CLIENT || receiver.getRole() != Role.MODEL) {
+            throw new CustomException(ErrorCode.MESSAGE_CONVERSATION_CREATE_FORBIDDEN);
+        }
+        if (creatorId.equals(request.receiverId())) {
+            throw new CustomException(ErrorCode.MESSAGE_SELF_SEND_NOT_ALLOWED);
+        }
+        validatePost(creatorId, request.postId());
+
+        MessageConversation conversation = MessageConversation.builder()
+                .clientId(creatorId)
+                .modelId(request.receiverId())
+                .postId(request.postId())
+                .applicationId(request.applicationId())
+                .build();
+        return MessageConversationResponse.from(conversationRepository.save(conversation));
+    }
 
     @Transactional
     public MessageResponse sendMessage(Long senderId, SendMessageRequest request) {
-        User sender = userService.findById(senderId);
-        userService.findById(request.receiverId());
-        validateDifferentUsers(senderId, request.receiverId());
-        Message parentMessage = validateParentMessage(
-                senderId,
-                request.receiverId(),
-                request.applicationId(),
-                request.postId(),
-                request.parentMessageId()
-        );
-        validateModelReply(sender.getRole(), senderId, parentMessage);
+        MessageConversation conversation = findConversation(request.conversationId());
+        validateParticipant(conversation, senderId);
+        validateParentMessage(conversation.getId(), senderId, request.parentMessageId());
+
+        if (conversation.getModelId().equals(senderId) && request.parentMessageId() == null) {
+            throw new CustomException(ErrorCode.MESSAGE_MODEL_INITIAL_SEND_NOT_ALLOWED);
+        }
 
         Message message = Message.builder()
+                .conversationId(conversation.getId())
                 .senderId(senderId)
-                .receiverId(request.receiverId())
-                .applicationId(request.applicationId())
-                .postId(request.postId())
+                .receiverId(conversation.otherParticipantId(senderId))
                 .parentMessageId(request.parentMessageId())
                 .content(request.content())
                 .senderType(SenderType.USER)
@@ -64,26 +89,21 @@ public class MessageService {
         return MessageResponse.from(messageRepository.save(message));
     }
 
-    /**
-     * 타 도메인에서 시스템 쪽지를 동기 방식으로 발송할 때 사용한다.
-     */
     @Transactional
     public MessageResponse sendSystemMessage(
+            Long conversationId,
             Long senderId,
-            Long receiverId,
-            Long applicationId,
-            Long postId,
             Long parentMessageId,
             String content
     ) {
-        validateDifferentUsers(senderId, receiverId);
-        validateParentMessage(senderId, receiverId, applicationId, postId, parentMessageId);
+        MessageConversation conversation = findConversation(conversationId);
+        validateParticipant(conversation, senderId);
+        validateParentMessage(conversationId, senderId, parentMessageId);
 
         Message message = Message.builder()
+                .conversationId(conversationId)
                 .senderId(senderId)
-                .receiverId(receiverId)
-                .applicationId(applicationId)
-                .postId(postId)
+                .receiverId(conversation.otherParticipantId(senderId))
                 .parentMessageId(parentMessageId)
                 .content(content)
                 .senderType(SenderType.SYSTEM)
@@ -92,29 +112,28 @@ public class MessageService {
         return MessageResponse.from(messageRepository.save(message));
     }
 
-    public MessagePageResponse getInbox(Long userId, Boolean read, Pageable pageable) {
-        Page<Message> messages = read == null
-                ? messageRepository.findBySenderIdOrReceiverIdOrderByCreatedAtDesc(
-                        userId,
-                        userId,
-                        pageable
-                )
-                : messageRepository.findByReceiverIdAndReadOrderByCreatedAtDesc(
-                        userId,
-                        read,
+    public MessagePageResponse getInbox(Long userId, Pageable pageable) {
+        List<MessageConversation> conversations =
+                conversationRepository.findByClientIdOrModelIdOrderByCreatedDateDesc(userId, userId);
+        List<Long> conversationIds = conversations.stream()
+                .map(MessageConversation::getId)
+                .toList();
+        Page<Message> messages = conversationIds.isEmpty()
+                ? Page.empty(pageable)
+                : messageRepository.findByConversationIdInOrderByCreatedAtDesc(
+                        conversationIds,
                         pageable
                 );
 
         Set<Long> allUserIds = new LinkedHashSet<>();
         allUserIds.add(userId);
-        messages.forEach(message -> {
-            allUserIds.add(message.getSenderId());
-            allUserIds.add(message.getReceiverId());
+        conversations.forEach(conversation -> {
+            allUserIds.add(conversation.getClientId());
+            allUserIds.add(conversation.getModelId());
         });
 
         Map<Long, User> userMap = userService.findAllByIds(allUserIds).stream()
                 .collect(Collectors.toMap(User::getId, Function.identity()));
-
         MessageParticipantResponse currentUser =
                 MessageParticipantResponse.from(userMap.get(userId));
         List<MessageParticipantResponse> participants = allUserIds.stream()
@@ -126,84 +145,57 @@ public class MessageService {
         return MessagePageResponse.from(
                 currentUser,
                 participants,
+                conversations.stream().map(MessageConversationResponse::from).toList(),
                 messages.map(MessageResponse::from)
         );
     }
 
     @Transactional
-    public MessageResponse markAsRead(Long userId, Long messageId) {
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new MessageNotFoundException(messageId));
-
-        if (!message.getReceiverId().equals(userId)) {
-            throw new MessageAccessDeniedException();
-        }
-
-        message.markAsRead();
-        return MessageResponse.from(message);
-    }
-
-    @Transactional
-    public int markConversationAsRead(
-            Long userId,
-            Long participantId,
-            Long applicationId,
-            Long postId
-    ) {
-        List<Message> unreadMessages = messageRepository.findUnreadConversationMessages(
-                userId,
-                participantId,
-                applicationId,
-                postId
-        );
+    public int markConversationAsRead(Long userId, Long conversationId) {
+        MessageConversation conversation = findConversation(conversationId);
+        validateParticipant(conversation, userId);
+        List<Message> unreadMessages =
+                messageRepository.findByConversationIdAndReceiverIdAndReadFalse(conversationId, userId);
         unreadMessages.forEach(Message::markAsRead);
         return unreadMessages.size();
     }
 
-    private void validateDifferentUsers(Long senderId, Long receiverId) {
-        if (senderId.equals(receiverId)) {
-            throw new SelfMessageNotAllowedException();
+    private MessageConversation findConversation(Long conversationId) {
+        return conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MESSAGE_CONVERSATION_NOT_FOUND));
+    }
+
+    private void validateParticipant(MessageConversation conversation, Long userId) {
+        if (!conversation.contains(userId)) {
+            throw new CustomException(ErrorCode.MESSAGE_ACCESS_DENIED);
         }
     }
 
-    private Message validateParentMessage(
+    private void validateParentMessage(
+            Long conversationId,
             Long senderId,
-            Long receiverId,
-            Long applicationId,
-            Long postId,
             Long parentMessageId
     ) {
         if (parentMessageId == null) {
-            return null;
-        }
-
-        Message parentMessage = messageRepository.findById(parentMessageId)
-                .orElseThrow(() -> new MessageNotFoundException(parentMessageId));
-
-        boolean sameConversation =
-                parentMessage.getSenderId().equals(senderId)
-                        && parentMessage.getReceiverId().equals(receiverId)
-                        || parentMessage.getSenderId().equals(receiverId)
-                        && parentMessage.getReceiverId().equals(senderId);
-
-        boolean sameContext =
-                Objects.equals(parentMessage.getApplicationId(), applicationId)
-                        && Objects.equals(parentMessage.getPostId(), postId);
-
-        if (!sameConversation || !sameContext) {
-            throw new InvalidParentMessageException();
-        }
-
-        return parentMessage;
-    }
-
-    private void validateModelReply(Role senderRole, Long senderId, Message parentMessage) {
-        if (senderRole != Role.MODEL) {
             return;
         }
+        Message parent = messageRepository.findById(parentMessageId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MESSAGE_NOT_FOUND));
+        if (!conversationId.equals(parent.getConversationId())
+                || !senderId.equals(parent.getReceiverId())) {
+            throw new CustomException(ErrorCode.MESSAGE_INVALID_PARENT);
+        }
+    }
 
-        if (parentMessage == null || !parentMessage.getReceiverId().equals(senderId)) {
-            throw new ModelInitialMessageNotAllowedException();
+    private void validatePost(Long clientId, Long postId) {
+        if (postId == null) {
+            return;
+        }
+        JobPosting posting = jobPostingRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
+        if (!posting.getClientId().equals(clientId)
+                || posting.getStatus() != JobPostingStatus.RECRUITING) {
+            throw new CustomException(ErrorCode.MESSAGE_POST_NOT_AVAILABLE);
         }
     }
 }

@@ -74,6 +74,17 @@ public class JobPostingController {
         return ApiResponse.ok("공고 목록 조회 성공", jobPostingService.getJobPostings(region, category, pageable));
     }
 
+    @GetMapping("/mine/recruiting")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ApiResponse<List<JobPostingListResponse>> getMyRecruitingJobPostings(
+            @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        return ApiResponse.ok(
+                "내 모집 중 공고 목록 조회 성공",
+                jobPostingService.getMyRecruitingJobPostings(securityUser.getId())
+        );
+    }
+
     // JOB-006~008: 역할에 따라 공고 상세 반환 (MODEL → 모델 뷰, CLIENT → 클라이언트 뷰, 그 외 → OTHER 뷰).
     @GetMapping("/{id}")
     public ApiResponse<Object> getJobPostingDetail(
