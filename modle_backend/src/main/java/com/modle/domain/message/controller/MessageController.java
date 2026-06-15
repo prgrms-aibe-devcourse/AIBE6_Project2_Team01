@@ -9,6 +9,7 @@ import com.modle.domain.message.dto.response.ConversationMessagesResponse;
 import com.modle.domain.message.dto.response.MessageResponse;
 import com.modle.domain.message.service.MessageService;
 import com.modle.global.auth.SecurityUser;
+import com.modle.global.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -32,44 +33,58 @@ public class MessageController {
 
     @PostMapping("/conversations")
     @ResponseStatus(HttpStatus.CREATED)
-    public MessageConversationResponse createConversation(
+    public ApiResponse<MessageConversationResponse> createConversation(
             @AuthenticationPrincipal SecurityUser user,
             @Valid @RequestBody CreateConversationRequest request
     ) {
-        return messageService.createConversation(user.getId(), request);
+        return ApiResponse.ok(
+                "대화방이 생성되었습니다.",
+                messageService.createConversation(user.getId(), request)
+        );
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public MessageResponse sendMessage(
+    public ApiResponse<MessageResponse> sendMessage(
             @AuthenticationPrincipal SecurityUser user,
             @Valid @RequestBody SendMessageRequest request
     ) {
-        return messageService.sendMessage(user.getId(), request);
+        return ApiResponse.ok(
+                "쪽지를 전송했습니다.",
+                messageService.sendMessage(user.getId(), request)
+        );
     }
 
     @GetMapping("/conversations")
-    public MessageInboxResponse getConversations(@AuthenticationPrincipal SecurityUser user) {
-        return messageService.getConversations(user.getId());
+    public ApiResponse<MessageInboxResponse> getConversations(
+            @AuthenticationPrincipal SecurityUser user
+    ) {
+        return ApiResponse.ok(
+                "대화 목록 조회 성공",
+                messageService.getConversations(user.getId())
+        );
     }
 
     @GetMapping("/conversations/{conversationId}/messages")
-    public ConversationMessagesResponse getConversationMessages(
+    public ApiResponse<ConversationMessagesResponse> getConversationMessages(
             @AuthenticationPrincipal SecurityUser user,
             @PathVariable Long conversationId,
             Pageable pageable
     ) {
-        return messageService.getConversationMessages(user.getId(), conversationId, pageable);
+        return ApiResponse.ok(
+                "대화방 메시지 조회 성공",
+                messageService.getConversationMessages(user.getId(), conversationId, pageable)
+        );
     }
 
     @PatchMapping("/read")
-    public int markConversationAsRead(
+    public ApiResponse<Integer> markConversationAsRead(
             @AuthenticationPrincipal SecurityUser user,
             @Valid @RequestBody ReadConversationRequest request
     ) {
-        return messageService.markConversationAsRead(
-                user.getId(),
-                request.conversationId()
+        return ApiResponse.ok(
+                "읽음 처리되었습니다.",
+                messageService.markConversationAsRead(user.getId(), request.conversationId())
         );
     }
 }

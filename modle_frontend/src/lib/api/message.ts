@@ -35,7 +35,7 @@ function toMessageItem(message: ApiMessage): MessageItem {
 export async function getInbox(): Promise<MessageInbox> {
   const response = await authenticatedFetch("/api/v1/messages/conversations");
   if (!response.ok) throw new Error("쪽지함을 불러오지 못했습니다.");
-  const inbox = (await response.json()) as MessageInboxApiResponse;
+  const inbox = ((await response.json()) as ApiResponse<MessageInboxApiResponse>).data;
   return {
     currentUser: inbox.currentUser,
     conversations: inbox.conversations.map((conversation) => ({
@@ -56,7 +56,7 @@ export async function getConversationMessages(
     `/api/v1/messages/conversations/${conversationId}/messages?page=${page}&size=${size}`,
   );
   if (!response.ok) throw new Error("대화 내용을 불러오지 못했습니다.");
-  const messagePage = (await response.json()) as ConversationMessagesApiResponse;
+  const messagePage = ((await response.json()) as ApiResponse<ConversationMessagesApiResponse>).data;
   return {
     ...messagePage,
     content: messagePage.content.map(toMessageItem).reverse(),
@@ -79,7 +79,7 @@ export async function createConversation(
     body: JSON.stringify({ receiverId, postId, applicationId: null }),
   });
   if (!response.ok) throw new Error("대화방을 만들지 못했습니다.");
-  return response.json();
+  return ((await response.json()) as ApiResponse<MessageConversation>).data;
 }
 
 export async function sendMessage(
@@ -93,7 +93,7 @@ export async function sendMessage(
     body: JSON.stringify({ conversationId, parentMessageId, content }),
   });
   if (!response.ok) throw new Error("쪽지를 보내지 못했습니다.");
-  return toMessageItem(await response.json());
+  return toMessageItem(((await response.json()) as ApiResponse<ApiMessage>).data);
 }
 
 export async function markConversationAsRead(conversationId: number): Promise<void> {
