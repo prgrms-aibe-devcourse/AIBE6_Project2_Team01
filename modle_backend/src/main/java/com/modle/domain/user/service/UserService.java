@@ -1,5 +1,6 @@
 package com.modle.domain.user.service;
 
+import com.modle.domain.user.dto.request.AdditionalInfoRequest;
 import com.modle.domain.user.dto.request.ClientRegisterRequest;
 import com.modle.domain.user.dto.request.ModelRegisterRequest;
 import com.modle.domain.user.entity.User;
@@ -133,5 +134,39 @@ public class UserService {
 
     public List<User> findAllByIds(Collection<Long> ids) {
         return userRepository.findAllById(ids);
+    }
+
+    @Transactional
+    public void completeSignup(Long userId, AdditionalInfoRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (user.getStatus() != UserStatus.INCOMPLETE) {
+            throw new CustomException(ErrorCode.INVALID_STATUS_CHANGE);
+        }
+
+        if (!request.role().isSelectable()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        user.completeOAuthSignup(request.role(), request.region());
+
+        if (request.role() == Role.MODEL) {
+            if (request.name() == null || request.height() == null ||
+                    request.weight() == null || request.age() == null || request.gender() == null) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+            }
+            Model model = Model.create(user, request.name(), request.height(),
+                    request.weight(), request.gender(), request.age());
+            modelRepository.save(model);
+        } else if (request.role() == Role.CLIENT) {
+            if (request.companyName() == null || request.companyNumber() == null
+                    || request.clientType() == null) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+            }
+            Client client = Client.create(user, request.clientType(),
+                    request.companyName(), request.companyNumber());
+            clientRepository.save(client);
+        }
     }
 }

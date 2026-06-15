@@ -23,8 +23,9 @@ public class AuthTokenService {
     private static final long REFRESH_EXPIRE_DAYS = 7;
 
     // Access Token 생성
-    String genAccessToken(User user) {
-        return jwtTokenProvider.createAccessToken(user.getId(), user.getRole().name());
+    public String genAccessToken(User user) {
+        String role = user.getRole() != null ? user.getRole().name() : "INCOMPLETE";
+        return jwtTokenProvider.createAccessToken(user.getId(), role);
     }
 
 

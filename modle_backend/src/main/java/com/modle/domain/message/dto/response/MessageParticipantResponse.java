@@ -22,7 +22,7 @@ public record MessageParticipantResponse(
                     user.getId(),
                     user.getClient().getCompanyName(),
                     user.getRole(),
-                    user.getClient().getLogoUrl()
+                    user.getClient().getProfileImageUrl()
             );
             case ADMIN -> new MessageParticipantResponse(
                     user.getId(),
