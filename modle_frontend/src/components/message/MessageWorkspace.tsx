@@ -127,10 +127,20 @@ export function MessageWorkspace() {
       try {
         const inbox = await getInbox();
         const loadedThreads = buildThreads(inbox);
-        if (draft) loadedThreads.unshift(draft);
+        const existingTarget = draft
+          ? loadedThreads.find((thread) => thread.participantId === draft.participantId)
+          : null;
+        const targetThread = existingTarget ?? draft;
+        if (draft && !existingTarget) loadedThreads.unshift(draft);
         setCurrentUser(inbox.currentUser);
         setThreads(loadedThreads);
-        setSelectedId((current) => current ?? loadedThreads[0]?.id ?? null);
+        setSelectedId((current) => {
+          if (targetThread) return targetThread.id;
+          return loadedThreads.some((thread) => thread.id === current)
+            ? current
+            : loadedThreads[0]?.id ?? null;
+        });
+        if (existingTarget) router.replace("/messages");
         if (userRole === "CLIENT") {
           getMyRecruitingJobs()
             .then(setJobs)
@@ -150,7 +160,7 @@ export function MessageWorkspace() {
     void load();
     const pollingId = window.setInterval(load, POLLING_INTERVAL_MS);
     return () => window.clearInterval(pollingId);
-  }, [isAuthLoading, user]);
+  }, [isAuthLoading, router, user]);
 
   const selectThread = useCallback((id: string) => setSelectedId(id), []);
 
@@ -244,41 +254,41 @@ export function MessageWorkspace() {
   }
 
   return (
-    <main className="relative h-[calc(100dvh-64px)] overflow-hidden bg-canvas-soft p-0 md:p-4">
+    <main className="relative h-[calc(100dvh-64px)] overflow-hidden bg-canvas-soft p-0 md:p-2">
       {error && (
         <div className="absolute left-1/2 top-4 z-20 -translate-x-1/2 rounded-full border border-error/20 bg-error-soft px-4 py-2 text-sm font-medium text-error shadow-sm">
           {error}
         </div>
       )}
-      <div className="mx-auto grid h-full max-w-[1440px] overflow-hidden border-hairline bg-surface shadow-sm md:grid-cols-[300px_minmax(0,1fr)] md:rounded-2xl md:border xl:grid-cols-[300px_minmax(0,1fr)_280px]">
+      <div className="mx-auto grid h-full max-w-[1360px] overflow-hidden border-hairline bg-surface shadow-sm md:grid-cols-[270px_minmax(0,1fr)] md:rounded-xl md:border xl:grid-cols-[270px_minmax(0,1fr)_240px]">
         <aside className="hidden min-h-0 flex-col border-r border-hairline bg-canvas md:flex">
-          <div className="border-b border-hairline px-5 pb-4 pt-5">
+          <div className="border-b border-hairline px-4 pb-3 pt-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-mute">Messages</p>
-                <h1 className="mt-1 text-xl font-bold text-ink">쪽지함</h1>
+                <h1 className="mt-0.5 text-lg font-bold text-ink">쪽지함</h1>
               </div>
               <span className="rounded-full bg-ink px-2.5 py-1 text-xs font-bold text-white">
                 {threads.length}
               </span>
             </div>
-            <div className="relative mt-4">
+            <div className="relative mt-3">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-mute">⌕</span>
               <input
-                className="h-10 w-full rounded-xl border border-hairline bg-canvas-soft pl-9 pr-3 text-sm outline-none transition focus:border-hairline-strong focus:bg-white"
+                className="h-9 w-full rounded-lg border border-hairline bg-canvas-soft pl-9 pr-3 text-xs outline-none transition focus:border-hairline-strong focus:bg-white"
                 placeholder="이름 또는 내용 검색"
                 onChange={(event) => setSearchQuery(event.target.value)}
                 value={searchQuery}
               />
             </div>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto p-2">
+          <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
             {visibleThreads.length === 0 ? (
               <p className="px-4 py-10 text-center text-sm text-mute">검색 결과가 없습니다.</p>
             ) : visibleThreads.map((thread) => (
               <button
                 key={thread.id}
-                className={`mb-1 flex w-full gap-3 rounded-xl p-3 text-left transition ${
+                className={`mb-0.5 flex w-full gap-2.5 rounded-lg px-2.5 py-2.5 text-left transition ${
                   selectedThread.id === thread.id ? "bg-ink text-white" : "hover:bg-canvas-soft"
                 }`}
                 onClick={() => selectThread(thread.id)}
@@ -286,9 +296,9 @@ export function MessageWorkspace() {
               >
                 <div className="relative shrink-0">
                   {thread.participantProfileImageUrl ? (
-                    <Image alt="" className="size-11 rounded-full object-cover" height={44} src={thread.participantProfileImageUrl} unoptimized width={44} />
+                    <Image alt="" className="size-9 rounded-full object-cover" height={36} src={thread.participantProfileImageUrl} unoptimized width={36} />
                   ) : (
-                    <div className={`grid size-11 place-items-center rounded-full text-sm font-bold ${selectedThread.id === thread.id ? "bg-white/15" : "bg-canvas-soft text-body"}`}>
+                    <div className={`grid size-9 place-items-center rounded-full text-xs font-bold ${selectedThread.id === thread.id ? "bg-white/15" : "bg-canvas-soft text-body"}`}>
                       {participantInitial(thread.participantName)}
                     </div>
                   )}
@@ -306,24 +316,24 @@ export function MessageWorkspace() {
           </div>
         </aside>
         <section className="flex min-h-0 min-w-0 flex-col bg-surface">
-          <div className="flex min-h-[72px] shrink-0 items-center justify-between border-b border-hairline px-4 md:px-6">
+          <div className="flex min-h-[60px] shrink-0 items-center justify-between border-b border-hairline px-4">
             <div className="flex min-w-0 items-center gap-3">
               {selectedThread.participantProfileImageUrl ? (
-                <Image alt="" className="size-10 rounded-full object-cover" height={40} src={selectedThread.participantProfileImageUrl} unoptimized width={40} />
+                <Image alt="" className="size-9 rounded-full object-cover" height={36} src={selectedThread.participantProfileImageUrl} unoptimized width={36} />
               ) : (
-                <div className="grid size-10 shrink-0 place-items-center rounded-full bg-canvas-soft text-sm font-bold text-body">
+                <div className="grid size-9 shrink-0 place-items-center rounded-full bg-canvas-soft text-xs font-bold text-body">
                   {participantInitial(selectedThread.participantName)}
                 </div>
               )}
               <div className="min-w-0">
-                <h2 className="truncate font-bold text-ink">{selectedThread.participantName}</h2>
+                <h2 className="truncate text-sm font-bold text-ink">{selectedThread.participantName}</h2>
                 <p className="mt-0.5 text-xs text-mute">{selectedThread.participantRole} · {selectedThread.conversationId ? "대화 중" : "새로운 섭외 제안"}</p>
               </div>
             </div>
             {!selectedThread.conversationId && (
               <label className="hidden items-center gap-2 text-xs md:flex">
                 <span className="font-semibold text-body">연결 공고</span>
-                <select className="h-9 max-w-52 rounded-lg border border-hairline bg-white px-3 text-xs outline-none focus:border-ink" onChange={(event) => changeDraftPost(event.target.value)} value={selectedThread.postId ?? ""}>
+                <select className="h-8 max-w-48 rounded-md border border-hairline bg-white px-2 text-xs outline-none focus:border-ink" onChange={(event) => changeDraftPost(event.target.value)} value={selectedThread.postId ?? ""}>
                   <option value="">공고 없이 일반 헤드헌팅</option>
                   {jobs.map((job) => <option key={job.id} value={job.id}>{job.title}</option>)}
                 </select>
@@ -339,7 +349,7 @@ export function MessageWorkspace() {
               </select>
             </label>
           )}
-          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto bg-canvas-soft px-4 py-5 md:px-8">
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto bg-canvas-soft px-4 py-4 md:px-6">
             {selectedThread.messages.length === 0
               ? <div className="grid flex-1 place-items-center text-center">
                   <div>
@@ -356,36 +366,36 @@ export function MessageWorkspace() {
                   return <div className="contents" key={message.id}>
                     {showDate && <div className="mx-auto rounded-full border border-hairline bg-white px-3 py-1 text-[11px] font-medium text-mute">{new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "long", day: "numeric" }).format(date)}</div>}
                     <article className={`flex max-w-[82%] flex-col md:max-w-[68%] ${mine ? "ml-auto items-end" : "items-start"}`}>
-                      <div className={`whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm leading-6 shadow-sm ${mine ? "rounded-br-md bg-ink text-white" : "rounded-bl-md border border-hairline bg-white text-ink"}`}>{message.content}</div>
+                      <div className={`whitespace-pre-wrap rounded-xl px-3.5 py-2 text-sm leading-5 shadow-sm ${mine ? "rounded-br-sm bg-ink text-white" : "rounded-bl-sm border border-hairline bg-white text-ink"}`}>{message.content}</div>
                       <time className="mt-1 px-1 text-[10px] text-mute">{new Intl.DateTimeFormat("ko-KR", { hour: "numeric", minute: "2-digit" }).format(date)}</time>
                     </article>
                   </div>;
                 })}
           </div>
-          <form className="shrink-0 border-t border-hairline bg-white px-4 py-3 md:px-6" onSubmit={submitMessage}>
-            <div className="flex items-end gap-2 rounded-2xl border border-hairline bg-canvas-soft p-2 transition focus-within:border-hairline-strong focus-within:bg-white">
-              <textarea className="max-h-28 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm leading-5 outline-none" maxLength={MAX_MESSAGE_LENGTH} onChange={(event) => setContent(event.target.value)} placeholder="메시지를 입력하세요." rows={1} value={content} />
-              <button className="grid size-10 shrink-0 place-items-center rounded-xl bg-ink text-sm font-bold text-white transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-25" disabled={!content.trim() || sending} type="submit">
+          <form className="shrink-0 border-t border-hairline bg-white px-4 py-2.5" onSubmit={submitMessage}>
+            <div className="flex items-end gap-2 rounded-xl border border-hairline bg-canvas-soft p-1.5 transition focus-within:border-hairline-strong focus-within:bg-white">
+              <textarea className="max-h-24 min-h-9 flex-1 resize-none bg-transparent px-2 py-1.5 text-sm leading-5 outline-none" maxLength={MAX_MESSAGE_LENGTH} onChange={(event) => setContent(event.target.value)} placeholder="메시지를 입력하세요." rows={1} value={content} />
+              <button className="grid size-9 shrink-0 place-items-center rounded-lg bg-ink text-sm font-bold text-white transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-25" disabled={!content.trim() || sending} type="submit">
                 {sending ? "…" : "↑"}
               </button>
             </div>
             <p className="mt-1.5 text-right text-[10px] text-mute">{content.length.toLocaleString()} / {MAX_MESSAGE_LENGTH.toLocaleString()}</p>
           </form>
         </section>
-        <aside className="hidden min-h-0 overflow-y-auto border-l border-hairline bg-canvas px-5 py-6 xl:block">
+        <aside className="hidden min-h-0 overflow-y-auto border-l border-hairline bg-canvas px-4 py-5 xl:block">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-mute">Conversation</p>
-          <div className="mt-5 flex flex-col items-center border-b border-hairline pb-6 text-center">
+          <div className="mt-4 flex flex-col items-center border-b border-hairline pb-5 text-center">
             {selectedThread.participantProfileImageUrl ? (
-              <Image alt="" className="size-16 rounded-full object-cover" height={64} src={selectedThread.participantProfileImageUrl} unoptimized width={64} />
+              <Image alt="" className="size-14 rounded-full object-cover" height={56} src={selectedThread.participantProfileImageUrl} unoptimized width={56} />
             ) : (
-              <div className="grid size-16 place-items-center rounded-full bg-canvas-soft text-xl font-bold text-body">{participantInitial(selectedThread.participantName)}</div>
+              <div className="grid size-14 place-items-center rounded-full bg-canvas-soft text-lg font-bold text-body">{participantInitial(selectedThread.participantName)}</div>
             )}
             <h3 className="mt-3 font-bold text-ink">{selectedThread.participantName}</h3>
             <p className="mt-1 text-xs text-mute">{selectedThread.participantRole}</p>
           </div>
-          <div className="mt-6">
+          <div className="mt-5">
             <p className="text-xs font-semibold text-mute">연결된 제안</p>
-            <div className="mt-3 rounded-xl border border-hairline bg-white p-4">
+            <div className="mt-2.5 rounded-lg border border-hairline bg-white p-3.5">
               <span className="inline-flex rounded-full bg-canvas-soft px-2 py-1 text-[10px] font-bold text-body">
                 {selectedThread.postId ? "공고 제안" : "헤드헌팅"}
               </span>
