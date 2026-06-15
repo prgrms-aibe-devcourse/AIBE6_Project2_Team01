@@ -21,6 +21,7 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
   // 모달이 닫힐 때 상태 초기화
   useEffect(() => {
     if (!isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedFiles([]);
       setPreviews((prev) => {
         prev.forEach(url => URL.revokeObjectURL(url));
@@ -88,7 +89,7 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
       const newPortfolios = await uploadPortfolioImages(selectedFiles);
       onSuccess(newPortfolios);
       onClose();
-    } catch (error) {
+    } catch {
       alert('업로드 중 오류가 발생했습니다.');
       setIsUploading(false);
     }

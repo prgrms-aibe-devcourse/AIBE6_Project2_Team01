@@ -13,10 +13,14 @@ interface PageProps {
 export default async function ClientDetailPage({ params }: PageProps) {
   const { id } = await params;
 
+  let clientData;
   try {
-    const clientData = await getClientProfile(id);
+    clientData = await getClientProfile(id);
+  } catch {
+    notFound();
+  }
 
-    return (
+  return (
       <main className="w-full bg-white text-black pb-32 font-sans selection:bg-black selection:text-white">
         <div className="max-w-[1000px] mx-auto px-4 md:px-6 pt-6 md:pt-10">
           
@@ -110,7 +114,4 @@ export default async function ClientDetailPage({ params }: PageProps) {
         </div>
       </main>
     );
-  } catch (error) {
-    notFound();
-  }
 }

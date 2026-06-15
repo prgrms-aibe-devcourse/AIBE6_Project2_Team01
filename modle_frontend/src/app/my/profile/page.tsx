@@ -8,15 +8,16 @@ export const metadata = {
 };
 
 export default async function MyProfilePage() {
+  let modelData;
   try {
     const cookieStore = await cookies();
     const cookieString = cookieStore.toString();
-    const modelData = await getMyModel({ Cookie: cookieString });
-    
-    return <MyProfileContainer initialData={modelData} />;
-  } catch (error) {
+    modelData = await getMyModel({ Cookie: cookieString });
+  } catch {
     console.error("내 프로필 로딩 실패:", error);
     // If model is not found or API fails, render 404
     notFound();
   }
+  
+  return <MyProfileContainer initialData={modelData} />;
 }

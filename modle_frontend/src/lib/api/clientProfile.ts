@@ -9,10 +9,10 @@ export async function getClientProfile(id: string | number): Promise<Client> {
   });
   
   if (error) {
-    throw new Error((error as any).msg || '클라이언트 정보를 불러오는데 실패했습니다.');
+    throw new Error((error as { msg?: string })?.msg || '클라이언트 정보를 불러오는데 실패했습니다.');
   }
   
-  const item = (data as any).data;
+  const item = (data as { data?: unknown })?.data;
   
   return {
     id: item.id,

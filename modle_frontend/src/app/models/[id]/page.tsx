@@ -14,18 +14,16 @@ interface PageProps {
 export default async function ModelDetailPage({ params }: PageProps) {
   const { id } = await params;
 
+  let modelData;
   try {
-    const modelData = await getModel(id);
+    modelData = await getModel(id);
+  } catch {
+    notFound();
+  }
 
-    const specs = [
-      modelData.region ? `REGION ${modelData.region}` : null,
-      modelData.age ? `AGE ${modelData.age}` : null,
-      modelData.height ? `HEIGHT ${modelData.height}` : null,
-      modelData.weight ? `WEIGHT ${modelData.weight}` : null,
-      modelData.gender !== undefined ? `GENDER ${modelData.gender ? 'MALE' : 'FEMALE'}` : null,
-    ].filter(Boolean);
+  
 
-    return (
+  return (
       <main className="w-full bg-white text-black pb-32 font-sans selection:bg-black selection:text-white">
         <div className="max-w-[1000px] mx-auto px-4 md:px-6 pt-6 md:pt-10">
           
@@ -131,7 +129,4 @@ export default async function ModelDetailPage({ params }: PageProps) {
         </div>
       </main>
     );
-  } catch (error) {
-    notFound();
-  }
 }

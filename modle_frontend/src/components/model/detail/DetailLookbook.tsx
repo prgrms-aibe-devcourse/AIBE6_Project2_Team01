@@ -35,6 +35,7 @@ export function DetailLookbook({ portfolios }: DetailLookbookProps) {
       {displayedPortfolios.map((portfolio) => (
         <div key={portfolio.id} className="w-full">
           <div className="relative w-full h-auto">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src={portfolio.imgUrl || '/images/default-avatar.png'} 
               alt="포트폴리오 룩북 이미지" 
