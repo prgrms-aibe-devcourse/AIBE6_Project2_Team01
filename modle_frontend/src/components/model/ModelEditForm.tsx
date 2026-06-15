@@ -49,7 +49,7 @@ export function ModelEditForm({ initialData }: Props) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
-    let parsedValue: React.ChangeEvent<HTMLInputElement> = value;
+    let parsedValue: string | number | boolean | undefined = value;
     if (type === 'number') {
       parsedValue = value ? Number(value) : undefined;
     } else if (name === 'gender') {

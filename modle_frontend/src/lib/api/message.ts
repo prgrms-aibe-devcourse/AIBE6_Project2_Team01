@@ -7,19 +7,21 @@ import type {
 } from "@/types/message";
 import { authenticatedFetch } from "@/lib/api/client";
 
+interface ApiMessage extends Omit<MessageItem, "isRead"> {
+  read: boolean;
+}
+
 interface MessageInboxApiResponse {
   currentUser: MessageInbox["currentUser"];
-  conversations: MessageConversation[];
+  conversations: Array<Omit<MessageConversation, "latestMessage"> & {
+    latestMessage: ApiMessage | null;
+  }>;
 }
 
 interface ConversationMessagesApiResponse {
   content: ApiMessage[];
   totalElements: number;
   hasNext: boolean;
-}
-
-interface ApiMessage extends Omit<MessageItem, "isRead"> {
-  read: boolean;
 }
 
 interface ApiResponse<T> {
@@ -39,7 +41,7 @@ export async function getInbox(): Promise<MessageInbox> {
     conversations: inbox.conversations.map((conversation) => ({
       ...conversation,
       latestMessage: conversation.latestMessage
-        ? toMessageItem(conversation.latestMessage as ApiMessage)
+        ? toMessageItem(conversation.latestMessage)
         : null,
     })),
   };
