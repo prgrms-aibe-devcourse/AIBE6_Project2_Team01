@@ -8,12 +8,20 @@ export interface MessageParticipant {
   profileImageUrl: string | null;
 }
 
+export interface MessageConversation {
+  id: number;
+  clientId: number;
+  modelId: number;
+  postId: number | null;
+  applicationId: number | null;
+  createdAt: string;
+}
+
 export interface MessageItem {
   id: number;
+  conversationId: number;
   senderId: number;
   receiverId: number;
-  applicationId: number | null;
-  postId: number | null;
   parentMessageId: number | null;
   content: string;
   senderType: SenderType;
@@ -24,9 +32,10 @@ export interface MessageItem {
 
 export interface MessageThread {
   id: string;
+  conversationId: number | null;
   participantId: number;
-  applicationId: number | null;
   postId: number | null;
+  applicationId: number | null;
   participantName: string;
   participantRole: string;
   participantProfileImageUrl: string | null;
@@ -39,5 +48,13 @@ export interface MessageThread {
 export interface MessageInbox {
   currentUser: MessageParticipant;
   participants: MessageParticipant[];
+  conversations: MessageConversation[];
   messages: MessageItem[];
+}
+
+export interface RecruitingJob {
+  id: number;
+  title: string;
+  region: string;
+  shootDate: string | null;
 }
