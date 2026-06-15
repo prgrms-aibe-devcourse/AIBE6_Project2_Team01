@@ -14,12 +14,12 @@ export function ModelFilterBar() {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-4 py-6 border-b border-hairline">
+    <div className="flex flex-wrap items-center gap-4 py-6 border-b border-gray-200">
       {/* 성별 필터 */}
       <select 
         value={searchParams.get('gender') || ''}
         onChange={(e) => updateFilter('gender', e.target.value)}
-        className="h-11 px-4 bg-canvas-soft border border-hairline rounded-sm text-body-md"
+        className="h-11 px-4 bg-white border border-gray-300 text-black text-xs font-bold tracking-wider hover:border-black focus:outline-none focus:border-black transition-colors"
       >
         <option value="">성별 전체</option>
         <option value="MALE">남성</option>
@@ -30,7 +30,7 @@ export function ModelFilterBar() {
       <select 
         value={searchParams.get('category') || ''}
         onChange={(e) => updateFilter('category', e.target.value)}
-        className="h-11 px-4 bg-canvas-soft border border-hairline rounded-sm text-body-md"
+        className="h-11 px-4 bg-white border border-gray-300 text-black text-xs font-bold tracking-wider hover:border-black focus:outline-none focus:border-black transition-colors"
       >
         <option value="">활동 분야 전체</option>
         <option value="fashion">패션</option>
@@ -43,7 +43,7 @@ export function ModelFilterBar() {
       <select 
         value={searchParams.get('region') || ''}
         onChange={(e) => updateFilter('region', e.target.value)}
-        className="h-11 px-4 bg-canvas-soft border border-hairline rounded-sm text-body-md"
+        className="h-11 px-4 bg-white border border-gray-300 text-black text-xs font-bold tracking-wider hover:border-black focus:outline-none focus:border-black transition-colors"
       >
         <option value="">지역 전체</option>
         <option value="seoul">서울</option>
@@ -56,7 +56,7 @@ export function ModelFilterBar() {
       <select 
         value={searchParams.get('height') || ''}
         onChange={(e) => updateFilter('height', e.target.value)}
-        className="h-11 px-4 bg-canvas-soft border border-hairline rounded-sm text-body-md"
+        className="h-11 px-4 bg-white border border-gray-300 text-black text-xs font-bold tracking-wider hover:border-black focus:outline-none focus:border-black transition-colors"
       >
         <option value="">키 전체</option>
         <option value="under-160">160cm 이하</option>
@@ -70,7 +70,7 @@ export function ModelFilterBar() {
         <select 
           value={searchParams.get('sort') || 'latest'}
           onChange={(e) => updateFilter('sort', e.target.value)}
-          className="h-11 px-4 bg-canvas-soft border border-hairline rounded-sm text-body-md"
+          className="h-11 px-4 bg-white border border-gray-300 text-black text-xs font-bold tracking-wider hover:border-black focus:outline-none focus:border-black transition-colors"
         >
           <option value="latest">최신순</option>
           <option value="recommended">추천순</option>

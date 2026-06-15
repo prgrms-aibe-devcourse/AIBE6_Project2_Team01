@@ -9,9 +9,9 @@ export function ModelCard({ model }: { model: Model }) {
       : (model.profileImageUrl || '/placeholder.png');
 
   return (
-    <div className="group border border-hairline rounded-lg overflow-hidden bg-surface hover:border-hairline-strong transition-all hover:shadow-md">
+    <div className="group border border-gray-200 bg-white hover:border-black transition-all hover:shadow-md cursor-pointer">
       {/* 상단 메인 이미지 (최근 포트폴리오) */}
-      <div className="relative aspect-[3/4] bg-canvas-soft">
+      <div className="relative aspect-[3/4] bg-gray-50 overflow-hidden">
         <Image 
           src={latestPortfolioImage} 
           alt={model.name}
@@ -31,14 +31,14 @@ export function ModelCard({ model }: { model: Model }) {
       </div>
 
       {/* 하단 텍스트 영역 */}
-      <div className="p-4 pt-6 relative">
-        <h3 className="text-title text-ink font-bold">{model.name}</h3>
-        <p className="text-body-sm text-mute mt-1">
+      <div className="p-4 pt-6 relative border-t border-gray-100">
+        <h3 className="text-lg text-black font-extrabold tracking-tight">{model.name}</h3>
+        <p className="text-xs text-gray-500 mt-1 font-bold">
           {model.region} | ★ {model.rating} ({model.reviewCount})
         </p>
         
         {(model.age || model.height || model.weight) && (
-          <p className="text-[11px] text-mute mt-1 font-medium tracking-wide">
+          <p className="text-[11px] text-gray-400 mt-1.5 font-medium tracking-wide uppercase">
             {model.age ? `${model.age}세 ` : ''}
             {model.height ? `${model.height}cm ` : ''}
             {model.weight ? `${model.weight}kg` : ''}
@@ -47,7 +47,7 @@ export function ModelCard({ model }: { model: Model }) {
         
         <div className="flex flex-wrap gap-1 mt-4">
           {model.categories?.map(cat => (
-            <span key={cat} className="text-[10px] uppercase font-bold bg-gray-100 text-gray-600 px-2.5 py-1 rounded-sm tracking-wider">
+            <span key={cat} className="text-[10px] uppercase font-bold bg-black text-white px-2.5 py-1 tracking-wider">
               {cat}
             </span>
           ))}
