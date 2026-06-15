@@ -51,6 +51,15 @@ const STATUS_LABELS: Record<string, string> = {
   CLOSED: "마감",
 };
 
+const STATUS_COLORS: Record<string, string> = {
+  RECRUITING: "bg-green-100 text-green-700",
+  SHOOTING:   "bg-blue-100 text-blue-700",
+  COMPLETED:  "bg-gray-100 text-gray-600",
+  CANCELLED:  "bg-red-100 text-red-600",
+  ON_HOLD:    "bg-amber-100 text-amber-700",
+  CLOSED:     "bg-slate-200 text-slate-600",
+};
+
 export default function JobsPage() {
   const { user } = useAuth();
   const isModel = user?.role === "MODEL";
@@ -181,7 +190,7 @@ export default function JobsPage() {
                     <h2 className="line-clamp-2 text-[15px] font-semibold leading-6 text-ink">
                       {job.title}
                     </h2>
-                    <span className="shrink-0 rounded-full bg-canvas-soft px-2 py-0.5 text-[11px] font-semibold text-body">
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_COLORS[job.status ?? ""] ?? "bg-canvas-soft text-body"}`}>
                       {STATUS_LABELS[job.status ?? ""] ?? job.status}
                     </span>
                   </div>

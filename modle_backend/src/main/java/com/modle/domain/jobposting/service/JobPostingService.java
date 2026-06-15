@@ -111,7 +111,8 @@ public class JobPostingService {
             throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
         }
 
-        if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
+        JobPostingStatus status = jobPosting.getStatus();
+        if (status != JobPostingStatus.RECRUITING && status != JobPostingStatus.CANCELLED) {
             throw new CustomException(ErrorCode.JOB_POSTING_NOT_EDITABLE);
         }
 
