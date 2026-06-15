@@ -79,8 +79,8 @@ public class ModelService {
             List<String> categories,
             List<String> tags,
             String introduction,
-            String profileImageUrl,
-            String region
+            String region,
+            String profileImageUrl
         ) {
         model.update(name, height, weight, gender, age, introduction, profileImageUrl);
         model.getUser().updateRegion(region);

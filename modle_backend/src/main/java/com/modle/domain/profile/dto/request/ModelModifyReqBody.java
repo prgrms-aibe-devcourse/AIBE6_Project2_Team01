@@ -27,6 +27,7 @@ public record ModelModifyReqBody (
         List<String> tags,
 
         String introduction,
+        String region,
         String profileImageUrl
 
 ) {}

@@ -109,6 +109,7 @@ public class ModelController {
                                 reqBody.categories(),
                                 reqBody.tags(),
                                 reqBody.introduction(),
+                                reqBody.region(),
                                 newImageUrl);
                 return new ApiResponse<>(
                                 "200-1",

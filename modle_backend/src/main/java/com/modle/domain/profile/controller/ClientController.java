@@ -1,17 +1,5 @@
 package com.modle.domain.profile.controller;
 
-import java.util.List;
-
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.modle.domain.profile.dto.ClientDto;
 import com.modle.domain.profile.dto.request.ClientModifyReqBody;
 import com.modle.domain.profile.service.ClientService;
@@ -21,11 +9,15 @@ import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
 import com.modle.global.gcs.GcsService;
 import com.modle.global.response.ApiResponse;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/clients")
@@ -103,6 +95,7 @@ public class ClientController {
                 reqBody.companyName(),
                 reqBody.clientType(),
                 reqBody.introduction(),
+                reqBody.region(),
                 newImageUrl);
         return new ApiResponse<>(
                 "200-1",
