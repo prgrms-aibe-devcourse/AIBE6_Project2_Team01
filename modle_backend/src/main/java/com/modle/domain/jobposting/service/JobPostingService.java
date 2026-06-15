@@ -1,6 +1,7 @@
 package com.modle.domain.jobposting.service;
 
 import com.modle.domain.jobposting.dto.request.JobPostingCreateRequest;
+import com.modle.domain.jobposting.dto.request.JobPostingStatusUpdateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
 import com.modle.domain.jobposting.dto.response.JobPostingClientDetailResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingListResponse;
@@ -130,8 +131,27 @@ public class JobPostingService {
         try {
             return Enum.valueOf(enumClass, value);
         } catch (IllegalArgumentException e) {
-            throw new CustomException(ErrorCode.JOB_POSTING_INVALID);
+            throw new CustomException(ErrorCode.JOB_POSTING_INVALID_FILTER_VALUE);
         }
+    }
+
+    // JOB-009: 공고 상태를 변경한다. 허용된 전환만 가능하며 본인 공고만 변경 가능.
+    @Transactional
+    public JobPostingResponse updateJobPostingStatus(Long jobPostingId, Long clientId, JobPostingStatusUpdateRequest request) {
+        JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
+
+        if (!jobPosting.getClientId().equals(clientId)) {
+            throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
+        }
+
+        if (!jobPosting.getStatus().canTransitionTo(request.status())) {
+            throw new CustomException(ErrorCode.JOB_POSTING_INVALID_STATUS_TRANSITION);
+        }
+
+        jobPosting.updateStatus(request.status());
+        // TODO(지원 도메인): SHOOTING 전환 시 해당 공고의 지원 비활성화 처리
+        return JobPostingResponse.from(jobPosting);
     }
 
     // JOB-006~008: 뷰어 타입에 따라 다른 공고 상세 정보를 반환한다.
