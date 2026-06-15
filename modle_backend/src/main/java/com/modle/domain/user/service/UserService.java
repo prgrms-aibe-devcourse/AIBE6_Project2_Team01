@@ -140,6 +140,11 @@ public class UserService {
             throw new CustomException(ErrorCode.INVALID_STATUS_CHANGE);
         }
 
+        // role 검증 — ADMIN 차단
+        if (!request.role().isSelectable()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
         // 유저 DB 갱신
         user.completeOAuthSignup(request.role(), request.region());
 
