@@ -1,7 +1,12 @@
 package com.modle.global.config;
 
-import java.util.List;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.modle.global.auth.JwtAuthenticationFilter;
+import com.modle.global.auth.OAuth2FailureHandler;
+import com.modle.global.auth.OAuth2SuccessHandler;
+import com.modle.global.auth.OAuth2UserService;
+import com.modle.global.response.ApiResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,14 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.modle.global.auth.JwtAuthenticationFilter;
-import com.modle.global.auth.OAuth2FailureHandler;
-import com.modle.global.auth.OAuth2SuccessHandler;
-import com.modle.global.auth.OAuth2UserService;
-import com.modle.global.response.ApiResponse;
-
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -63,11 +61,8 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.GET,
                                                                 "/api/v1/models",
                                                                 "/api/v1/models/{id}",
+                                                                "/api/v1/clients",
                                                                 "/api/v1/clients/{id}"
-
-                                                ).permitAll()
-                                                .requestMatchers(HttpMethod.PUT
-
                                                 ).permitAll()
                                                 // 관리자만
                                                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
