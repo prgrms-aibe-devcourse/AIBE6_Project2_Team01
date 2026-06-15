@@ -1,10 +1,9 @@
 package com.modle.domain.profile.dto;
 
-import java.time.LocalDateTime;
-
+import com.modle.domain.user.entity.Client;
 import org.springframework.lang.NonNull;
 
-import com.modle.domain.user.entity.Client;
+import java.time.LocalDateTime;
 
 public record ClientDto(
         @NonNull long id,
@@ -13,6 +12,7 @@ public record ClientDto(
         @NonNull String clientType,
         @NonNull String companyName,
         String companyNumber,
+        String region,
         String introduction,
         String profileImageUrl,
         double avgRating,
@@ -27,6 +27,7 @@ public record ClientDto(
                 client.getClientType() != null ? client.getClientType().name() : "UNKNOWN",
                 client.getCompanyName(),
                 client.getCompanyNumber(),
+                client.getUser() != null ? client.getUser().getRegion() : null,
                 client.getIntroduction(),
                 client.getProfileImageUrl(),
                 client.getAvgRating(),

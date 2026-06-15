@@ -17,6 +17,7 @@ public record ModelDto(
         @NonNull int age,
         List<String> categories,
         List<String> tags,
+        String region,
 
         String introduction,
         String profileImageUrl,
@@ -45,6 +46,7 @@ public record ModelDto(
                         model.getModelTags().stream()
                         .map(mt -> mt.getTag().getName())
                         .toList() : List.of(),
+                model.getUser() != null ? model.getUser().getRegion() : null,
                 model.getIntroduction(),
                 model.getProfileImageUrl(),
                 model.getAvgRating(),
