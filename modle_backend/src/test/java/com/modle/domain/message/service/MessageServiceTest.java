@@ -88,6 +88,51 @@ class MessageServiceTest {
     }
 
     @Test
+    void createConversation_같은모델같은공고_기존대화방재사용() {
+        User client = user(1L, Role.CLIENT);
+        User model = user(2L, Role.MODEL);
+        MessageConversation existing = conversation(100L, 1L, 2L, 10L);
+        given(userService.findById(1L)).willReturn(client);
+        given(userService.findById(2L)).willReturn(model);
+        given(conversationRepository
+                .findFirstByClientIdAndModelIdAndPostIdOrderByCreatedDateDesc(1L, 2L, 10L))
+                .willReturn(Optional.of(existing));
+
+        var response = messageService.createConversation(
+                1L,
+                new CreateConversationRequest(2L, 10L, null)
+        );
+
+        assertThat(response.id()).isEqualTo(100L);
+        verify(conversationRepository, never()).save(any());
+    }
+
+    @Test
+    void createConversation_같은모델다른공고_새대화방생성() {
+        User client = user(1L, Role.CLIENT);
+        User model = user(2L, Role.MODEL);
+        given(userService.findById(1L)).willReturn(client);
+        given(userService.findById(2L)).willReturn(model);
+        given(conversationRepository
+                .findFirstByClientIdAndModelIdAndPostIdOrderByCreatedDateDesc(1L, 2L, 11L))
+                .willReturn(Optional.empty());
+        JobPosting posting = mock(JobPosting.class);
+        given(posting.getClientId()).willReturn(1L);
+        given(posting.getStatus()).willReturn(JobPostingStatus.RECRUITING);
+        given(jobPostingRepository.findById(11L)).willReturn(Optional.of(posting));
+        given(conversationRepository.save(any(MessageConversation.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        var response = messageService.createConversation(
+                1L,
+                new CreateConversationRequest(2L, 11L, null)
+        );
+
+        assertThat(response.postId()).isEqualTo(11L);
+        verify(conversationRepository).save(any(MessageConversation.class));
+    }
+
+    @Test
     void createConversation_모델이대화방생성_예외발생() {
         User model = user(1L, Role.MODEL);
         User client = user(2L, Role.CLIENT);
@@ -194,9 +239,14 @@ class MessageServiceTest {
     }
 
     private MessageConversation conversation(Long id, Long clientId, Long modelId) {
+        return conversation(id, clientId, modelId, null);
+    }
+
+    private MessageConversation conversation(Long id, Long clientId, Long modelId, Long postId) {
         MessageConversation conversation = MessageConversation.builder()
                 .clientId(clientId)
                 .modelId(modelId)
+                .postId(postId)
                 .build();
         ReflectionTestUtils.setField(conversation, "id", id);
         return conversation;

@@ -58,6 +58,11 @@ public class MessageService {
         if (creatorId.equals(request.receiverId())) {
             throw new CustomException(ErrorCode.MESSAGE_SELF_SEND_NOT_ALLOWED);
         }
+        // 동일 모델·동일 공고 조합이면 기존 대화방을 재사용해 중복 생성을 막는다.
+        MessageConversation existingConversation = findDuplicateConversation(creatorId, request);
+        if (existingConversation != null) {
+            return MessageConversationResponse.from(existingConversation);
+        }
         validatePost(creatorId, request.postId());
 
         MessageConversation conversation = MessageConversation.builder()
@@ -66,7 +71,20 @@ public class MessageService {
                 .postId(request.postId())
                 .applicationId(request.applicationId())
                 .build();
+        // 위 조회로 일반적인 중복은 막지만, 동시 요청 경합은 DB unique 제약
+        // (uk_conversation_client_model_post)이 최종적으로 중복 저장을 차단한다.
         return MessageConversationResponse.from(conversationRepository.save(conversation));
+    }
+
+    // 공고가 지정된 경우에만 동일 클라이언트·모델·공고 대화방을 중복으로 본다.
+    private MessageConversation findDuplicateConversation(Long creatorId, CreateConversationRequest request) {
+        if (request.postId() == null) {
+            return null;
+        }
+        return conversationRepository
+                .findFirstByClientIdAndModelIdAndPostIdOrderByCreatedDateDesc(
+                        creatorId, request.receiverId(), request.postId())
+                .orElse(null);
     }
 
     @Transactional
