@@ -1,25 +1,24 @@
 package com.modle.domain.profile.dto;
 
-import com.modle.domain.user.entity.Client;
-import org.springframework.lang.NonNull;
-
 import java.time.LocalDateTime;
 
-public record ClientDto (
-    @NonNull
-    long id,
-    @NonNull
-    LocalDateTime createdDate,
-    @NonNull LocalDateTime modifiedDate,
-    @NonNull String clientType,
-    @NonNull String companyName,
-    String companyNumber,
-    String introduction,
-    String profileImageUrl,
-    double avgRating,
-    int reviewCount
+import org.springframework.lang.NonNull;
 
-    ){
+import com.modle.domain.user.entity.Client;
+
+public record ClientDto(
+        @NonNull long id,
+        @NonNull LocalDateTime createdDate,
+        @NonNull LocalDateTime modifiedDate,
+        @NonNull String clientType,
+        @NonNull String companyName,
+        String companyNumber,
+        String introduction,
+        String profileImageUrl,
+        double avgRating,
+        int reviewCount
+
+) {
     public ClientDto(Client client) {
         this(
                 client.getId(),
@@ -31,7 +30,6 @@ public record ClientDto (
                 client.getIntroduction(),
                 client.getProfileImageUrl(),
                 client.getAvgRating(),
-                client.getReviewCount()
-        );
+                client.getReviewCount());
     }
 }
