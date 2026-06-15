@@ -87,7 +87,7 @@ export default function NewContractPage() {
 
       setStatus("success");
       setMessage("계약서가 DRAFT 상태로 저장되었습니다.");
-    } catch {
+    } catch(error) {
       setStatus("error");
       setMessage(
         error instanceof Error ? error.message : "계약서 저장에 실패했습니다.",

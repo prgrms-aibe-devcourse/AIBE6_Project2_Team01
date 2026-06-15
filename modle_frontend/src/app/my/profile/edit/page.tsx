@@ -13,7 +13,7 @@ export default async function MyProfileEditPage() {
     const cookieStore = await cookies();
     const cookieString = cookieStore.toString();
     modelData = await getMyModel({ Cookie: cookieString });
-  } catch {
+  } catch(error){
     console.error("내 프로필 로딩 실패:", error);
     // If model is not found or API fails, render 404 or redirect to login
     notFound();
