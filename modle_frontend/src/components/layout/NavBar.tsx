@@ -29,6 +29,14 @@ export function NavBar() {
       <div className="flex items-center gap-3">
         {isLoading ? null : user ? (
           <>
+            {user.role === "ADMIN" && (
+              <Link
+                href="/admin"
+                className="text-[13px] font-semibold leading-5 text-ink hover:underline"
+              >
+                관리자
+              </Link>
+            )}
             <span className="text-[13px] leading-5 text-body">
               {ROLE_LABEL[user.role] ?? user.role} 계정
             </span>
