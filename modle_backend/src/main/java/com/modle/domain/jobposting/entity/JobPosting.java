@@ -130,4 +130,5 @@ public class JobPosting extends BaseEntity {
         this.payType = payType;
         this.shootDate = shootDate;
     }
+
 }
