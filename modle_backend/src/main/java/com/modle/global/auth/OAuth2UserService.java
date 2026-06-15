@@ -42,6 +42,13 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                 throw new OAuth2AuthenticationException("카카오 이메일 동의가 필요합니다.");
             }
             email = (String) kakaoAccount.get("email");
+        } else if (provider == Provider.NAVER) {
+            Map<String, Object> response = oAuth2User.getAttribute("response");
+            if (response == null || response.get("email") == null) {
+                throw new OAuth2AuthenticationException("네이버 이메일 동의가 필요합니다.");
+            }
+            providerId = (String) response.get("id");
+            email = (String) response.get("email");
         } else {
             // 구글: sub, email
             providerId = oAuth2User.getAttribute("sub");
@@ -51,8 +58,8 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         // 기존 유저 조회
         User user = userRepository.findByEmail(email)
                 .map(existingUser -> {
-                    // 이미 이메일(LOCAL)로 가입된 계정이면 차단
-                    if (existingUser.getProvider() == Provider.LOCAL) {
+                    // provider가 다르면 차단
+                    if (existingUser.getProvider() != provider) {
                         throw new CustomException(ErrorCode.OAUTH_EMAIL_ALREADY_EXISTS);
                     }
                     return existingUser;
