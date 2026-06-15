@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/hooks/useAuth";
 import { client } from "@/lib/api/client";
 import {
   JobPostingForm,
@@ -7,7 +8,7 @@ import {
 } from "@/components/jobposting/JobPostingForm";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 
 export default function EditJobPage({
   params,
@@ -17,12 +18,28 @@ export default function EditJobPage({
   const { id } = use(params);
   const postingId = Number(id);
   const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
+  const alertedRef = useRef(false);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user && !alertedRef.current) {
+      alertedRef.current = true;
+      alert("로그인이 필요한 서비스입니다.");
+      router.replace("/login");
+      return;
+    }
+    if (user && user.role !== "CLIENT") {
+      router.replace(`/jobs/${postingId}`);
+    }
+  }, [user, authLoading, router, postingId]);
 
   const [initialValues, setInitialValues] =
     useState<Partial<JobPostingFormState> | null>(null);
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
+    if (authLoading || !user || user.role !== "CLIENT") return;
     client
       .GET("/api/v1/jobs/{id}", {
         params: { path: { id: postingId } },
@@ -123,6 +140,10 @@ export default function EditJobPage({
 
     router.push(`/jobs/${postingId}`);
   };
+
+  if (authLoading || !user || user.role !== "CLIENT") {
+    return <main className="min-h-screen bg-canvas" />;
+  }
 
   if (loadError) {
     return (

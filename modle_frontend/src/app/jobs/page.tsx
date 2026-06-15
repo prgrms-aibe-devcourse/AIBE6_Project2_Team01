@@ -63,6 +63,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function JobsPage() {
   const { user } = useAuth();
   const isModel = user?.role === "MODEL";
+  const isClient = user?.role === "CLIENT";
   const [region, setRegion] = useState("");
   const [category, setCategory] = useState("");
   const [page, setPage] = useState(0);
@@ -133,12 +134,14 @@ export default function JobsPage() {
                 지역·카테고리 필터로 원하는 공고를 찾아보세요.
               </p>
             </div>
-            <Link
-              href="/jobs/new"
-              className="inline-flex h-11 w-fit items-center rounded-lg bg-primary px-6 text-[15px] font-semibold text-on-primary transition hover:bg-primary-hover"
-            >
-              공고 등록
-            </Link>
+            {isClient ? (
+              <Link
+                href="/jobs/new"
+                className="inline-flex h-11 w-fit items-center rounded-lg bg-primary px-6 text-[15px] font-semibold text-on-primary transition hover:bg-primary-hover"
+              >
+                공고 등록
+              </Link>
+            ) : null}
           </div>
         </header>
 
