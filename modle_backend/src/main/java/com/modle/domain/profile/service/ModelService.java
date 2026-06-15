@@ -26,25 +26,28 @@ public class ModelService {
         return modelRepository.count();
     }
 
-    public List<Model> getList(String query, Boolean gender, List<Category> categories, List<String> tags) {
+    public List<Model> getList(String query, Boolean gender, List<Category> categories, List<String> regions, List<String> tags) {
         List<Specification<Model>> specs = new ArrayList<>();
-        // 1. 검색어 필터
+        // 1. 이름 검색 (query)
         if (query != null && !query.trim().isEmpty()) {
             specs.add(ModelSpecification.nameContains(query));
         }
-        // 2. 성별 필터
+        // 2. 성별 (gender)
         if (gender != null) {
             specs.add(ModelSpecification.genderEquals(gender));
         }
-        // 3. 카테고리 다중 필터 추가
+        // 3. 카테고리 (categories)
         if (categories != null && !categories.isEmpty()) {
             specs.add(ModelSpecification.hasCategories(categories));
         }
-        // 4.  태그 다중 필터 추가
+        // 4. 지역 (regions) - User 엔티티 기반
+        if (regions != null && !regions.isEmpty()) {
+            specs.add(ModelSpecification.hasRegions(regions));
+        }
+        // 5. 일반 태그 (tags) - ModelTag 엔티티 기반
         if (tags != null && !tags.isEmpty()) {
             specs.add(ModelSpecification.hasTags(tags));
         }
-        // 조건 종합 후 조회
         Specification<Model> finalSpec = Specification.allOf(specs);
         return modelRepository.findAll(finalSpec);
     }

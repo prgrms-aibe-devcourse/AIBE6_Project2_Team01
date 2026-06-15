@@ -4,6 +4,7 @@ import com.modle.domain.profile.entity.ModelTag;
 import com.modle.domain.profile.entity.Tag;
 import com.modle.domain.profile.entity.type.Category;
 import com.modle.domain.user.entity.Model;
+import com.modle.domain.user.entity.User;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
@@ -36,13 +37,24 @@ public class ModelSpecification {
             return categoryJoin.get("category").in(categories);
         };
     }
-    // 태그  다중 필터 (선택한 태그 이름 중 하나라도 일치하면 검색 - OR 조건)
+    // 지역 다중 필터 (선택한 지역 중 하나라도 일치하면 검색 - OR 조건)
+    public static Specification<Model> hasRegions(List<String> regions) {
+        return (root, query, criteriaBuilder) -> {
+            // Model과 User 엔티티 Join
+            Join<Model, User> userJoin = root.join("user", JoinType.INNER);
+            // User의 region 속성이 전달된 리스트(regions) 안에 포함되는지 검사
+            return userJoin.get("region").in(regions);
+        };
+    }
+    // 태그 다중 필터
     public static Specification<Model> hasTags(List<String> tagNames) {
         return (root, query, criteriaBuilder) -> {
-            query.distinct(true); // 중복 결과 방지
+            query.distinct(true);
             Join<Model, ModelTag> modelTagJoin = root.join("modelTags", JoinType.INNER);
             Join<ModelTag, Tag> tagJoin = modelTagJoin.join("tag", JoinType.INNER);
             return tagJoin.get("name").in(tagNames);
         };
     }
 }
+
+

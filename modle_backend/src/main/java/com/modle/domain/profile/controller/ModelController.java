@@ -30,30 +30,26 @@ public class ModelController {
 
         @Transactional(readOnly = true)
         @GetMapping
-        @Operation(summary = "다건 조회 및 다중 필터링")
+        @Operation(summary = "다건 조회 및 필터링")
         public ApiResponse<List<ModelDto>> getItems(
                 @RequestParam(required = false) String query,
                 @RequestParam(required = false) String gender,
                 @RequestParam(required = false) List<Category> categories,
+                @RequestParam(required = false) List<String> regions, // 지역 파라미터 추가
                 @RequestParam(required = false) List<String> tags
         ) {
-                // 성별 처리 
+                // 성별 파라미터 처리
                 Boolean genderParam = null;
                 if ("MALE".equalsIgnoreCase(gender)) {
                         genderParam = true;
                 } else if ("FEMALE".equalsIgnoreCase(gender)) {
                         genderParam = false;
                 }
-                // Service에 리스트까지 전달
-                List<Model> items = modelService.getList(query, genderParam, categories, tags);
-                List<ModelDto> dtoList = items
-                        .stream()
-                        .map(ModelDto::new)
-                        .toList();
-                return new ApiResponse<>(
-                        "200-1",
-                        "조회 성공",
-                        dtoList);
+                // Service 호출
+                List<Model> items = modelService.getList(query, genderParam, categories, regions, tags);
+                // DTO 변환
+                List<ModelDto> dtoList = items.stream().map(ModelDto::new).toList();
+                return new ApiResponse<>("200-1", "조회 성공", dtoList);
         }
 
         @Transactional(readOnly = true)
