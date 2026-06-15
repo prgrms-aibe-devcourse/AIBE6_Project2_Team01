@@ -172,6 +172,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/password/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/reset/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sendPasswordResetCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/reset/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirmPasswordResetCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/logout": {
         parameters: {
             query?: never;
@@ -564,6 +612,11 @@ export interface components {
             memo?: string;
             pdfUrl?: string;
         };
+        ApiResponseContractResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["ContractResponse"];
+        };
         ContractResponse: {
             /** Format: int64 */
             id?: number;
@@ -625,6 +678,17 @@ export interface components {
             /** @enum {string} */
             clientType?: "INDIVIDUAL" | "ORGANIZATION";
         };
+        PasswordResetRequest: {
+            email: string;
+            newPassword: string;
+        };
+        EmailVerifyRequest: {
+            email: string;
+        };
+        EmailVerifyConfirmRequest: {
+            email: string;
+            code: string;
+        };
         LoginRequest: {
             email: string;
             password: string;
@@ -648,13 +712,6 @@ export interface components {
             role?: "MODEL" | "CLIENT" | "ADMIN";
             /** @enum {string} */
             status?: "INCOMPLETE" | "PENDING" | "ACTIVE" | "SUSPENDED" | "WITHDRAWN" | "REJECTED";
-        };
-        EmailVerifyRequest: {
-            email: string;
-        };
-        EmailVerifyConfirmRequest: {
-            email: string;
-            code: string;
         };
         JobPostingUpdateRequest: {
             title: string;
@@ -756,21 +813,21 @@ export interface components {
             createdDate?: string;
         };
         PageJobPostingListResponse: {
-            /** Format: int32 */
-            totalPages?: number;
             /** Format: int64 */
             totalElements?: number;
-            first?: boolean;
-            last?: boolean;
+            /** Format: int32 */
+            totalPages?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["JobPostingListResponse"][];
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
-            pageable?: components["schemas"]["PageableObject"];
+            first?: boolean;
+            last?: boolean;
             /** Format: int32 */
             numberOfElements?: number;
+            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
         PageableObject: {
@@ -805,6 +862,11 @@ export interface components {
             category?: string;
             title?: string;
             content?: string;
+        };
+        ApiResponseListContractTemplateResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["ContractTemplateResponse"][];
         };
         ContractTemplateResponse: {
             /** Format: int64 */
@@ -1080,7 +1142,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ContractResponse"];
+                    "*/*": components["schemas"]["ApiResponseContractResponse"];
                 };
             };
         };
@@ -1165,6 +1227,78 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    resetPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordResetRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    sendPasswordResetCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailVerifyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    confirmPasswordResetCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailVerifyConfirmRequest"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -1488,7 +1622,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ContractTemplateResponse"][];
+                    "*/*": components["schemas"]["ApiResponseListContractTemplateResponse"];
                 };
             };
         };

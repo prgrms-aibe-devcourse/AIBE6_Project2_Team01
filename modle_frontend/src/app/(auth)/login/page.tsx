@@ -82,6 +82,13 @@ function LoginForm() {
             />
           </Field>
 
+          <Link
+            href="/find-password"
+            className="-mt-2 self-end text-[13px] leading-5 text-mute hover:text-ink hover:underline"
+          >
+            비밀번호를 잊으셨나요?
+          </Link>
+
           <button
             type="submit"
             disabled={status === "submitting"}
