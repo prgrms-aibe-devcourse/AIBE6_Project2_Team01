@@ -5,6 +5,7 @@ import type {
   MessageParticipant,
   RecruitingJob,
 } from "@/types/message";
+import { authenticatedFetch } from "@/lib/api/client";
 
 interface MessagePage {
   currentUser: MessageParticipant;
@@ -35,9 +36,7 @@ export async function getInbox(): Promise<MessageInbox> {
   let hasNext = true;
 
   while (hasNext) {
-    const response = await fetch(`/api/v1/messages?page=${page}&size=100`, {
-      credentials: "include",
-    });
+    const response = await authenticatedFetch(`/api/v1/messages?page=${page}&size=100`);
     if (!response.ok) throw new Error("쪽지함을 불러오지 못했습니다.");
 
     const responsePage: MessagePage = await response.json();
@@ -59,7 +58,7 @@ export async function getInbox(): Promise<MessageInbox> {
 }
 
 export async function getMyRecruitingJobs(): Promise<RecruitingJob[]> {
-  const response = await fetch("/api/v1/jobs/mine/recruiting", { credentials: "include" });
+  const response = await authenticatedFetch("/api/v1/jobs/mine/recruiting");
   if (!response.ok) throw new Error("모집 중 공고를 불러오지 못했습니다.");
   return ((await response.json()) as ApiResponse<RecruitingJob[]>).data;
 }
@@ -68,10 +67,9 @@ export async function createConversation(
   receiverId: number,
   postId: number | null,
 ): Promise<MessageConversation> {
-  const response = await fetch("/api/v1/messages/conversations", {
+  const response = await authenticatedFetch("/api/v1/messages/conversations", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    credentials: "include",
     body: JSON.stringify({ receiverId, postId, applicationId: null }),
   });
   if (!response.ok) throw new Error("대화방을 만들지 못했습니다.");
@@ -83,10 +81,9 @@ export async function sendMessage(
   content: string,
   parentMessageId: number | null,
 ): Promise<MessageItem> {
-  const response = await fetch("/api/v1/messages", {
+  const response = await authenticatedFetch("/api/v1/messages", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    credentials: "include",
     body: JSON.stringify({ conversationId, parentMessageId, content }),
   });
   if (!response.ok) throw new Error("쪽지를 보내지 못했습니다.");
@@ -94,10 +91,9 @@ export async function sendMessage(
 }
 
 export async function markConversationAsRead(conversationId: number): Promise<void> {
-  const response = await fetch("/api/v1/messages/read", {
+  const response = await authenticatedFetch("/api/v1/messages/read", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    credentials: "include",
     body: JSON.stringify({ conversationId }),
   });
   if (!response.ok) throw new Error("쪽지를 읽음 처리하지 못했습니다.");
