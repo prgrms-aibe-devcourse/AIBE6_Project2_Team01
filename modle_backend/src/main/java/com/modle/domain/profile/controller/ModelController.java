@@ -1,19 +1,8 @@
 package com.modle.domain.profile.controller;
 
-import java.util.List;
-
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.modle.domain.profile.dto.ModelDto;
 import com.modle.domain.profile.dto.request.ModelModifyReqBody;
+import com.modle.domain.profile.entity.type.Category;
 import com.modle.domain.profile.service.ModelService;
 import com.modle.domain.user.entity.Model;
 import com.modle.global.auth.SecurityUser;
@@ -21,11 +10,15 @@ import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
 import com.modle.global.gcs.GcsService;
 import com.modle.global.response.ApiResponse;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController // @Controller + @ResponseBody
 @RequestMapping("/api/v1/models")
@@ -37,17 +30,30 @@ public class ModelController {
 
         @Transactional(readOnly = true)
         @GetMapping
-        @Operation(summary = "다건 조회")
-        public ApiResponse<List<ModelDto>> getItems() {
-                List<Model> items = modelService.getList();
+        @Operation(summary = "다건 조회 및 다중 필터링")
+        public ApiResponse<List<ModelDto>> getItems(
+                @RequestParam(required = false) String query,
+                @RequestParam(required = false) String gender,
+                @RequestParam(required = false) List<Category> categories,
+                @RequestParam(required = false) List<String> tags
+        ) {
+                // 성별 처리 
+                Boolean genderParam = null;
+                if ("MALE".equalsIgnoreCase(gender)) {
+                        genderParam = true;
+                } else if ("FEMALE".equalsIgnoreCase(gender)) {
+                        genderParam = false;
+                }
+                // Service에 리스트까지 전달
+                List<Model> items = modelService.getList(query, genderParam, categories, tags);
                 List<ModelDto> dtoList = items
-                                .stream()
-                                .map(ModelDto::new) // modelDto 변환
-                                .toList();
+                        .stream()
+                        .map(ModelDto::new)
+                        .toList();
                 return new ApiResponse<>(
-                                "200-1",
-                                "조회 성공",
-                                dtoList);
+                        "200-1",
+                        "조회 성공",
+                        dtoList);
         }
 
         @Transactional(readOnly = true)

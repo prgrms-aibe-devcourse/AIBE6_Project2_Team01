@@ -1,16 +1,19 @@
 package com.modle.domain.profile.service;
 
-import com.modle.domain.profile.entity.type.Category;
 import com.modle.domain.profile.entity.ModelCategory;
 import com.modle.domain.profile.entity.ModelTag;
 import com.modle.domain.profile.entity.Tag;
+import com.modle.domain.profile.entity.type.Category;
 import com.modle.domain.profile.repository.TagRepository;
 import com.modle.domain.user.entity.Model;
 import com.modle.domain.user.entity.User;
 import com.modle.domain.user.repository.ModelRepository;
+import com.modle.domain.user.repository.ModelSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -23,8 +26,27 @@ public class ModelService {
         return modelRepository.count();
     }
 
-    public List<Model> getList() {
-        return modelRepository.findAll();
+    public List<Model> getList(String query, Boolean gender, List<Category> categories, List<String> tags) {
+        List<Specification<Model>> specs = new ArrayList<>();
+        // 1. 검색어 필터
+        if (query != null && !query.trim().isEmpty()) {
+            specs.add(ModelSpecification.nameContains(query));
+        }
+        // 2. 성별 필터
+        if (gender != null) {
+            specs.add(ModelSpecification.genderEquals(gender));
+        }
+        // 3. 카테고리 다중 필터 추가
+        if (categories != null && !categories.isEmpty()) {
+            specs.add(ModelSpecification.hasCategories(categories));
+        }
+        // 4.  태그 다중 필터 추가
+        if (tags != null && !tags.isEmpty()) {
+            specs.add(ModelSpecification.hasTags(tags));
+        }
+        // 조건 종합 후 조회
+        Specification<Model> finalSpec = Specification.allOf(specs);
+        return modelRepository.findAll(finalSpec);
     }
 
     public Model findById(Long id) {

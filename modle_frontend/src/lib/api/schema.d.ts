@@ -404,10 +404,10 @@ export interface components {
             introduction?: string;
             profileImageUrl?: string;
         };
-        RsDataVoid: {
-            resultCode: string;
-            msg: string;
-            data: unknown;
+        ApiResponseVoid: {
+            resultCode?: string;
+            msg?: string;
+            data?: unknown;
         };
         ClientModifyReqBody: {
             companyName: string;
@@ -417,15 +417,15 @@ export interface components {
             introduction?: string;
             profileImageUrl?: string;
         };
+        ApiResponseListPortfolioDto: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["PortfolioDto"][];
+        };
         PortfolioDto: {
             /** Format: int64 */
             id?: number;
             imgUrl?: string;
-        };
-        RsDataListPortfolioDto: {
-            resultCode: string;
-            msg: string;
-            data: components["schemas"]["PortfolioDto"][];
         };
         JobPostingCreateRequest: {
             title: string;
@@ -551,11 +551,6 @@ export interface components {
             age?: number;
             gender: boolean;
         };
-        ApiResponseVoid: {
-            resultCode?: string;
-            msg?: string;
-            data?: unknown;
-        };
         ClientRegisterRequest: {
             email: string;
             password: string;
@@ -626,6 +621,11 @@ export interface components {
         RejectRequest: {
             reason: string;
         };
+        ApiResponseListModelDto: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["ModelDto"][];
+        };
         ModelDto: {
             /** Format: int64 */
             id: number;
@@ -651,15 +651,10 @@ export interface components {
             reviewCount: number;
             portfolios?: components["schemas"]["PortfolioDto"][];
         };
-        RsDataListModelDto: {
-            resultCode: string;
-            msg: string;
-            data: components["schemas"]["ModelDto"][];
-        };
-        RsDataModelDto: {
-            resultCode: string;
-            msg: string;
-            data: components["schemas"]["ModelDto"];
+        ApiResponseModelDto: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["ModelDto"];
         };
         Pageable: {
             /** Format: int32 */
@@ -712,19 +707,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            paged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
-            /** Format: int32 */
-            pageSize?: number;
+            paged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
             unpaged?: boolean;
         };
         SortObject: {
-            sorted?: boolean;
             empty?: boolean;
+            sorted?: boolean;
             unsorted?: boolean;
         };
         ApiResponseObject: {
@@ -744,6 +739,11 @@ export interface components {
             title?: string;
             content?: string;
         };
+        ApiResponseListClientDto: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["ClientDto"][];
+        };
         ClientDto: {
             /** Format: int64 */
             id: number;
@@ -753,7 +753,7 @@ export interface components {
             modifiedDate: string;
             clientType: string;
             companyName: string;
-            componyNumber?: string;
+            companyNumber?: string;
             introduction?: string;
             profileImageUrl?: string;
             /** Format: double */
@@ -761,15 +761,10 @@ export interface components {
             /** Format: int32 */
             reviewCount?: number;
         };
-        RsDataListClientDto: {
-            resultCode: string;
-            msg: string;
-            data: components["schemas"]["ClientDto"][];
-        };
-        RsDataClientDto: {
-            resultCode: string;
-            msg: string;
-            data: components["schemas"]["ClientDto"];
+        ApiResponseClientDto: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["ClientDto"];
         };
         ApiResponseListPendingClientResponse: {
             resultCode?: string;
@@ -812,7 +807,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataModelDto"];
+                    "*/*": components["schemas"]["ApiResponseModelDto"];
                 };
             };
         };
@@ -836,7 +831,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataVoid"];
+                    "*/*": components["schemas"]["ApiResponseVoid"];
                 };
             };
         };
@@ -856,7 +851,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataClientDto"];
+                    "*/*": components["schemas"]["ApiResponseClientDto"];
                 };
             };
         };
@@ -880,7 +875,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataVoid"];
+                    "*/*": components["schemas"]["ApiResponseVoid"];
                 };
             };
         };
@@ -906,7 +901,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataListPortfolioDto"];
+                    "*/*": components["schemas"]["ApiResponseListPortfolioDto"];
                 };
             };
         };
@@ -1305,7 +1300,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataListModelDto"];
+                    "*/*": components["schemas"]["ApiResponseListModelDto"];
                 };
             };
         };
@@ -1327,7 +1322,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataModelDto"];
+                    "*/*": components["schemas"]["ApiResponseModelDto"];
                 };
             };
         };
@@ -1349,7 +1344,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataModelDto"];
+                    "*/*": components["schemas"]["ApiResponseModelDto"];
                 };
             };
         };
@@ -1391,7 +1386,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataListClientDto"];
+                    "*/*": components["schemas"]["ApiResponseListClientDto"];
                 };
             };
         };
@@ -1413,7 +1408,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataClientDto"];
+                    "*/*": components["schemas"]["ApiResponseClientDto"];
                 };
             };
         };
@@ -1435,7 +1430,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataClientDto"];
+                    "*/*": components["schemas"]["ApiResponseClientDto"];
                 };
             };
         };
@@ -1477,7 +1472,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataVoid"];
+                    "*/*": components["schemas"]["ApiResponseVoid"];
                 };
             };
         };
