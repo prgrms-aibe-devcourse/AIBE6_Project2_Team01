@@ -23,7 +23,7 @@ public enum ErrorCode {
     EMAIL_NOT_VERIFIED(HttpStatus.FORBIDDEN, "403-4", "이메일 인증이 완료되지 않았습니다."),
 
     // JWT
-    UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "403-5", "접근 권한이 없습니다."),
+    UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "403-7", "접근 권한이 없습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "401-2", "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "401-3", "만료된 토큰입니다."),
     TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "401-4", "토큰이 없습니다."),
