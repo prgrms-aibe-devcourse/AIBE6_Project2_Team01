@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ApiResponse<Void>> handle(NoSuchElementException e) {
         return new ResponseEntity<>(
-                ApiResponse.fail("404-1", "존재하지 않는 데이터에 접근했습니다."),
+                ApiResponse.fail(ErrorCode.DATA_NOT_FOUND.getResultCode(), ErrorCode.DATA_NOT_FOUND.getMessage()),
                 NOT_FOUND
         );
     }
@@ -60,10 +60,9 @@ public class GlobalExceptionHandler {
     // 메서드 레벨 권한 부족 (@PreAuthorize 실패)
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handle(AccessDeniedException e) {
-        ErrorCode errorCode = ErrorCode.JOB_POSTING_FORBIDDEN;
         return ResponseEntity
-                .status(errorCode.getStatus())
-                .body(ApiResponse.fail(errorCode.getResultCode(), errorCode.getMessage()));
+                .status(ErrorCode.ACCESS_DENIED.getStatus())
+                .body(ApiResponse.fail(ErrorCode.ACCESS_DENIED.getResultCode(), ErrorCode.ACCESS_DENIED.getMessage()));
     }
 
     // 그 외 예외

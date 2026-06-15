@@ -29,7 +29,7 @@ public class Client extends BaseEntity {
     private String introduction;
 
     @Column(length = 500)
-    private String logoUrl;
+    private String profileImageUrl;
 
     @Column(nullable = false)
     private double avgRating = 0.0;
@@ -46,5 +46,13 @@ public class Client extends BaseEntity {
         client.companyName = name;
         client.companyNumber = number;
         return client;
+    }
+
+    public void update(String companyName, String companyNumber, ClientType clientType, String introduction, String profileImageUrl) {
+        if (companyName != null) this.companyName = companyName;
+        if (companyNumber != null) this.companyNumber = companyNumber;
+        if (clientType != null) this.clientType = clientType;
+        if (introduction != null) this.introduction = introduction;
+        if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
     }
 }

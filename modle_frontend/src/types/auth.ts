@@ -1,4 +1,4 @@
 export type AuthUser = {
-  id: number
+  id?: number
   role: 'MODEL' | 'CLIENT' | 'ADMIN'
 }

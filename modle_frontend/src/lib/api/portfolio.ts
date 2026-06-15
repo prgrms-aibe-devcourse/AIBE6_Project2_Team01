@@ -10,14 +10,14 @@ export const uploadPortfolioImages = async (files: File[]): Promise<Portfolio[]>
     formData.append('files', file); 
   });
   const { data, error } = await client.POST('/api/v1/portfolios', {
-    body: formData as any,
+    body: formData as never,
   });
   
   if (error) {
-    throw new Error((error as any).msg || '포트폴리오 업로드에 실패했습니다.');
+    throw new Error((error as { msg?: string })?.msg || '포트폴리오 업로드에 실패했습니다.');
   }
   
-  return (data as any).data as Portfolio[]; 
+  return (data as { data?: unknown })?.data as Portfolio[]; 
 };
 
 export const deletePortfolioImage = async (portfolioId: number) => {
@@ -28,8 +28,8 @@ export const deletePortfolioImage = async (portfolioId: number) => {
   });
   
   if (error) {
-    throw new Error((error as any).msg || '포트폴리오 삭제에 실패했습니다.');
+    throw new Error((error as { msg?: string })?.msg || '포트폴리오 삭제에 실패했습니다.');
   }
   
-  return (data as any).data;
+  return (data as { data?: unknown })?.data;
 };

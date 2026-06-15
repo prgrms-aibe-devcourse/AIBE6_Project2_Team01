@@ -4,18 +4,18 @@ import { client } from './client';
 export async function getModels(params: Record<string, string>): Promise<ModelListResponse> {
   const { data, error } = await client.GET('/api/v1/models', {
     params: {
-      query: params as any
+      query: params as never
     }
   });
   
   if (error) {
-    throw new Error((error as any).msg || '모델 목록을 불러오는데 실패했습니다.');
+    throw new Error((error as { msg?: string })?.msg || '모델 목록을 불러오는데 실패했습니다.');
   }
 
-  const responseData = (data as any).data;
+  const responseData = (data as { data?: unknown })?.data;
   
   if (Array.isArray(responseData)) {
-    const models = responseData.map((item: any) => ({
+    const models = responseData.map((item: Record<string, unknown>) => ({
       id: item.id,
       name: item.name || '이름 없음',
       region: item.region || '지역 미상',
@@ -48,10 +48,10 @@ export async function getModel(id: string | number): Promise<Model> {
   });
   
   if (error) {
-    throw new Error((error as any).msg || '모델 정보를 불러오는데 실패했습니다.');
+    throw new Error((error as { msg?: string })?.msg || '모델 정보를 불러오는데 실패했습니다.');
   }
   
-  const item = (data as any).data;
+  const item = (data as { data?: unknown })?.data;
   
   return {
     id: item.id,
@@ -74,14 +74,14 @@ export async function getModel(id: string | number): Promise<Model> {
 
 export async function getMyModel(customHeaders?: HeadersInit): Promise<Model> {
   const { data, error } = await client.GET('/api/v1/models/my', {
-    headers: customHeaders as any
+    headers: customHeaders as never
   });
   
   if (error) {
-    throw new Error((error as any).msg || '내 모델 정보를 불러오는데 실패했습니다.');
+    throw new Error((error as { msg?: string })?.msg || '내 모델 정보를 불러오는데 실패했습니다.');
   }
   
-  const item = (data as any).data;
+  const item = (data as { data?: unknown })?.data;
   
   return {
     id: item.id,
@@ -116,11 +116,11 @@ export async function updateMyModel(modelData: Partial<Model>): Promise<void> {
   };
 
   const { error } = await client.PUT('/api/v1/models/my', {
-    body: payload as any
+    body: payload as never
   });
   
   if (error) {
-    throw new Error((error as any).msg || '내 모델 정보를 수정하는데 실패했습니다.');
+    throw new Error((error as { msg?: string })?.msg || '내 모델 정보를 수정하는데 실패했습니다.');
   }
 }
 

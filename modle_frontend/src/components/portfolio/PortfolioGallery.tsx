@@ -27,7 +27,7 @@ export function PortfolioGallery({ modelId, initialPortfolios = [] }: Props) {
       // 2. 화면에서 해당 사진 제거
       setPortfolios(prev => prev.filter(p => p.id !== id));
       alert('삭제되었습니다.');
-    } catch (error) {
+    } catch {
       alert('삭제 중 오류가 발생했습니다.');
     }
   };

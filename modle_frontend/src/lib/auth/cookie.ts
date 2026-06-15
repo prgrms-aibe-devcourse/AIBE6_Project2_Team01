@@ -21,7 +21,12 @@ export function readAuthUserCookie(): AuthUser | null {
     const value = decodeURIComponent(match.slice(AUTH_USER_COOKIE.length + 1))
     const parsed = JSON.parse(value) as AuthUser
 
-    if (typeof parsed.id !== 'number' || typeof parsed.role !== 'string') {
+    const VALID_ROLES: AuthUser['role'][] = ['MODEL', 'CLIENT', 'ADMIN']
+
+    if (
+      (parsed.id !== undefined && typeof parsed.id !== 'number') ||
+      !VALID_ROLES.includes(parsed.role)
+    ) {
       return null
     }
 
