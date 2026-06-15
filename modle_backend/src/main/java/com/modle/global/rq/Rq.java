@@ -4,6 +4,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -14,6 +15,15 @@ import java.util.Optional;
 public class Rq {
     private final HttpServletRequest req;
     private final HttpServletResponse resp;
+
+    @Value("${cookie.secure:false}")
+    private boolean cookieSecure;
+
+    @Value("${cookie.domain:localhost}")
+    private String cookieDomain;
+
+    @Value("${cookie.same-site:Strict}")
+    private String cookieSameSite;
 
     public void setHeader(String name, String value) {
         if (value == null) value = "";
@@ -53,9 +63,12 @@ public class Rq {
         Cookie cookie = new Cookie(name, value);
         cookie.setPath("/"); // 쿠키를 도메인 전체에서 쓰겠다.
         cookie.setHttpOnly(true); // 쿠키를 스크립트로 접근 못하게(XSS 공격방어)
-        cookie.setDomain("localhost"); // 쿠키가 적용될 도메인 지정
-        cookie.setSecure(true); // https 에서만 쿠키전송
-        cookie.setAttribute("SameSite", "Strict"); // 동일 사이트에서만 쿠키 전송(CSRF 공격방어)
+        // 쿠키가 적용될 도메인 지정
+        if (cookieDomain != null && !cookieDomain.isBlank()) {
+            cookie.setDomain(cookieDomain);
+        }
+        cookie.setSecure(cookieSecure); // https 에서만 쿠키전송
+        cookie.setAttribute("SameSite", cookieSameSite); // 동일 사이트에서만 쿠키 전송(CSRF 공격방어)
         // 값이 없다면 해당 변수를 삭제하라는 뜻
         cookie.setMaxAge(value.isBlank() ? 0 : maxAge);
 
