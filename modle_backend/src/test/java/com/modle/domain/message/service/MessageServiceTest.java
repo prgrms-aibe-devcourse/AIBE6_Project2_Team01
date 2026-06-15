@@ -122,6 +122,23 @@ class MessageServiceTest {
     }
 
     @Test
+    void sendMessage_모델도생성된대화방에서연속전송가능() {
+        MessageConversation conversation = conversation(100L, 1L, 2L);
+        given(conversationRepository.findById(100L)).willReturn(Optional.of(conversation));
+        given(messageRepository.save(any(Message.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        MessageResponse response = messageService.sendMessage(
+                2L,
+                new SendMessageRequest(100L, null, "추가로 전달드립니다.")
+        );
+
+        assertThat(response.senderId()).isEqualTo(2L);
+        assertThat(response.receiverId()).isEqualTo(1L);
+        assertThat(response.parentMessageId()).isNull();
+    }
+
+    @Test
     void sendMessage_대화방비참여자_예외발생() {
         given(conversationRepository.findById(100L))
                 .willReturn(Optional.of(conversation(100L, 1L, 2L)));

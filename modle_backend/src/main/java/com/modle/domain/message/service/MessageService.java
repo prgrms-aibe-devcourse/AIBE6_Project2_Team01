@@ -73,10 +73,6 @@ public class MessageService {
         validateParticipant(conversation, senderId);
         validateParentMessage(conversation.getId(), senderId, request.parentMessageId());
 
-        if (conversation.getModelId().equals(senderId) && request.parentMessageId() == null) {
-            throw new CustomException(ErrorCode.MESSAGE_MODEL_INITIAL_SEND_NOT_ALLOWED);
-        }
-
         Message message = Message.builder()
                 .conversationId(conversation.getId())
                 .senderId(senderId)
