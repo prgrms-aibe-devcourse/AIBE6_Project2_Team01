@@ -1,5 +1,8 @@
 package com.modle.domain.user.service;
 
+import com.modle.domain.user.entity.User;
+import com.modle.domain.user.entity.type.Provider;
+import com.modle.domain.user.repository.UserRepository;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
 import com.modle.infra.mail.MailService;
@@ -14,11 +17,14 @@ import java.util.concurrent.TimeUnit;
 public class EmailVerifyService {
     private final RedisTemplate<String, String> redisTemplate;
     private final MailService mailService;
+    private final UserRepository userRepository;
 
     private static final String CODE_PREFIX = "email:verify:";
     private static final String VERIFIED_PREFIX = "email:verified:";
+    private static final String PASSWORD_RESET_PREFIX = "password:reset:";
     private static final long CODE_EXPIRE_MINUTES = 5;
     private static final long VERIFIED_EXPIRE_MINUTES = 30;
+    private static final long PASSWORD_RESET_EXPIRE_MINUTES = 10;
 
     // 인증 코드 생성 → Redis 저장 → 이메일 발송
     public void sendVerificationCode(String email) {
@@ -73,5 +79,37 @@ public class EmailVerifyService {
     // 6자리 숫자 인증 코드 생성
     private String generateCode() {
         return String.valueOf((int) (Math.random() * 900000) + 100000);
+    }
+
+    // 비밀번호 재설정용 인증 코드 발송
+    public void sendPasswordResetCode(String email) {
+        userRepository.findByEmail(email)
+                .filter(user -> user.getProvider() == Provider.LOCAL)
+                .ifPresent(user -> sendVerificationCode(email));
+    }
+
+    // 인증 코드 확인 → 비밀번호 재설정 허용 토큰 저장
+    public void verifyPasswordResetCode(String email, String code) {
+        verifyCode(email, code);
+
+        redisTemplate.opsForValue().set(
+                PASSWORD_RESET_PREFIX + email,
+                "true",
+                PASSWORD_RESET_EXPIRE_MINUTES,
+                TimeUnit.MINUTES
+        );
+    }
+
+    // 재설정 허용 여부 확인
+    public void checkPasswordResetVerified(String email) {
+        String verified = redisTemplate.opsForValue().get(PASSWORD_RESET_PREFIX + email);
+        if (!"true".equals(verified)) {
+            throw new CustomException(ErrorCode.PASSWORD_RESET_NOT_VERIFIED);
+        }
+    }
+
+    // 재설정 허용 플래그 삭제
+    public void clearPasswordResetVerified(String email) {
+        redisTemplate.delete(PASSWORD_RESET_PREFIX + email);
     }
 }
