@@ -1,7 +1,7 @@
-import { getMyModel } from '@/lib/api/model';
-import { notFound } from 'next/navigation';
-import { cookies } from 'next/headers';
 import { MyProfileContainer } from '@/components/profile/MyProfileContainer';
+import { getMyModel } from '@/lib/api/model';
+import { cookies } from 'next/headers';
+import { notFound } from 'next/navigation';
 
 export const metadata = {
   title: '내 프로필 | 모들',

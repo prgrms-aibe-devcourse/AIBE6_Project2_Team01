@@ -1,5 +1,6 @@
 package com.modle.domain.profile.controller;
 
+<<<<<<< HEAD
 
 import com.modle.domain.profile.dto.ClientDto;
 import com.modle.domain.profile.dto.request.ClientModifyReqBody;
@@ -127,4 +128,7 @@ public class ClientController {
                 "%d번 모델 프로필이 삭제되었습니다.".formatted(id),
                 new ClientDto(client));
     }
+=======
+public class ClientController {
+>>>>>>> 9cfceafe646a635c46a184d36e80b4e7f7b1b4c6
 }

@@ -1,5 +1,15 @@
 package com.modle.global.init;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.modle.domain.profile.service.ModelService;
 import com.modle.domain.user.entity.Client;
 import com.modle.domain.user.entity.Model;
@@ -10,16 +20,8 @@ import com.modle.domain.user.entity.type.UserStatus;
 import com.modle.domain.user.repository.ClientRepository;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
@@ -143,7 +145,7 @@ public class InitData {
         if (userRepository.existsByEmail("client1@modle.com")) {
             return;
         }
-        
+
         User user1 = User.createLocal(
                 "client1@modle.com",
                 passwordEncoder.encode("client1234"),
@@ -152,7 +154,8 @@ public class InitData {
         user1.updateStatus(UserStatus.ACTIVE);
         userRepository.save(user1);
         Client client1 = Client.create(user1, ClientType.ORGANIZATION, "무신사", "111-22-33333");
-        client1.update("무신사", "111-22-33333", ClientType.ORGANIZATION, "대한민국 No.1 패션 플랫폼 무신사입니다.", "https://image.msscdn.net/mfile_s01/2021/04/16/0919ec3116fc53e878ecdfab2d90eb11.jpg");
+        client1.update("무신사", "111-22-33333", ClientType.ORGANIZATION, "대한민국 No.1 패션 플랫폼 무신사입니다.",
+                "https://image.msscdn.net/mfile_s01/2021/04/16/0919ec3116fc53e878ecdfab2d90eb11.jpg");
         clientRepository.save(client1);
 
         User user2 = User.createLocal(
@@ -163,7 +166,8 @@ public class InitData {
         user2.updateStatus(UserStatus.ACTIVE);
         userRepository.save(user2);
         Client client2 = Client.create(user2, ClientType.ORGANIZATION, "지그재그", "222-33-44444");
-        client2.update("지그재그", "222-33-44444", ClientType.ORGANIZATION, "나를 찾는 1020 여성 쇼핑앱 지그재그입니다.", "https://example.com/zigzag.jpg");
+        client2.update("지그재그", "222-33-44444", ClientType.ORGANIZATION, "나를 찾는 1020 여성 쇼핑앱 지그재그입니다.",
+                "https://example.com/zigzag.jpg");
         clientRepository.save(client2);
 
         User user3 = User.createLocal(
@@ -174,7 +178,8 @@ public class InitData {
         user3.updateStatus(UserStatus.ACTIVE);
         userRepository.save(user3);
         Client client3 = Client.create(user3, ClientType.INDIVIDUAL, "에이블리", "333-44-55555");
-        client3.update("에이블리", "333-44-55555", ClientType.INDIVIDUAL, "내 스타일을 가장 잘 아는 쇼핑몰 에이블리입니다.", "https://example.com/ably.jpg");
+        client3.update("에이블리", "333-44-55555", ClientType.INDIVIDUAL, "내 스타일을 가장 잘 아는 쇼핑몰 에이블리입니다.",
+                "https://example.com/ably.jpg");
         clientRepository.save(client3);
     }
 }

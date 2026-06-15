@@ -5,6 +5,7 @@ import com.modle.domain.user.dto.request.*;
 import com.modle.domain.user.dto.response.LoginResponse;
 import com.modle.domain.user.entity.User;
 import com.modle.domain.user.service.UserService;
+import com.modle.global.auth.SecurityUser;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
 import com.modle.global.response.ApiResponse;
@@ -12,6 +13,7 @@ import com.modle.global.rq.Rq;
 import com.modle.domain.user.service.EmailVerifyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -112,5 +114,31 @@ public class UserController {
         rq.setCookie("accessToken", newAccessToken, 60 * 30);
 
         return new ApiResponse<>("200-1", "토큰이 재발급되었습니다.");
+    }
+
+    @PostMapping("/signup/additional")
+    public ApiResponse<Void> signupAdditional(
+            @Valid @RequestBody AdditionalInfoRequest request,
+            @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        userService.completeSignup(securityUser.getId(), request);
+
+        // 완료 후 갱신된 role로 토큰 재발급
+        User user = userService.findById(securityUser.getId());
+
+        String accessToken = userService.genAccessToken(user);
+        String refreshToken = userService.genRefreshToken(user);
+        rq.setCookie("accessToken", accessToken, 60 * 30);
+        rq.setCookie("refreshToken", refreshToken);
+
+        return new ApiResponse<>("200-1", "추가 정보 입력이 완료되었습니다.");
+    }
+
+    @GetMapping("/me")
+    public ApiResponse<UserDto> me(
+            @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        User user = userService.findById(securityUser.getId());
+        return new ApiResponse<>("200-1", "내 정보 조회 성공", new UserDto(user));
     }
 }
