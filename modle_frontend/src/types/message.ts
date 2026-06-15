@@ -14,6 +14,9 @@ export interface MessageConversation {
   modelId: number;
   postId: number | null;
   applicationId: number | null;
+  participant: MessageParticipant;
+  latestMessage: MessageItem | null;
+  unreadCount: number;
   createdAt: string;
 }
 
@@ -47,9 +50,13 @@ export interface MessageThread {
 
 export interface MessageInbox {
   currentUser: MessageParticipant;
-  participants: MessageParticipant[];
   conversations: MessageConversation[];
-  messages: MessageItem[];
+}
+
+export interface ConversationMessages {
+  content: MessageItem[];
+  totalElements: number;
+  hasNext: boolean;
 }
 
 export interface RecruitingJob {

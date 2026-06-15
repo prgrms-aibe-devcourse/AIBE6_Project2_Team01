@@ -2,16 +2,19 @@ import type {
   MessageConversation,
   MessageInbox,
   MessageItem,
-  MessageParticipant,
   RecruitingJob,
+  ConversationMessages,
 } from "@/types/message";
 import { authenticatedFetch } from "@/lib/api/client";
 
-interface MessagePage {
-  currentUser: MessageParticipant;
-  participants: MessageParticipant[];
+interface MessageInboxApiResponse {
+  currentUser: MessageInbox["currentUser"];
   conversations: MessageConversation[];
+}
+
+interface ConversationMessagesApiResponse {
   content: ApiMessage[];
+  totalElements: number;
   hasNext: boolean;
 }
 
@@ -28,32 +31,33 @@ function toMessageItem(message: ApiMessage): MessageItem {
 }
 
 export async function getInbox(): Promise<MessageInbox> {
-  const messages: MessageItem[] = [];
-  const participants = new Map<number, MessageParticipant>();
-  const conversations = new Map<number, MessageConversation>();
-  let currentUser: MessageParticipant | null = null;
-  let page = 0;
-  let hasNext = true;
-
-  while (hasNext) {
-    const response = await authenticatedFetch(`/api/v1/messages?page=${page}&size=100`);
-    if (!response.ok) throw new Error("쪽지함을 불러오지 못했습니다.");
-
-    const responsePage: MessagePage = await response.json();
-    currentUser = responsePage.currentUser;
-    responsePage.participants.forEach((participant) => participants.set(participant.id, participant));
-    responsePage.conversations.forEach((conversation) => conversations.set(conversation.id, conversation));
-    messages.push(...responsePage.content.map(toMessageItem));
-    hasNext = responsePage.hasNext;
-    page += 1;
-  }
-
-  if (!currentUser) throw new Error("로그인 사용자 정보를 확인하지 못했습니다.");
+  const response = await authenticatedFetch("/api/v1/messages/conversations");
+  if (!response.ok) throw new Error("쪽지함을 불러오지 못했습니다.");
+  const inbox = (await response.json()) as MessageInboxApiResponse;
   return {
-    currentUser,
-    participants: [...participants.values()],
-    conversations: [...conversations.values()],
-    messages,
+    currentUser: inbox.currentUser,
+    conversations: inbox.conversations.map((conversation) => ({
+      ...conversation,
+      latestMessage: conversation.latestMessage
+        ? toMessageItem(conversation.latestMessage as ApiMessage)
+        : null,
+    })),
+  };
+}
+
+export async function getConversationMessages(
+  conversationId: number,
+  page = 0,
+  size = 50,
+): Promise<ConversationMessages> {
+  const response = await authenticatedFetch(
+    `/api/v1/messages/conversations/${conversationId}/messages?page=${page}&size=${size}`,
+  );
+  if (!response.ok) throw new Error("대화 내용을 불러오지 못했습니다.");
+  const messagePage = (await response.json()) as ConversationMessagesApiResponse;
+  return {
+    ...messagePage,
+    content: messagePage.content.map(toMessageItem).reverse(),
   };
 }
 

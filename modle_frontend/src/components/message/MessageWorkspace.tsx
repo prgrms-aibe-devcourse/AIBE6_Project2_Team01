@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import {
   createConversation,
+  getConversationMessages,
   getInbox,
   getMyRecruitingJobs,
   markConversationAsRead,
@@ -30,16 +31,18 @@ function participantInitial(name: string): string {
   return name.trim().slice(0, 1) || "?";
 }
 
-function buildThreads(inbox: MessageInbox): MessageThread[] {
-  const participantMap = new Map(inbox.participants.map((participant) => [participant.id, participant]));
-  return inbox.conversations.map((conversation) => {
+function buildThreads(inbox: MessageInbox, currentThreads: MessageThread[] = []): MessageThread[] {
+  const currentMap = new Map(currentThreads.map((thread) => [thread.id, thread]));
+  return [...inbox.conversations].sort((a, b) => {
+    const aTime = a.latestMessage?.createdAt ?? a.createdAt;
+    const bTime = b.latestMessage?.createdAt ?? b.createdAt;
+    return bTime.localeCompare(aTime);
+  }).map((conversation) => {
     const participantId =
       conversation.clientId === inbox.currentUser.id ? conversation.modelId : conversation.clientId;
-    const participant = participantMap.get(participantId);
-    const messages = inbox.messages
-      .filter((message) => message.conversationId === conversation.id)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    const last = messages.at(-1);
+    const participant = conversation.participant;
+    const messages = currentMap.get(String(conversation.id))?.messages ?? [];
+    const last = conversation.latestMessage;
     return {
       id: String(conversation.id),
       conversationId: conversation.id,
@@ -53,15 +56,9 @@ function buildThreads(inbox: MessageInbox): MessageThread[] {
       time: last
         ? new Intl.DateTimeFormat("ko-KR", { month: "numeric", day: "numeric" }).format(new Date(last.createdAt))
         : "",
-      unreadCount: messages.filter(
-        (message) => message.receiverId === inbox.currentUser.id && !message.isRead,
-      ).length,
+      unreadCount: conversation.unreadCount,
       messages,
     };
-  }).sort((a, b) => {
-    const aTime = a.messages.at(-1)?.createdAt ?? "";
-    const bTime = b.messages.at(-1)?.createdAt ?? "";
-    return bTime.localeCompare(aTime);
   });
 }
 
@@ -105,7 +102,7 @@ export function MessageWorkspace() {
     return threads.filter(
       (thread) =>
         thread.participantName.toLocaleLowerCase("ko-KR").includes(query) ||
-        thread.messages.some((message) => message.content.toLocaleLowerCase("ko-KR").includes(query)),
+        thread.preview.toLocaleLowerCase("ko-KR").includes(query),
     );
   }, [searchQuery, threads]);
   const selectedJob = jobs.find((job) => job.id === selectedThread?.postId) ?? null;
@@ -126,21 +123,23 @@ export function MessageWorkspace() {
 
       try {
         const inbox = await getInbox();
-        const loadedThreads = buildThreads(inbox);
-        const existingTarget = draft
-          ? loadedThreads.find((thread) => thread.participantId === draft.participantId)
-          : null;
-        const targetThread = existingTarget ?? draft;
-        if (draft && !existingTarget) loadedThreads.unshift(draft);
         setCurrentUser(inbox.currentUser);
-        setThreads(loadedThreads);
-        setSelectedId((current) => {
-          if (targetThread) return targetThread.id;
-          return loadedThreads.some((thread) => thread.id === current)
-            ? current
-            : loadedThreads[0]?.id ?? null;
+        setThreads((currentThreads) => {
+          const loadedThreads = buildThreads(inbox, currentThreads);
+          const existingTarget = draft
+            ? loadedThreads.find((thread) => thread.participantId === draft.participantId)
+            : null;
+          const targetThread = existingTarget ?? draft;
+          if (draft && !existingTarget) loadedThreads.unshift(draft);
+          setSelectedId((current) => {
+            if (targetThread) return targetThread.id;
+            return loadedThreads.some((thread) => thread.id === current)
+              ? current
+              : loadedThreads[0]?.id ?? null;
+          });
+          if (existingTarget) router.replace("/messages");
+          return loadedThreads;
         });
-        if (existingTarget) router.replace("/messages");
         if (userRole === "CLIENT") {
           getMyRecruitingJobs()
             .then(setJobs)
@@ -163,6 +162,26 @@ export function MessageWorkspace() {
   }, [isAuthLoading, router, user]);
 
   const selectThread = useCallback((id: string) => setSelectedId(id), []);
+
+  useEffect(() => {
+    if (!selectedThread?.conversationId) return;
+    const conversationId = selectedThread.conversationId;
+    async function loadMessages() {
+      try {
+        const page = await getConversationMessages(conversationId);
+        setThreads((current) => current.map((thread) =>
+          thread.conversationId === conversationId
+            ? { ...thread, messages: page.content }
+            : thread,
+        ));
+      } catch (requestError) {
+        setError((requestError as Error).message);
+      }
+    }
+    void loadMessages();
+    const pollingId = window.setInterval(loadMessages, POLLING_INTERVAL_MS);
+    return () => window.clearInterval(pollingId);
+  }, [selectedThread?.conversationId]);
 
   useEffect(() => {
     if (!currentUser || !selectedThread?.conversationId) return;
