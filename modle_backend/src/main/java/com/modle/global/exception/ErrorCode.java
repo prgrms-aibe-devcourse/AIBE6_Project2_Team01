@@ -35,6 +35,8 @@ public enum ErrorCode {
     //계약
     CONTRACT_ALREADY_EXISTS(HttpStatus.CONFLICT, "409-2", "이미 해당 지원 ID로 계약이 존재합니다."),
     INVALID_CONTRACT_SHOOT_TIME(HttpStatus.BAD_REQUEST, "400-5", "촬영 종료 시간은 촬영 시작 시간 이후여야 합니다."),
+    INVALID_FILE_CONTRACT(HttpStatus.BAD_REQUEST, "400-6", "파일 첨부 방식 계약은 업로드된 계약서 정보가 필요합니다."),
+    INVALID_CONTRACT_PAYMENT(HttpStatus.BAD_REQUEST, "400-7", "계약 보수 값이 보수 유형과 맞지 않습니다."),
 
     // 공고
     JOB_POSTING_NOT_FOUND(HttpStatus.NOT_FOUND, "404-2", "공고를 찾을 수 없습니다."),
