@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
@@ -39,13 +40,17 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 
             Map<String, Object> kakaoAccount = oAuth2User.getAttribute("kakao_account");
             if (kakaoAccount == null || kakaoAccount.get("email") == null) {
-                throw new OAuth2AuthenticationException("카카오 이메일 동의가 필요합니다.");
+                throw new OAuth2AuthenticationException(
+                        new OAuth2Error("kakao_email_required", "카카오 이메일 동의가 필요합니다.", null)
+                );
             }
             email = (String) kakaoAccount.get("email");
         } else if (provider == Provider.NAVER) {
             Map<String, Object> response = oAuth2User.getAttribute("response");
             if (response == null || response.get("email") == null) {
-                throw new OAuth2AuthenticationException("네이버 이메일 동의가 필요합니다.");
+                throw new OAuth2AuthenticationException(
+                        new OAuth2Error("naver_email_required", "네이버 이메일 동의가 필요합니다.", null)
+                );
             }
             providerId = (String) response.get("id");
             email = (String) response.get("email");
@@ -60,7 +65,13 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                 .map(existingUser -> {
                     // provider가 다르면 차단
                     if (existingUser.getProvider() != provider) {
-                        throw new CustomException(ErrorCode.OAUTH_EMAIL_ALREADY_EXISTS);
+                        throw new OAuth2AuthenticationException(
+                                new OAuth2Error(
+                                        ErrorCode.OAUTH_EMAIL_ALREADY_EXISTS.getResultCode(),
+                                        ErrorCode.OAUTH_EMAIL_ALREADY_EXISTS.getMessage(),
+                                        null
+                                )
+                        );
                     }
                     return existingUser;
                 })
