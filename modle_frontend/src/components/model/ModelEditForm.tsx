@@ -47,9 +47,9 @@ export function ModelEditForm({ initialData }: Props) {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target as any;
+    const { name, value, type } = e.target;
     
-    let parsedValue: any = value;
+    let parsedValue: React.ChangeEvent<HTMLInputElement> = value;
     if (type === 'number') {
       parsedValue = value ? Number(value) : undefined;
     } else if (name === 'gender') {
@@ -116,8 +116,8 @@ export function ModelEditForm({ initialData }: Props) {
       
       router.push('/my/profile'); // TODO: Create /my/profile page if it doesn't exist
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || '프로필 수정에 실패했습니다.');
+    } catch (err: unknown) {
+      setError((err as Error).message || '프로필 수정에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -147,7 +147,8 @@ export function ModelEditForm({ initialData }: Props) {
           />
           <div className="w-36 h-36 rounded-full overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center relative">
             {previewUrl ? (
-              <img 
+              /* eslint-disable-next-line @next/next/no-img-element */
+          <img 
                 src={previewUrl} 
                 alt="프로필 미리보기" 
                 className="w-full h-full object-cover" 

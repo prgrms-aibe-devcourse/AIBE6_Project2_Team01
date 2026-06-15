@@ -14,4 +14,6 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
     List<Client> findByUser_Status(UserStatus userStatus);
 
     Optional<Client> findByUser(User user);
+
+    Optional<Client> findByUserId(Long userId);
 }

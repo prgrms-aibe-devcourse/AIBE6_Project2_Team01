@@ -22,6 +22,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clients/my": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 프로필 단건 조회 */
+        get: operations["getMyItem_1"];
+        /** 내 프로필 수정 */
+        put: operations["modifyMyItem_1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/portfolios": {
         parameters: {
             query?: never;
@@ -38,24 +56,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/models": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** 다건 조회 */
-        get: operations["getItems"];
-        put?: never;
-        /** 모델 프로필 생성 */
-        post: operations["create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/jobs": {
         parameters: {
             query?: never;
@@ -65,7 +65,7 @@ export interface paths {
         };
         get: operations["getJobPostings"];
         put?: never;
-        post: operations["create_1"];
+        post: operations["create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -134,22 +134,6 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["registerClient"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/signup/additional": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["signupAdditional"];
         delete?: never;
         options?: never;
         head?: never;
@@ -284,6 +268,23 @@ export interface paths {
         patch: operations["approveClient"];
         trace?: never;
     };
+    "/api/v1/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 다건 조회 */
+        get: operations["getItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/models/{id}": {
         parameters: {
             query?: never;
@@ -318,17 +319,36 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/auth/me": {
+    "/api/v1/clients": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["me"];
+        /** 다건 조회 */
+        get: operations["getItems_1"];
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clients/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 단건 조회 */
+        get: operations["getItem_1"];
+        put?: never;
+        post?: never;
+        /** 삭제 */
+        delete: operations["delete_2"];
         options?: never;
         head?: never;
         patch?: never;
@@ -384,64 +404,28 @@ export interface components {
             introduction?: string;
             profileImageUrl?: string;
         };
-        ApiResponseVoid: {
-            resultCode?: string;
-            msg?: string;
-            data?: unknown;
+        RsDataVoid: {
+            resultCode: string;
+            msg: string;
+            data: unknown;
         };
-        ApiResponseListPortfolioDto: {
-            resultCode?: string;
-            msg?: string;
-            data?: components["schemas"]["PortfolioDto"][];
+        ClientModifyReqBody: {
+            companyName: string;
+            companyNumber: string;
+            /** @enum {string} */
+            clientType?: "INDIVIDUAL" | "ORGANIZATION";
+            introduction?: string;
+            profileImageUrl?: string;
         };
         PortfolioDto: {
             /** Format: int64 */
             id?: number;
             imgUrl?: string;
         };
-        ModelCreateReqBody: {
-            name: string;
-            /** Format: int32 */
-            height: number;
-            /** Format: int32 */
-            weight: number;
-            gender: boolean;
-            /** Format: int32 */
-            age: number;
-            categories?: string[];
-            tags?: string[];
-            introduction?: string;
-            profileImageUrl?: string;
-        };
-        ApiResponseModelDto: {
-            resultCode?: string;
-            msg?: string;
-            data?: components["schemas"]["ModelDto"];
-        };
-        ModelDto: {
-            /** Format: int64 */
-            id: number;
-            /** Format: date-time */
-            createdDate: string;
-            /** Format: date-time */
-            modifiedDate: string;
-            name: string;
-            /** Format: int32 */
-            height: number;
-            /** Format: int32 */
-            weight: number;
-            gender: boolean;
-            /** Format: int32 */
-            age: number;
-            categories?: string[];
-            tags?: string[];
-            introduction?: string;
-            profileImageUrl?: string;
-            /** Format: double */
-            avgRating: number;
-            /** Format: int32 */
-            reviewCount: number;
-            portfolios?: components["schemas"]["PortfolioDto"][];
+        RsDataListPortfolioDto: {
+            resultCode: string;
+            msg: string;
+            data: components["schemas"]["PortfolioDto"][];
         };
         JobPostingCreateRequest: {
             title: string;
@@ -567,6 +551,11 @@ export interface components {
             age?: number;
             gender: boolean;
         };
+        ApiResponseVoid: {
+            resultCode?: string;
+            msg?: string;
+            data?: unknown;
+        };
         ClientRegisterRequest: {
             email: string;
             password: string;
@@ -575,23 +564,6 @@ export interface components {
             companyNumber: string;
             /** @enum {string} */
             clientType: "INDIVIDUAL" | "ORGANIZATION";
-        };
-        AdditionalInfoRequest: {
-            /** @enum {string} */
-            role: "MODEL" | "CLIENT" | "ADMIN";
-            region: string;
-            name?: string;
-            /** Format: int32 */
-            height?: number;
-            /** Format: int32 */
-            weight?: number;
-            /** Format: int32 */
-            age?: number;
-            gender?: boolean;
-            companyName?: string;
-            companyNumber?: string;
-            /** @enum {string} */
-            clientType?: "INDIVIDUAL" | "ORGANIZATION";
         };
         LoginRequest: {
             email: string;
@@ -613,9 +585,7 @@ export interface components {
             /** Format: date-time */
             modifyDate: string;
             /** @enum {string} */
-            role?: "MODEL" | "CLIENT" | "ADMIN";
-            /** @enum {string} */
-            status?: "INCOMPLETE" | "PENDING" | "ACTIVE" | "SUSPENDED" | "WITHDRAWN" | "REJECTED";
+            role: "MODEL" | "CLIENT" | "ADMIN";
         };
         EmailVerifyRequest: {
             email: string;
@@ -656,10 +626,40 @@ export interface components {
         RejectRequest: {
             reason: string;
         };
-        ApiResponseListModelDto: {
-            resultCode?: string;
-            msg?: string;
-            data?: components["schemas"]["ModelDto"][];
+        ModelDto: {
+            /** Format: int64 */
+            id: number;
+            /** Format: date-time */
+            createdDate: string;
+            /** Format: date-time */
+            modifiedDate: string;
+            name: string;
+            /** Format: int32 */
+            height: number;
+            /** Format: int32 */
+            weight: number;
+            gender: boolean;
+            /** Format: int32 */
+            age: number;
+            categories?: string[];
+            tags?: string[];
+            introduction?: string;
+            profileImageUrl?: string;
+            /** Format: double */
+            avgRating: number;
+            /** Format: int32 */
+            reviewCount: number;
+            portfolios?: components["schemas"]["PortfolioDto"][];
+        };
+        RsDataListModelDto: {
+            resultCode: string;
+            msg: string;
+            data: components["schemas"]["ModelDto"][];
+        };
+        RsDataModelDto: {
+            resultCode: string;
+            msg: string;
+            data: components["schemas"]["ModelDto"];
         };
         Pageable: {
             /** Format: int32 */
@@ -712,19 +712,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
+            paged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
-            paged?: boolean;
-            unpaged?: boolean;
             /** Format: int32 */
             pageSize?: number;
             /** Format: int32 */
             pageNumber?: number;
+            unpaged?: boolean;
         };
         SortObject: {
-            empty?: boolean;
             sorted?: boolean;
+            empty?: boolean;
             unsorted?: boolean;
         };
         ApiResponseObject: {
@@ -744,10 +744,32 @@ export interface components {
             title?: string;
             content?: string;
         };
-        ApiResponseUserDto: {
-            resultCode?: string;
-            msg?: string;
-            data?: components["schemas"]["UserDto"];
+        ClientDto: {
+            /** Format: int64 */
+            id: number;
+            /** Format: date-time */
+            createdDate: string;
+            /** Format: date-time */
+            modifiedDate: string;
+            clientType: string;
+            companyName: string;
+            componyNumber?: string;
+            introduction?: string;
+            profileImageUrl?: string;
+            /** Format: double */
+            avgRating?: number;
+            /** Format: int32 */
+            reviewCount?: number;
+        };
+        RsDataListClientDto: {
+            resultCode: string;
+            msg: string;
+            data: components["schemas"]["ClientDto"][];
+        };
+        RsDataClientDto: {
+            resultCode: string;
+            msg: string;
+            data: components["schemas"]["ClientDto"];
         };
         ApiResponseListPendingClientResponse: {
             resultCode?: string;
@@ -790,7 +812,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseModelDto"];
+                    "*/*": components["schemas"]["RsDataModelDto"];
                 };
             };
         };
@@ -814,7 +836,51 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseVoid"];
+                    "*/*": components["schemas"]["RsDataVoid"];
+                };
+            };
+        };
+    };
+    getMyItem_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataClientDto"];
+                };
+            };
+        };
+    };
+    modifyMyItem_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClientModifyReqBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataVoid"];
                 };
             };
         };
@@ -840,51 +906,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseListPortfolioDto"];
-                };
-            };
-        };
-    };
-    getItems: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ApiResponseListModelDto"];
-                };
-            };
-        };
-    };
-    create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ModelCreateReqBody"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ApiResponseModelDto"];
+                    "*/*": components["schemas"]["RsDataListPortfolioDto"];
                 };
             };
         };
@@ -913,7 +935,7 @@ export interface operations {
             };
         };
     };
-    create_1: {
+    create: {
         parameters: {
             query?: never;
             header?: never;
@@ -1024,30 +1046,6 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ClientRegisterRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ApiResponseVoid"];
-                };
-            };
-        };
-    };
-    signupAdditional: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdditionalInfoRequest"];
             };
         };
         responses: {
@@ -1292,6 +1290,26 @@ export interface operations {
             };
         };
     };
+    getItems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataListModelDto"];
+                };
+            };
+        };
+    };
     getItem: {
         parameters: {
             query?: never;
@@ -1309,7 +1327,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseModelDto"];
+                    "*/*": components["schemas"]["RsDataModelDto"];
                 };
             };
         };
@@ -1331,7 +1349,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseModelDto"];
+                    "*/*": components["schemas"]["RsDataModelDto"];
                 };
             };
         };
@@ -1358,7 +1376,7 @@ export interface operations {
             };
         };
     };
-    me: {
+    getItems_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -1373,7 +1391,51 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseUserDto"];
+                    "*/*": components["schemas"]["RsDataListClientDto"];
+                };
+            };
+        };
+    };
+    getItem_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataClientDto"];
+                };
+            };
+        };
+    };
+    delete_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataClientDto"];
                 };
             };
         };
@@ -1415,7 +1477,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseVoid"];
+                    "*/*": components["schemas"]["RsDataVoid"];
                 };
             };
         };
