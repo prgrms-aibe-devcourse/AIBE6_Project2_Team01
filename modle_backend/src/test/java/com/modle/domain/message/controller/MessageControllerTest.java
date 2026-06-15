@@ -1,6 +1,7 @@
 package com.modle.domain.message.controller;
 
 import com.modle.domain.message.service.MessageService;
+import com.modle.domain.message.dto.response.ConversationMessagesResponse;
 import com.modle.global.auth.SecurityUser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,14 +12,18 @@ import org.springframework.core.MethodParameter;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import java.util.List;
+
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,7 +40,10 @@ class MessageControllerTest {
     void markConversationAsRead_인증사용자와대화문맥전달() throws Exception {
         SecurityUser user = new SecurityUser(1L, "client@example.com", "CLIENT");
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(messageController)
-                .setCustomArgumentResolvers(authenticationPrincipalResolver(user))
+                .setCustomArgumentResolvers(
+                        authenticationPrincipalResolver(user),
+                        new PageableHandlerMethodArgumentResolver()
+                )
                 .build();
         given(messageService.markConversationAsRead(1L, 100L)).willReturn(3);
 
@@ -50,6 +58,33 @@ class MessageControllerTest {
                 .andExpect(content().json("3"));
 
         verify(messageService).markConversationAsRead(1L, 100L);
+    }
+
+    @Test
+    void getConversationMessages_선택한대화방ID전달() throws Exception {
+        SecurityUser user = new SecurityUser(1L, "client@example.com", "CLIENT");
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(messageController)
+                .setCustomArgumentResolvers(
+                        authenticationPrincipalResolver(user),
+                        new PageableHandlerMethodArgumentResolver()
+                )
+                .build();
+        given(messageService.getConversationMessages(
+                org.mockito.ArgumentMatchers.eq(1L),
+                org.mockito.ArgumentMatchers.eq(100L),
+                org.mockito.ArgumentMatchers.any()
+        )).willReturn(new ConversationMessagesResponse(List.of(), 0, false));
+
+        mockMvc.perform(get("/api/v1/messages/conversations/100/messages")
+                        .param("page", "0")
+                        .param("size", "20"))
+                .andExpect(status().isOk());
+
+        verify(messageService).getConversationMessages(
+                org.mockito.ArgumentMatchers.eq(1L),
+                org.mockito.ArgumentMatchers.eq(100L),
+                org.mockito.ArgumentMatchers.any()
+        );
     }
 
     private HandlerMethodArgumentResolver authenticationPrincipalResolver(SecurityUser user) {

@@ -4,8 +4,9 @@ import com.modle.domain.message.dto.request.CreateConversationRequest;
 import com.modle.domain.message.dto.request.SendMessageRequest;
 import com.modle.domain.message.dto.request.ReadConversationRequest;
 import com.modle.domain.message.dto.response.MessageConversationResponse;
+import com.modle.domain.message.dto.response.MessageInboxResponse;
+import com.modle.domain.message.dto.response.ConversationMessagesResponse;
 import com.modle.domain.message.dto.response.MessageResponse;
-import com.modle.domain.message.dto.response.MessagePageResponse;
 import com.modle.domain.message.service.MessageService;
 import com.modle.global.auth.SecurityUser;
 import jakarta.validation.Valid;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,12 +48,18 @@ public class MessageController {
         return messageService.sendMessage(user.getId(), request);
     }
 
-    @GetMapping
-    public MessagePageResponse getInbox(
+    @GetMapping("/conversations")
+    public MessageInboxResponse getConversations(@AuthenticationPrincipal SecurityUser user) {
+        return messageService.getConversations(user.getId());
+    }
+
+    @GetMapping("/conversations/{conversationId}/messages")
+    public ConversationMessagesResponse getConversationMessages(
             @AuthenticationPrincipal SecurityUser user,
+            @PathVariable Long conversationId,
             Pageable pageable
     ) {
-        return messageService.getInbox(user.getId(), pageable);
+        return messageService.getConversationMessages(user.getId(), conversationId, pageable);
     }
 
     @PatchMapping("/read")

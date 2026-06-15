@@ -6,7 +6,9 @@ import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.message.dto.request.CreateConversationRequest;
 import com.modle.domain.message.dto.request.SendMessageRequest;
 import com.modle.domain.message.dto.response.MessageConversationResponse;
-import com.modle.domain.message.dto.response.MessagePageResponse;
+import com.modle.domain.message.dto.response.MessageConversationSummaryResponse;
+import com.modle.domain.message.dto.response.MessageInboxResponse;
+import com.modle.domain.message.dto.response.ConversationMessagesResponse;
 import com.modle.domain.message.dto.response.MessageParticipantResponse;
 import com.modle.domain.message.dto.response.MessageResponse;
 import com.modle.domain.message.entity.Message;
@@ -108,18 +110,9 @@ public class MessageService {
         return MessageResponse.from(messageRepository.save(message));
     }
 
-    public MessagePageResponse getInbox(Long userId, Pageable pageable) {
+    public MessageInboxResponse getConversations(Long userId) {
         List<MessageConversation> conversations =
                 conversationRepository.findByClientIdOrModelIdOrderByCreatedDateDesc(userId, userId);
-        List<Long> conversationIds = conversations.stream()
-                .map(MessageConversation::getId)
-                .toList();
-        Page<Message> messages = conversationIds.isEmpty()
-                ? Page.empty(pageable)
-                : messageRepository.findByConversationIdInOrderByCreatedAtDesc(
-                        conversationIds,
-                        pageable
-                );
 
         Set<Long> allUserIds = new LinkedHashSet<>();
         allUserIds.add(userId);
@@ -132,18 +125,40 @@ public class MessageService {
                 .collect(Collectors.toMap(User::getId, Function.identity()));
         MessageParticipantResponse currentUser =
                 MessageParticipantResponse.from(userMap.get(userId));
-        List<MessageParticipantResponse> participants = allUserIds.stream()
-                .filter(id -> !id.equals(userId))
-                .map(userMap::get)
-                .map(MessageParticipantResponse::from)
+        List<MessageConversationSummaryResponse> summaries = conversations.stream()
+                .map(conversation -> {
+                    Long participantId = conversation.otherParticipantId(userId);
+                    MessageParticipantResponse participant =
+                            MessageParticipantResponse.from(userMap.get(participantId));
+                    MessageResponse latestMessage = messageRepository
+                            .findFirstByConversationIdOrderByCreatedAtDesc(conversation.getId())
+                            .map(MessageResponse::from)
+                            .orElse(null);
+                    long unreadCount = messageRepository
+                            .countByConversationIdAndReceiverIdAndReadFalse(conversation.getId(), userId);
+                    return MessageConversationSummaryResponse.from(
+                            conversation,
+                            participant,
+                            latestMessage,
+                            unreadCount
+                    );
+                })
                 .toList();
 
-        return MessagePageResponse.from(
-                currentUser,
-                participants,
-                conversations.stream().map(MessageConversationResponse::from).toList(),
-                messages.map(MessageResponse::from)
-        );
+        return new MessageInboxResponse(currentUser, summaries);
+    }
+
+    public ConversationMessagesResponse getConversationMessages(
+            Long userId,
+            Long conversationId,
+            Pageable pageable
+    ) {
+        MessageConversation conversation = findConversation(conversationId);
+        validateParticipant(conversation, userId);
+        Page<MessageResponse> messages = messageRepository
+                .findByConversationIdOrderByCreatedAtDesc(conversationId, pageable)
+                .map(MessageResponse::from);
+        return ConversationMessagesResponse.from(messages);
     }
 
     @Transactional

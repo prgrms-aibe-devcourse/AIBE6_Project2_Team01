@@ -21,6 +21,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -150,6 +152,22 @@ class MessageServiceTest {
                 .isInstanceOf(CustomException.class)
                 .extracting(exception -> ((CustomException) exception).getErrorCode())
                 .isEqualTo(ErrorCode.MESSAGE_ACCESS_DENIED);
+    }
+
+    @Test
+    void getConversationMessages_선택한대화방메시지만조회() {
+        MessageConversation conversation = conversation(100L, 1L, 2L);
+        Message message = message(100L, 2L, 1L);
+        PageRequest pageable = PageRequest.of(0, 20);
+        given(conversationRepository.findById(100L)).willReturn(Optional.of(conversation));
+        given(messageRepository.findByConversationIdOrderByCreatedAtDesc(100L, pageable))
+                .willReturn(new PageImpl<>(List.of(message), pageable, 1));
+
+        var response = messageService.getConversationMessages(1L, 100L, pageable);
+
+        assertThat(response.content()).hasSize(1);
+        assertThat(response.content().getFirst().conversationId()).isEqualTo(100L);
+        verify(messageRepository).findByConversationIdOrderByCreatedAtDesc(100L, pageable);
     }
 
     @Test
