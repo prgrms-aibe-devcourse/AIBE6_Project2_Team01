@@ -9,49 +9,49 @@ export function ModelCard({ model }: { model: Model }) {
       : (model.profileImageUrl || '/placeholder.png');
 
   return (
-    <div className="group border border-gray-200 bg-white hover:border-black transition-all hover:shadow-md cursor-pointer">
+    <div className="group cursor-pointer">
       {/* 상단 메인 이미지 (최근 포트폴리오) */}
-      <div className="relative aspect-[3/4] bg-gray-50 overflow-hidden">
+      <div className="relative aspect-[3/4] bg-gray-100 overflow-hidden mb-3">
         <Image 
           src={latestPortfolioImage} 
           alt={model.name}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          className="object-cover group-hover:scale-105 transition-transform duration-700"
         />
         
-        {/* 하단 우측에 걸쳐진 동그란 프로필 이미지 */}
-        <div className="absolute -bottom-5 right-4 w-12 h-12 rounded-full border-[3px] border-white overflow-hidden bg-white shadow-sm z-10">
-          <Image 
-            src={model.profileImageUrl || '/placeholder.png'} 
-            alt={`${model.name} 프로필`}
-            fill
-            className="object-cover"
-          />
+        {/* 호버 시 나타나는 찜(하트) 버튼 */}
+        <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <button className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-black hover:bg-black hover:text-white transition-colors border border-gray-200 shadow-sm">
+            ♡
+          </button>
         </div>
       </div>
 
       {/* 하단 텍스트 영역 */}
-      <div className="p-4 pt-6 relative border-t border-gray-100">
-        <h3 className="text-lg text-black font-extrabold tracking-tight">{model.name}</h3>
-        <p className="text-xs text-gray-500 mt-1 font-bold">
-          {model.region} | ★ {model.rating} ({model.reviewCount})
+      <div className="flex flex-col gap-1 px-1">
+        <div className="flex justify-between items-center">
+          <h3 className="text-[14px] text-black font-extrabold tracking-widest uppercase">{model.name}</h3>
+          <span className="text-[12px] text-gray-900 font-bold tracking-wider">
+            ★ {model.rating} <span className="text-gray-400 font-normal">({model.reviewCount})</span>
+          </span>
+        </div>
+        
+        <p className="text-[12px] text-gray-500 font-medium mt-1">
+          {model.region} 
+          {(model.height || model.weight) ? ' | ' : ''}
+          {model.height ? `${model.height}cm ` : ''}
+          {model.weight ? `${model.weight}kg` : ''}
         </p>
         
-        {(model.age || model.height || model.weight) && (
-          <p className="text-[11px] text-gray-400 mt-1.5 font-medium tracking-wide uppercase">
-            {model.age ? `${model.age}세 ` : ''}
-            {model.height ? `${model.height}cm ` : ''}
-            {model.weight ? `${model.weight}kg` : ''}
-          </p>
+        {model.categories && model.categories.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {model.categories.map(cat => (
+              <span key={cat} className="text-[10px] text-gray-500 uppercase font-bold tracking-wider border border-gray-200 px-1.5 py-0.5 bg-gray-50">
+                {cat}
+              </span>
+            ))}
+          </div>
         )}
-        
-        <div className="flex flex-wrap gap-1 mt-4">
-          {model.categories?.map(cat => (
-            <span key={cat} className="text-[10px] uppercase font-bold bg-black text-white px-2.5 py-1 tracking-wider">
-              {cat}
-            </span>
-          ))}
-        </div>
       </div>
     </div>
   );
