@@ -17,6 +17,7 @@ export async function getModels(params: Record<string, string>): Promise<ModelLi
   if (Array.isArray(responseData)) {
     const models = responseData.map((item: any) => ({
       id: item.id,
+      userId: item.userId,
       name: item.name || '이름 없음',
       region: item.region || '지역 미상',
       rating: item.avgRating || 0,
@@ -55,6 +56,7 @@ export async function getModel(id: string | number): Promise<Model> {
   
   return {
     id: item.id,
+    userId: item.userId,
     name: item.name || '',
     region: item.region || '',
     rating: item.avgRating || 0,
@@ -85,6 +87,7 @@ export async function getMyModel(customHeaders?: HeadersInit): Promise<Model> {
   
   return {
     id: item.id,
+    userId: item.userId,
     name: item.name || '',
     region: item.region || '',
     rating: item.avgRating || 0,
@@ -123,4 +126,3 @@ export async function updateMyModel(modelData: Partial<Model>): Promise<void> {
     throw new Error((error as any).msg || '내 모델 정보를 수정하는데 실패했습니다.');
   }
 }
-
