@@ -35,7 +35,8 @@ public enum ErrorCode {
     // 공고
     JOB_POSTING_NOT_FOUND(HttpStatus.NOT_FOUND, "404-2", "공고를 찾을 수 없습니다."),
     JOB_POSTING_NOT_EDITABLE(HttpStatus.CONFLICT, "409-3", "모집 중 상태에서만 수정/삭제할 수 있습니다."),
-    JOB_POSTING_FORBIDDEN(HttpStatus.FORBIDDEN, "403-5", "공고에 대한 권한이 없습니다.");
+    JOB_POSTING_FORBIDDEN(HttpStatus.FORBIDDEN, "403-5", "공고에 대한 권한이 없습니다."),
+    JOB_POSTING_INVALID(HttpStatus.BAD_REQUEST, "400-6", "유효하지 않은 필터 값입니다.");
 
     private final HttpStatus status;
     private final String resultCode;

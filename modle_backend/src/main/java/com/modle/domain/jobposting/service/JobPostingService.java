@@ -82,12 +82,12 @@ public class JobPostingService {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
-        if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
-            throw new CustomException(ErrorCode.JOB_POSTING_NOT_EDITABLE);
-        }
-
         if (!jobPosting.getClientId().equals(clientId)) {
             throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
+        }
+
+        if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
+            throw new CustomException(ErrorCode.JOB_POSTING_NOT_EDITABLE);
         }
 
         jobPosting.update(request.title(), request.content(), request.category(), request.region(),
@@ -106,12 +106,12 @@ public class JobPostingService {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
-        if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
-            throw new CustomException(ErrorCode.JOB_POSTING_NOT_EDITABLE);
-        }
-
         if (!jobPosting.getClientId().equals(clientId)) {
             throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
+        }
+
+        if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
+            throw new CustomException(ErrorCode.JOB_POSTING_NOT_EDITABLE);
         }
 
         jobPostingRepository.delete(jobPosting);
@@ -119,10 +119,19 @@ public class JobPostingService {
 
     // JOB-005: 지역·카테고리 필터를 적용한 공고 목록을 반환한다.
     public Page<JobPostingListResponse> getJobPostings(String region, String category, Pageable pageable) {
-        Region regionEnum = (region != null && !region.isBlank()) ? Region.valueOf(region) : null;
-        Category categoryEnum = (category != null && !category.isBlank()) ? Category.valueOf(category) : null;
+        Region regionEnum = parseEnum(Region.class, region);
+        Category categoryEnum = parseEnum(Category.class, category);
         return jobPostingRepository.findByFilter(regionEnum, categoryEnum, pageable)
                 .map(JobPostingListResponse::from);
+    }
+
+    private <E extends Enum<E>> E parseEnum(Class<E> enumClass, String value) {
+        if (value == null || value.isBlank()) return null;
+        try {
+            return Enum.valueOf(enumClass, value);
+        } catch (IllegalArgumentException e) {
+            throw new CustomException(ErrorCode.JOB_POSTING_INVALID);
+        }
     }
 
     // JOB-006~008: 뷰어 타입에 따라 다른 공고 상세 정보를 반환한다.
