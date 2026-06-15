@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-import { GOOGLE_OAUTH_URL, KAKAO_OAUTH_URL } from '@/lib/auth/oauth'
+import { GOOGLE_OAUTH_URL, KAKAO_OAUTH_URL, NAVER_OAUTH_URL } from '@/lib/auth/oauth'
 
 export default function SignupPage() {
   return (
@@ -55,6 +55,13 @@ export default function SignupPage() {
           className="mt-3 flex h-11 w-full items-center justify-center rounded-md border border-hairline-strong bg-surface px-4 text-[15px] font-semibold leading-6 text-ink transition hover:border-ink"
         >
           카카오 계정으로 시작하기
+        </a>
+
+        <a
+          href={NAVER_OAUTH_URL}
+          className="mt-3 flex h-11 w-full items-center justify-center rounded-md border border-hairline-strong bg-surface px-4 text-[15px] font-semibold leading-6 text-ink transition hover:border-ink"
+        >
+          네이버 계정으로 시작하기
         </a>
 
         <p className="mt-6 text-center text-[13px] leading-5 text-mute">

@@ -9,7 +9,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { client } from "@/lib/api/client";
 import { getErrorMessage } from "@/lib/api/error";
-import { GOOGLE_OAUTH_URL, KAKAO_OAUTH_URL } from "@/lib/auth/oauth";
+import { GOOGLE_OAUTH_URL, KAKAO_OAUTH_URL, NAVER_OAUTH_URL } from "@/lib/auth/oauth";
 
 export default function LoginPage() {
   return (
@@ -118,6 +118,13 @@ function LoginForm() {
           className="mt-3 flex h-11 w-full items-center justify-center rounded-md border border-hairline-strong bg-surface px-4 text-[15px] font-semibold leading-6 text-ink transition hover:border-ink"
         >
           카카오로 로그인
+        </a>
+
+        <a
+          href={NAVER_OAUTH_URL}
+          className="mt-3 flex h-11 w-full items-center justify-center rounded-md border border-hairline-strong bg-surface px-4 text-[15px] font-semibold leading-6 text-ink transition hover:border-ink"
+        >
+          네이버로 로그인
         </a>
 
         <p className="mt-6 text-center text-[13px] leading-5 text-mute">
