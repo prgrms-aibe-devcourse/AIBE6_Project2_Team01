@@ -77,11 +77,8 @@ export default async function ClientDetailPage({ params }: PageProps) {
                </div>
 
                <div className="mt-8 md:mt-auto pt-8 flex gap-2">
-                  <button className="flex-[1] bg-white border border-gray-300 hover:border-black text-black font-bold py-4 text-center transition-colors">
+                  <button className="w-full bg-white border border-gray-300 hover:border-black text-black font-bold py-4 text-center transition-colors">
                     ♡ 관심 등록
-                  </button>
-                  <button className="flex-[2] bg-black hover:bg-gray-800 text-white font-bold py-4 text-center transition-colors">
-                    메시지 보내기
                   </button>
                </div>
             </div>
