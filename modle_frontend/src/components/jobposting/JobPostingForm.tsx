@@ -313,7 +313,10 @@ export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) 
                   key={pt}
                   type="button"
                   className={toggleBtn(form.payType === pt)}
-                  onClick={() => updateField("payType", pt)}
+                  onClick={() => {
+                    if (pt !== "CASH") updateField("payment", "");
+                    updateField("payType", pt);
+                  }}
                 >
                   {pt === "CASH" ? "현금" : pt === "SERVICE" ? "서비스" : "무료"}
                 </button>
@@ -321,15 +324,18 @@ export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) 
             </div>
           </Field>
 
-          <Field label="보수 금액 (원)">
-            <input
-              className={inputClass}
-              type="number"
-              min={0}
-              value={form.payment}
-              onChange={(e) => updateField("payment", e.target.value)}
-            />
-          </Field>
+          {form.payType === "CASH" ? (
+            <Field label="보수 금액 (원)" required>
+              <input
+                className={inputClass}
+                type="number"
+                min={0}
+                value={form.payment}
+                onChange={(e) => updateField("payment", e.target.value)}
+                required
+              />
+            </Field>
+          ) : null}
         </div>
       </section>
 

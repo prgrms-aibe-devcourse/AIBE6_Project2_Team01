@@ -8,6 +8,7 @@ import java.util.List;
 
 public record ModelDto(
         @NonNull long id,
+        @NonNull long userId,
         @NonNull LocalDateTime createdDate,
         @NonNull LocalDateTime modifiedDate,
         @NonNull String name,
@@ -27,6 +28,7 @@ public record ModelDto(
     public ModelDto(Model model) {
         this(
                 model.getId(),
+                model.getUser().getId(),
                 model.getCreatedDate(),
                 model.getModifiedDate(),
                 model.getName(),

@@ -88,6 +88,21 @@ const STATUS_LABELS: Record<string, string> = {
   CLOSED: "마감",
 };
 
+const STATUS_COLORS: Record<string, string> = {
+  RECRUITING: "bg-green-100 text-green-700",
+  SHOOTING:   "bg-blue-100 text-blue-700",
+  COMPLETED:  "bg-gray-100 text-gray-600",
+  CANCELLED:  "bg-red-100 text-red-600",
+  ON_HOLD:    "bg-amber-100 text-amber-700",
+  CLOSED:     "bg-slate-200 text-slate-600",
+};
+
+const STATUS_TRANSITIONS: Record<string, string[]> = {
+  RECRUITING: ["SHOOTING", "CANCELLED", "ON_HOLD", "CLOSED"],
+  SHOOTING:   ["COMPLETED", "CANCELLED", "ON_HOLD"],
+  ON_HOLD:    ["RECRUITING", "CANCELLED", "CLOSED"],
+};
+
 export default function JobDetailPage({
   params,
 }: {
@@ -111,6 +126,8 @@ export default function JobDetailPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [favorited, setFavorited] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [statusChanging, setStatusChanging] = useState(false);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -129,13 +146,51 @@ export default function JobDetailPage({
         if (loaded && isModelDetail(loaded)) {
           setFavorited(loaded.favorited);
         }
+        if (loaded && isClientDetail(loaded)) {
+          const transitions = STATUS_TRANSITIONS[loaded.status] ?? [];
+          setSelectedStatus(transitions[0] ?? "");
+        }
         setLoading(false);
       })
       .catch(() => {
         setError("공고를 불러오지 못했습니다.");
         setLoading(false);
       });
-  }, [postingId]);
+  }, [postingId, authLoading, user]);
+
+  const handleStatusChange = async () => {
+    if (!selectedStatus) return;
+    if (
+      !window.confirm(
+        `상태를 "${STATUS_LABELS[selectedStatus]}"(으)로 변경하시겠습니까?`,
+      )
+    )
+      return;
+    setStatusChanging(true);
+    const { data, response } = await client.PATCH("/api/v1/jobs/{id}/status", {
+      params: { path: { id: postingId } },
+      body: {
+        status: selectedStatus as
+          | "RECRUITING"
+          | "SHOOTING"
+          | "COMPLETED"
+          | "CANCELLED"
+          | "ON_HOLD"
+          | "CLOSED",
+      },
+    });
+    setStatusChanging(false);
+    if (!response.ok) {
+      alert("상태 변경에 실패했습니다.");
+      return;
+    }
+    const newStatus = (data?.data as { status: string })?.status;
+    if (newStatus) {
+      setDetail((prev) => prev ? { ...prev, status: newStatus } : prev);
+      const transitions = STATUS_TRANSITIONS[newStatus] ?? [];
+      setSelectedStatus(transitions[0] ?? "");
+    }
+  };
 
   const handleDelete = async () => {
     if (!window.confirm("공고를 삭제하시겠습니까?")) return;
@@ -173,6 +228,9 @@ export default function JobDetailPage({
 
   const isOwner = isClientDetail(detail) && user?.id === detail.clientId;
   const hasRangeInfo = !isOtherDetail(detail);
+  const nextStatuses = isOwner
+    ? (STATUS_TRANSITIONS[(detail as ClientDetail).status] ?? [])
+    : [];
 
   return (
     <main className="min-h-screen bg-canvas text-ink">
@@ -184,7 +242,7 @@ export default function JobDetailPage({
                 <h1 className="text-[28px] font-bold leading-9 text-ink">
                   {detail.title}
                 </h1>
-                <span className="inline-flex h-7 items-center rounded-full bg-canvas-soft px-3 text-[12px] font-semibold text-body">
+                <span className={`inline-flex h-7 items-center rounded-full px-3 text-[12px] font-semibold ${STATUS_COLORS[detail.status] ?? "bg-canvas-soft text-body"}`}>
                   {STATUS_LABELS[detail.status] ?? detail.status}
                 </span>
               </div>
@@ -316,17 +374,47 @@ export default function JobDetailPage({
               </dl>
             </section>
 
+            {/* CLIENT 뷰 본인 공고: 상태 변경 */}
+            {isOwner && nextStatuses.length > 0 ? (
+              <section className="rounded-xl border border-hairline bg-surface p-6">
+                <h2 className="text-[15px] font-semibold leading-6 text-ink">
+                  상태 변경
+                </h2>
+                <div className="mt-4 flex gap-2">
+                  <select
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    className="flex-1 rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13px] text-ink focus:border-primary focus:outline-none"
+                  >
+                    {nextStatuses.map((s) => (
+                      <option key={s} value={s}>
+                        {STATUS_LABELS[s]}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={handleStatusChange}
+                    disabled={statusChanging}
+                    className="rounded-lg bg-primary px-4 py-2 text-[13px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:opacity-50"
+                  >
+                    {statusChanging ? "변경 중..." : "변경"}
+                  </button>
+                </div>
+              </section>
+            ) : null}
+
             {/* CLIENT 뷰 본인 공고: AI 추천 모델 */}
             {isOwner ? (
               <section className="rounded-xl border border-hairline bg-surface p-6">
                 <h2 className="text-[15px] font-semibold leading-6 text-ink">
                   AI 추천 모델
                 </h2>
-                {detail.recommendedModelIds.length === 0 ? (
+                {(detail as ClientDetail).recommendedModelIds.length === 0 ? (
                   <p className="mt-3 text-[13px] text-mute">추천 없음</p>
                 ) : (
                   <ul className="mt-3 space-y-1">
-                    {detail.recommendedModelIds.map((mid) => (
+                    {(detail as ClientDetail).recommendedModelIds.map((mid) => (
                       <li key={mid} className="text-[13px] text-ink">
                         모델 ID: {mid}
                       </li>

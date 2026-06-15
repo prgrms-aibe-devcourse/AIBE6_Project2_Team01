@@ -51,9 +51,19 @@ const STATUS_LABELS: Record<string, string> = {
   CLOSED: "마감",
 };
 
+const STATUS_COLORS: Record<string, string> = {
+  RECRUITING: "bg-green-100 text-green-700",
+  SHOOTING:   "bg-blue-100 text-blue-700",
+  COMPLETED:  "bg-gray-100 text-gray-600",
+  CANCELLED:  "bg-red-100 text-red-600",
+  ON_HOLD:    "bg-amber-100 text-amber-700",
+  CLOSED:     "bg-slate-200 text-slate-600",
+};
+
 export default function JobsPage() {
   const { user } = useAuth();
   const isModel = user?.role === "MODEL";
+  const isClient = user?.role === "CLIENT";
   const [region, setRegion] = useState("");
   const [category, setCategory] = useState("");
   const [page, setPage] = useState(0);
@@ -72,18 +82,16 @@ export default function JobsPage() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
 
     client
       .GET("/api/v1/jobs", {
         params: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           query: {
             region: region || undefined,
             category: category || undefined,
             page,
             size: 10,
-          } as any,
+          },
         },
       })
       .then(({ data }) => {
@@ -102,9 +110,15 @@ export default function JobsPage() {
   }, [region, category, page]);
 
   const handleFilterChange = (nextRegion: string, nextCategory: string) => {
+    setLoading(true);
     setPage(0);
     setRegion(nextRegion);
     setCategory(nextCategory);
+  };
+
+  const handlePageChange = (i: number) => {
+    setLoading(true);
+    setPage(i);
   };
 
   const items = pageData?.content ?? [];
@@ -124,12 +138,14 @@ export default function JobsPage() {
                 지역·카테고리 필터로 원하는 공고를 찾아보세요.
               </p>
             </div>
-            <Link
-              href="/jobs/new"
-              className="inline-flex h-11 w-fit items-center rounded-lg bg-primary px-6 text-[15px] font-semibold text-on-primary transition hover:bg-primary-hover"
-            >
-              공고 등록
-            </Link>
+            {isClient ? (
+              <Link
+                href="/jobs/new"
+                className="inline-flex h-11 w-fit items-center rounded-lg bg-primary px-6 text-[15px] font-semibold text-on-primary transition hover:bg-primary-hover"
+              >
+                공고 등록
+              </Link>
+            ) : null}
           </div>
         </header>
 
@@ -181,7 +197,7 @@ export default function JobsPage() {
                     <h2 className="line-clamp-2 text-[15px] font-semibold leading-6 text-ink">
                       {job.title}
                     </h2>
-                    <span className="shrink-0 rounded-full bg-canvas-soft px-2 py-0.5 text-[11px] font-semibold text-body">
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_COLORS[job.status ?? ""] ?? "bg-canvas-soft text-body"}`}>
                       {STATUS_LABELS[job.status ?? ""] ?? job.status}
                     </span>
                   </div>
@@ -239,7 +255,7 @@ export default function JobsPage() {
               <button
                 key={i}
                 type="button"
-                onClick={() => setPage(i)}
+                onClick={() => handlePageChange(i)}
                 className={`h-9 w-9 rounded-md border text-[13px] font-semibold transition ${
                   i === currentPage
                     ? "border-primary bg-primary text-on-primary"
