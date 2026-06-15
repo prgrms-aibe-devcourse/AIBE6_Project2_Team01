@@ -2,13 +2,20 @@ package com.modle.domain.contract.service;
 
 import com.modle.domain.contract.dto.request.ContractCreateRequest;
 import com.modle.domain.contract.dto.response.ContractResponse;
+import com.modle.domain.contract.dto.response.ContractTemplateResponse;
 import com.modle.domain.contract.entity.Contract;
+import com.modle.domain.contract.entity.type.ContractType;
 import com.modle.domain.contract.repository.ContractRepository;
+import com.modle.domain.contract.repository.ContractTemplateRepository;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -16,28 +23,34 @@ import org.springframework.transaction.annotation.Transactional;
 public class ContractService {
 
     private final ContractRepository contractRepository;
+    private final ContractTemplateRepository contractTemplateRepository;
 
+    // TODO: Application 도메인 연동 후
+    // applicationId 존재 검증 및 현재 로그인한 CLIENT의 공고인지 소유권 검증 추가
     @Transactional
-    public ContractResponse createContract(ContractCreateRequest request) {
+    public ContractResponse createContract(Long clientUserId, ContractCreateRequest request) {
         validateDuplicateContract(request.applicationId());
-        validateShootTime(request);
+        validateCreateRequest(request);
 
-        Contract contract = Contract.builder()
-                .applicationId(request.applicationId())
-                .contractType(request.contractType())
-                .shootStartAt(request.shootStartAt())
-                .shootEndAt(request.shootEndAt())
-                .location(request.location())
-                .payment(request.payment())
-                .payType(request.payType())
-                .usageScope(request.usageScope())
-                .memo(request.memo())
-                .pdfUrl(request.pdfUrl())
-                .build();
-
-        Contract savedContract = contractRepository.save(contract);
-
-        return ContractResponse.from(savedContract);
+        Contract contract = Contract.createDraft(
+                request.applicationId(),
+                request.contractType(),
+                request.shootStartAt(),
+                request.shootEndAt(),
+                request.location(),
+                request.payment(),
+                request.payType(),
+                request.usageScope(),
+                request.memo(),
+                request.pdfUrl()
+        );
+        try {
+            Contract savedContract = contractRepository.save(contract);
+            return ContractResponse.from(savedContract);
+        }catch (DataIntegrityViolationException e) {
+            // applicationId의 unique 제약 조건 위반 시 예외 처리
+            throw new CustomException(ErrorCode.CONTRACT_ALREADY_EXISTS);
+        }
 
     }
 
@@ -47,9 +60,68 @@ public class ContractService {
         }
     }
 
+    private void validateCreateRequest(ContractCreateRequest request) {
+        validateShootTime(request);
+        validateContractType(request);
+        validatePayType(request);
+    }
+
+    private void validatePayType(ContractCreateRequest request) {
+        if (request.payType() == null) {
+            return;
+        }
+
+        if (request.payment() == null) {
+            throw new CustomException(ErrorCode.INVALID_CONTRACT_PAYMENT);
+        }
+
+        switch (request.payType()) {
+            case CASH -> validateCashPayment(request);
+            case SERVICE -> validateServicePayment(request);
+            case FREE -> validateFreePayment(request);
+        }
+    }
+
+    private void validateCashPayment(ContractCreateRequest request) {
+        if (request.payment().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new CustomException(ErrorCode.INVALID_CONTRACT_PAYMENT);
+        }
+    }
+
+    private void validateServicePayment(ContractCreateRequest request) {
+        if (request.payment().compareTo(BigDecimal.ZERO) < 0) {
+            throw new CustomException(ErrorCode.INVALID_CONTRACT_PAYMENT);
+        }
+    }
+
+    private void validateFreePayment(ContractCreateRequest request) {
+        if (request.payment().compareTo(BigDecimal.ZERO) != 0) {
+            throw new CustomException(ErrorCode.INVALID_CONTRACT_PAYMENT);
+        }
+    }
+
+
     private void validateShootTime(ContractCreateRequest request) {
         if (!request.shootEndAt().isAfter(request.shootStartAt())) {
             throw new CustomException(ErrorCode.INVALID_CONTRACT_SHOOT_TIME);
         }
+    }
+
+    private void validateContractType(ContractCreateRequest request) {
+        if(request.contractType() == ContractType.FILE) {
+            validateFileContract(request);
+        }
+    }
+
+    private void validateFileContract(ContractCreateRequest request) {
+        if(request.pdfUrl() == null || request.pdfUrl().isBlank()) {
+            throw new CustomException(ErrorCode.INVALID_FILE_CONTRACT);
+        }
+    }
+
+    public List<ContractTemplateResponse> getTemplates() {
+        return contractTemplateRepository.findAll().stream()
+                .map(ContractTemplateResponse::from)
+                .toList();
     }
 }

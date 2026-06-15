@@ -1,7 +1,7 @@
 package com.modle.domain.contract.dto.request;
 
-import com.modle.domain.contract.entity.ContractType;
-import com.modle.domain.contract.entity.PayType;
+import com.modle.domain.contract.entity.type.ContractType;
+import com.modle.domain.contract.entity.type.PayType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
