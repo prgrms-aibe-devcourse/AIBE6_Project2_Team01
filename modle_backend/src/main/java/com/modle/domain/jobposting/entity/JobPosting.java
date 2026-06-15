@@ -131,4 +131,7 @@ public class JobPosting extends BaseEntity {
         this.shootDate = shootDate;
     }
 
+    public void updateStatus(JobPostingStatus newStatus) {
+        this.status = newStatus;
+    }
 }
