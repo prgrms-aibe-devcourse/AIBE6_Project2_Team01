@@ -1,0 +1,361 @@
+"use client";
+
+import { useAuth } from "@/hooks/useAuth";
+import { client } from "@/lib/api/client";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { use, useEffect, useRef, useState } from "react";
+
+type ClientDetail = {
+  id: number;
+  clientId: number;
+  title: string;
+  content: string;
+  category: string;
+  region: string;
+  status: string;
+  requiredSex?: string;
+  ageMin?: number;
+  ageMax?: number;
+  heightMin?: number;
+  heightMax?: number;
+  weightMin?: number;
+  weightMax?: number;
+  minCareerMonths?: number;
+  payment?: number;
+  payType?: string;
+  shootDate?: string;
+  createdDate?: string;
+  recommendedModelIds: number[];
+};
+
+type ModelDetail = {
+  id: number;
+  title: string;
+  content: string;
+  category: string;
+  region: string;
+  status: string;
+  requiredSex?: string;
+  ageMin?: number;
+  ageMax?: number;
+  heightMin?: number;
+  heightMax?: number;
+  weightMin?: number;
+  weightMax?: number;
+  minCareerMonths?: number;
+  payment?: number;
+  payType?: string;
+  shootDate?: string;
+  createdDate?: string;
+  favorited: boolean;
+};
+
+type OtherDetail = {
+  id: number;
+  title: string;
+  content: string;
+  category: string;
+  region: string;
+  status: string;
+  requiredSex?: string;
+  payment?: number;
+  payType?: string;
+  shootDate?: string;
+  createdDate?: string;
+};
+
+type DetailData = ClientDetail | ModelDetail | OtherDetail;
+
+function isClientDetail(d: unknown): d is ClientDetail {
+  return typeof d === "object" && d !== null && "clientId" in d;
+}
+
+function isModelDetail(d: unknown): d is ModelDetail {
+  return typeof d === "object" && d !== null && "favorited" in d;
+}
+
+function isOtherDetail(d: DetailData): d is OtherDetail {
+  return !isClientDetail(d) && !isModelDetail(d);
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  RECRUITING: "모집 중",
+  SHOOTING: "촬영 중",
+  COMPLETED: "완료",
+  CANCELLED: "취소",
+  ON_HOLD: "일시정지",
+  CLOSED: "마감",
+};
+
+export default function JobDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+  const postingId = Number(id);
+  const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
+  const alertedRef = useRef(false);
+
+  useEffect(() => {
+    if (!authLoading && !user && !alertedRef.current) {
+      alertedRef.current = true;
+      alert("로그인이 필요한 서비스입니다.");
+      router.replace("/login");
+    }
+  }, [user, authLoading, router]);
+
+  const [detail, setDetail] = useState<DetailData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [favorited, setFavorited] = useState(false);
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+    client
+      .GET("/api/v1/jobs/{id}", {
+        params: { path: { id: postingId } },
+      })
+      .then(({ data, response }) => {
+        if (!response.ok) {
+          setError("공고를 불러오지 못했습니다.");
+          setLoading(false);
+          return;
+        }
+        const loaded = (data?.data as DetailData) ?? null;
+        setDetail(loaded);
+        if (loaded && isModelDetail(loaded)) {
+          setFavorited(loaded.favorited);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("공고를 불러오지 못했습니다.");
+        setLoading(false);
+      });
+  }, [postingId]);
+
+  const handleDelete = async () => {
+    if (!window.confirm("공고를 삭제하시겠습니까?")) return;
+    const { response } = await client.DELETE("/api/v1/jobs/{id}", {
+      params: { path: { id: postingId } },
+    });
+    if (!response.ok) {
+      alert("삭제에 실패했습니다.");
+      return;
+    }
+    router.push("/jobs");
+  };
+
+  if (authLoading || !user) {
+    return <main className="min-h-screen bg-canvas" />;
+  }
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-canvas">
+        <p className="py-20 text-center text-[15px] text-mute">로딩 중...</p>
+      </main>
+    );
+  }
+
+  if (error || !detail) {
+    return (
+      <main className="min-h-screen bg-canvas">
+        <p className="py-20 text-center text-[15px] text-error">
+          {error || "공고를 찾을 수 없습니다."}
+        </p>
+      </main>
+    );
+  }
+
+  const isOwner = isClientDetail(detail) && user?.id === detail.clientId;
+  const hasRangeInfo = !isOtherDetail(detail);
+
+  return (
+    <main className="min-h-screen bg-canvas text-ink">
+      <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
+        <header className="border-b border-hairline pb-6">
+          <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex-1">
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-[28px] font-bold leading-9 text-ink">
+                  {detail.title}
+                </h1>
+                <span className="inline-flex h-7 items-center rounded-full bg-canvas-soft px-3 text-[12px] font-semibold text-body">
+                  {STATUS_LABELS[detail.status] ?? detail.status}
+                </span>
+              </div>
+              <p className="mt-1 text-[13px] text-mute">
+                등록일:{" "}
+                {detail.createdDate ? detail.createdDate.substring(0, 10) : "-"}
+              </p>
+            </div>
+            {isOwner ? (
+              <div className="flex gap-3">
+                <Link
+                  href={`/jobs/${detail.id}/edit`}
+                  className="inline-flex h-10 items-center rounded-lg border border-hairline bg-surface px-5 text-[14px] font-semibold text-ink transition hover:border-hairline-strong"
+                >
+                  수정
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="h-10 rounded-lg bg-error px-5 text-[14px] font-semibold text-on-primary transition hover:opacity-90"
+                >
+                  삭제
+                </button>
+              </div>
+            ) : isModelDetail(detail) ? (
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setFavorited((f) => !f)}
+                  className={`h-10 rounded-lg border px-5 text-[14px] font-semibold transition ${
+                    favorited
+                      ? "border-red-400 bg-red-50 text-red-500"
+                      : "border-hairline bg-surface text-body hover:border-hairline-strong"
+                  }`}
+                >
+                  {favorited ? "♥ 저장하기" : "♡ 저장하기"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => alert("지원 기능은 준비 중입니다.")}
+                  className="h-10 rounded-lg bg-primary px-6 text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover"
+                >
+                  지원하기
+                </button>
+              </div>
+            ) : null}
+          </div>
+        </header>
+
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
+          {/* 공고 본문 */}
+          <section className="rounded-xl border border-hairline bg-surface p-6">
+            <h2 className="text-lg font-semibold leading-[26px] text-ink">
+              공고 내용
+            </h2>
+            <p className="mt-4 whitespace-pre-wrap text-[15px] leading-7 text-body">
+              {detail.content}
+            </p>
+          </section>
+
+          {/* 우측 정보 패널 */}
+          <aside className="flex flex-col gap-6">
+            <section className="rounded-xl border border-hairline bg-surface p-6">
+              <h2 className="text-[15px] font-semibold leading-6 text-ink">
+                공고 정보
+              </h2>
+              <dl className="mt-4 space-y-3 text-[13px] leading-5">
+                <InfoRow label="카테고리" value={detail.category} />
+                <InfoRow label="지역" value={detail.region} />
+                <InfoRow
+                  label="성별 조건"
+                  value={
+                    detail.requiredSex === "M"
+                      ? "남성"
+                      : detail.requiredSex === "F"
+                        ? "여성"
+                        : "무관"
+                  }
+                />
+                <InfoRow
+                  label="보수"
+                  value={
+                    detail.payType === "FREE"
+                      ? "무료"
+                      : detail.payType === "SERVICE"
+                        ? "서비스 제공"
+                        : detail.payment != null
+                          ? `${Number(detail.payment).toLocaleString("ko-KR")}원`
+                          : "-"
+                  }
+                />
+                {detail.shootDate ? (
+                  <InfoRow
+                    label="촬영일"
+                    value={detail.shootDate.substring(0, 10)}
+                  />
+                ) : null}
+                {hasRangeInfo ? (
+                  <>
+                    {(detail as ModelDetail).ageMin != null ||
+                    (detail as ModelDetail).ageMax != null ? (
+                      <InfoRow
+                        label="나이"
+                        value={`${(detail as ModelDetail).ageMin ?? "-"} ~ ${(detail as ModelDetail).ageMax ?? "-"}세`}
+                      />
+                    ) : null}
+                    {(detail as ModelDetail).heightMin != null ||
+                    (detail as ModelDetail).heightMax != null ? (
+                      <InfoRow
+                        label="키"
+                        value={`${(detail as ModelDetail).heightMin ?? "-"} ~ ${(detail as ModelDetail).heightMax ?? "-"}cm`}
+                      />
+                    ) : null}
+                    {(detail as ModelDetail).weightMin != null ||
+                    (detail as ModelDetail).weightMax != null ? (
+                      <InfoRow
+                        label="몸무게"
+                        value={`${(detail as ModelDetail).weightMin ?? "-"} ~ ${(detail as ModelDetail).weightMax ?? "-"}kg`}
+                      />
+                    ) : null}
+                    {(detail as ModelDetail).minCareerMonths != null ? (
+                      <InfoRow
+                        label="최소 경력"
+                        value={`${(detail as ModelDetail).minCareerMonths}개월`}
+                      />
+                    ) : null}
+                  </>
+                ) : null}
+              </dl>
+            </section>
+
+            {/* CLIENT 뷰 본인 공고: AI 추천 모델 */}
+            {isOwner ? (
+              <section className="rounded-xl border border-hairline bg-surface p-6">
+                <h2 className="text-[15px] font-semibold leading-6 text-ink">
+                  AI 추천 모델
+                </h2>
+                {detail.recommendedModelIds.length === 0 ? (
+                  <p className="mt-3 text-[13px] text-mute">추천 없음</p>
+                ) : (
+                  <ul className="mt-3 space-y-1">
+                    {detail.recommendedModelIds.map((mid) => (
+                      <li key={mid} className="text-[13px] text-ink">
+                        모델 ID: {mid}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            ) : null}
+          </aside>
+        </div>
+
+        <div className="pt-4">
+          <Link
+            href="/jobs"
+            className="text-[14px] text-mute underline-offset-2 hover:underline"
+          >
+            ← 목록으로
+          </Link>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid grid-cols-[88px_1fr] gap-3">
+      <dt className="text-mute">{label}</dt>
+      <dd className="min-w-0 break-words text-ink">{value || "-"}</dd>
+    </div>
+  );
+}

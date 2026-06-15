@@ -42,6 +42,7 @@ public enum ErrorCode {
     JOB_POSTING_NOT_FOUND(HttpStatus.NOT_FOUND, "404-2", "공고를 찾을 수 없습니다."),
     JOB_POSTING_NOT_EDITABLE(HttpStatus.CONFLICT, "409-3", "모집 중 상태에서만 수정/삭제할 수 있습니다."),
     JOB_POSTING_FORBIDDEN(HttpStatus.FORBIDDEN, "403-5", "공고에 대한 권한이 없습니다."),
+    JOB_POSTING_INVALID(HttpStatus.BAD_REQUEST, "400-8", "유효하지 않은 필터 값입니다."),
 
     // 쪽지
     MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG-001", "쪽지를 찾을 수 없습니다."),
@@ -56,6 +57,7 @@ public enum ErrorCode {
     // 잘못된 접근
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "403-6", "권한이 없습니다."),
     DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "404-3", "존재하지 않는 데이터에 접근했습니다.");
+
 
     private final HttpStatus status;
     private final String resultCode;
