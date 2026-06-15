@@ -8,6 +8,7 @@ import Link from "next/link";
 
 import { client } from "@/lib/api/client";
 import { getErrorMessage } from "@/lib/api/error";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 
 type ClientType = "INDIVIDUAL" | "ORGANIZATION";
 
@@ -174,8 +175,7 @@ export default function ClientSignupPage() {
           ) : null}
 
           <Field label="비밀번호" required>
-            <input
-              type="password"
+            <PasswordInput
               required
               minLength={5}
               maxLength={50}

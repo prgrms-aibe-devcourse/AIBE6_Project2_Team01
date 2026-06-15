@@ -10,6 +10,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { client } from "@/lib/api/client";
 import { getErrorMessage } from "@/lib/api/error";
 import { GOOGLE_OAUTH_URL, KAKAO_OAUTH_URL, NAVER_OAUTH_URL } from "@/lib/auth/oauth";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 
 export default function LoginPage() {
   return (
@@ -73,8 +74,7 @@ function LoginForm() {
           </Field>
 
           <Field label="비밀번호">
-            <input
-              type="password"
+            <PasswordInput
               required
               value={password}
               onChange={(event) => setPassword(event.target.value)}

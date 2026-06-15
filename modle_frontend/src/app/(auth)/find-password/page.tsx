@@ -6,6 +6,7 @@ import { useState } from "react";
 import Link from "next/link";
 
 import { confirmPasswordResetCode, resetPassword, sendPasswordResetCode } from "@/lib/api/auth";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 
 type Step = "email" | "code" | "password" | "done";
 
@@ -173,8 +174,7 @@ export default function FindPasswordPage() {
         {step === "password" ? (
           <form onSubmit={handleResetPassword} className="mt-8 flex flex-col gap-4">
             <Field label="새 비밀번호">
-              <input
-                type="password"
+              <PasswordInput
                 required
                 minLength={5}
                 maxLength={50}
@@ -185,8 +185,7 @@ export default function FindPasswordPage() {
             </Field>
 
             <Field label="새 비밀번호 확인">
-              <input
-                type="password"
+              <PasswordInput
                 required
                 minLength={5}
                 maxLength={50}
