@@ -1,6 +1,7 @@
 package com.modle.domain.jobposting.controller;
 
 import com.modle.domain.jobposting.dto.request.JobPostingCreateRequest;
+import com.modle.domain.jobposting.dto.request.JobPostingStatusUpdateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
 import com.modle.domain.jobposting.dto.response.JobPostingListResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingResponse;
@@ -72,6 +73,16 @@ public class JobPostingController {
             @RequestParam(required = false) String category,
             @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable) {
         return ApiResponse.ok("공고 목록 조회 성공", jobPostingService.getJobPostings(region, category, pageable));
+    }
+
+    // JOB-009: 공고 상태 변경 (CLIENT 본인만 가능).
+    @PreAuthorize("hasRole('CLIENT')")
+    @PatchMapping("/{id}/status")
+    public ApiResponse<JobPostingResponse> updateStatus(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser securityUser,
+            @Valid @RequestBody JobPostingStatusUpdateRequest request) {
+        return ApiResponse.ok("공고 상태 변경 성공", jobPostingService.updateJobPostingStatus(id, securityUser.getId(), request));
     }
 
     // JOB-006~008: 역할에 따라 공고 상세 반환 (MODEL → 모델 뷰, CLIENT → 클라이언트 뷰, 그 외 → OTHER 뷰).
