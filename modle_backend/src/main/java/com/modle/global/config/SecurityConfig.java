@@ -54,11 +54,12 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/models",
-                                "/api/v1/models/**",
-                                "/api/v1/models/my"
+                                "/api/v1/models/{id}",
+                                "/api/v1/clients/{id}"
+
                         ).permitAll()
-                        .requestMatchers(HttpMethod.PUT,
-                                "/api/v1/models/my"
+                        .requestMatchers(HttpMethod.PUT
+
                         ).permitAll()
                         // 관리자만
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
