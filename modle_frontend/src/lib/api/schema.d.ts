@@ -4,1015 +4,1482 @@
  */
 
 export interface paths {
-  // ─── Jobs ───
-  "/api/v1/jobs": {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    /** 구인 게시글 목록 조회 */
-    get: operations["listJobPostings"];
-    put?: never;
-    /** 구인 게시글 생성 */
-    post: operations["createJobPosting"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/jobs/{id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: { id: number };
-      cookie?: never;
+    "/api/v1/models/my": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 프로필 단건 조회 */
+        get: operations["getMyItem"];
+        /** 내 프로필 수정 */
+        put: operations["modifyMyItem"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** 구인 게시글 상세 조회 */
-    get: operations["getJobPosting"];
-    put?: never;
-    post?: never;
-    /** 구인 게시글 삭제 */
-    delete: operations["deleteJobPosting"];
-    options?: never;
-    head?: never;
-    /** 구인 게시글 수정 */
-    patch: operations["updateJobPosting"];
-    trace?: never;
-  };
-  "/api/v1/jobs/templates": {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    /** 구인 게시글 템플릿 목록 조회 */
-    get: operations["listJobPostingTemplates"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-
-  // ─── Contracts ───
-  "/api/v1/contracts": {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    get?: never;
-    put?: never;
-    /**
-     * 계약서 임시 저장
-     * @description 계약 조건을 입력받아 DRAFT 상태의 계약서를 생성합니다.
-     */
-    post: operations["createContract"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-
-  // ─── Auth ───
-  "/api/v1/auth/signup/model": {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    get?: never;
-    put?: never;
-    /** 모델 회원가입 */
-    post: operations["registerModel"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/signup/client": {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    get?: never;
-    put?: never;
-    /** 클라이언트 회원가입 */
-    post: operations["registerClient"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/reissue": {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    get?: never;
-    put?: never;
-    /** 토큰 재발급 */
-    post: operations["reissue"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/logout": {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    get?: never;
-    put?: never;
-    /** 로그아웃 */
-    post: operations["logout"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/login": {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    get?: never;
-    put?: never;
-    /** 로그인 */
-    post: operations["login"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/email/verify/send": {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    get?: never;
-    put?: never;
-    /** 이메일 인증 코드 발송 */
-    post: operations["sendVerificationCode"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/email/verify/confirm": {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    get?: never;
-    put?: never;
-    /** 이메일 인증 코드 확인 */
-    post: operations["confirmVerificationCode"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-
-  // ─── Admin ───
-  "/api/v1/admin/clients/pending": {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    /** 승인 대기 중인 클라이언트 목록 조회 */
-    get: operations["getPendingClients"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/admin/clients/{userId}/approve": {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** 클라이언트 가입 승인 */
-    patch: operations["approveClient"];
-    trace?: never;
-  };
-  "/api/v1/admin/clients/{userId}/reject": {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** 클라이언트 가입 거절 */
-    patch: operations["rejectClient"];
-    trace?: never;
-  };
+    "/api/v1/clients/my": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 프로필 단건 조회 */
+        get: operations["getMyItem_1"];
+        /** 내 프로필 수정 */
+        put: operations["modifyMyItem_1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/portfolios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["uploadPortfolios"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getJobPostings"];
+        put?: never;
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/images/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["uploadImage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 계약서 임시 저장
+         * @description 계약 조건을 입력받아 DRAFT 상태의 계약서를 생성합니다.
+         */
+        post: operations["createContract"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/signup/model": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["registerModel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/signup/client": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["registerClient"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/reissue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reissue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/email/verify/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sendVerificationCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/email/verify/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirmVerificationCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getJobPostingDetail"];
+        put?: never;
+        post?: never;
+        delete: operations["delete"];
+        options?: never;
+        head?: never;
+        patch: operations["update"];
+        trace?: never;
+    };
+    "/api/v1/admin/clients/{userId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["rejectClient"];
+        trace?: never;
+    };
+    "/api/v1/admin/clients/{userId}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["approveClient"];
+        trace?: never;
+    };
+    "/api/v1/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 다건 조회 */
+        get: operations["getItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/models/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 단건 조회 */
+        get: operations["getItem"];
+        put?: never;
+        post?: never;
+        /** 삭제 */
+        delete: operations["delete_1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getTemplates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 다건 조회 */
+        get: operations["getItems_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clients/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 단건 조회 */
+        get: operations["getItem_1"];
+        put?: never;
+        post?: never;
+        /** 삭제 */
+        delete: operations["delete_2"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/clients/pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPendingClients"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/portfolios/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deletePortfolio"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
-
 export type webhooks = Record<string, never>;
-
 export interface components {
-  schemas: {
-    // ─── Job Schemas ───
-    JobPostingCreateRequest: {
-      title: string;
-      content: string;
-      /** @enum {string} */
-      category:
-        | "HAIR"
-        | "MAKEUP"
-        | "CLOTHING"
-        | "FITTING"
-        | "HAND"
-        | "FOOD"
-        | "PRODUCT"
-        | "ETC";
-      /** @enum {string} */
-      region:
-        | "SEOUL"
-        | "BUSAN"
-        | "DAEGU"
-        | "INCHEON"
-        | "GWANGJU"
-        | "DAEJEON"
-        | "ULSAN"
-        | "SEJONG"
-        | "GYEONGGI"
-        | "GANGWON"
-        | "CHUNGBUK"
-        | "CHUNGNAM"
-        | "JEONBUK"
-        | "JEONNAM"
-        | "GYEONGBUK"
-        | "GYEONGNAM"
-        | "JEJU";
-      /** @enum {string} */
-      requiredSex?: "M" | "F" | "ANY";
-      ageMin?: number;
-      ageMax?: number;
-      heightMin?: number;
-      heightMax?: number;
-      weightMin?: number;
-      weightMax?: number;
-      minCareerMonths?: number;
-      payment?: number;
-      /** @enum {string} */
-      payType?: "CASH" | "SERVICE" | "FREE";
-      /** Format: date */
-      shootDate?: string;
+    schemas: {
+        ModelModifyReqBody: {
+            name: string;
+            /** Format: int32 */
+            height: number;
+            /** Format: int32 */
+            weight: number;
+            gender: boolean;
+            /** Format: int32 */
+            age: number;
+            categories?: string[];
+            tags?: string[];
+            introduction?: string;
+            profileImageUrl?: string;
+        };
+        RsDataVoid: {
+            resultCode: string;
+            msg: string;
+            data: unknown;
+        };
+        ClientModifyReqBody: {
+            companyName: string;
+            companyNumber: string;
+            /** @enum {string} */
+            clientType?: "INDIVIDUAL" | "ORGANIZATION";
+            introduction?: string;
+            profileImageUrl?: string;
+        };
+        PortfolioDto: {
+            /** Format: int64 */
+            id?: number;
+            imgUrl?: string;
+        };
+        RsDataListPortfolioDto: {
+            resultCode: string;
+            msg: string;
+            data: components["schemas"]["PortfolioDto"][];
+        };
+        JobPostingCreateRequest: {
+            title: string;
+            content: string;
+            /** @enum {string} */
+            category: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            /** @enum {string} */
+            region: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
+            /** @enum {string} */
+            requiredSex?: "M" | "F" | "ANY";
+            /** Format: int32 */
+            ageMin?: number;
+            /** Format: int32 */
+            ageMax?: number;
+            /** Format: int32 */
+            heightMin?: number;
+            /** Format: int32 */
+            heightMax?: number;
+            /** Format: int32 */
+            weightMin?: number;
+            /** Format: int32 */
+            weightMax?: number;
+            /** Format: int32 */
+            minCareerMonths?: number;
+            payment?: number;
+            /** @enum {string} */
+            payType?: "CASH" | "SERVICE" | "FREE";
+            /** Format: date-time */
+            shootDate?: string;
+        };
+        ApiResponseJobPostingResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["JobPostingResponse"];
+        };
+        JobPostingResponse: {
+            /** Format: int64 */
+            id?: number;
+            /** Format: int64 */
+            clientId?: number;
+            title?: string;
+            content?: string;
+            /** @enum {string} */
+            category?: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            /** @enum {string} */
+            region?: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
+            /** @enum {string} */
+            status?: "RECRUITING" | "SHOOTING" | "COMPLETED" | "CANCELLED" | "ON_HOLD" | "CLOSED";
+            /** @enum {string} */
+            requiredSex?: "M" | "F" | "ANY";
+            /** Format: int32 */
+            ageMin?: number;
+            /** Format: int32 */
+            ageMax?: number;
+            /** Format: int32 */
+            heightMin?: number;
+            /** Format: int32 */
+            heightMax?: number;
+            /** Format: int32 */
+            weightMin?: number;
+            /** Format: int32 */
+            weightMax?: number;
+            /** Format: int32 */
+            minCareerMonths?: number;
+            payment?: number;
+            /** @enum {string} */
+            payType?: "CASH" | "SERVICE" | "FREE";
+            /** Format: date-time */
+            shootDate?: string;
+            /** Format: date-time */
+            createdDate?: string;
+        };
+        /** @description 계약서 생성 요청 */
+        ContractCreateRequest: {
+            /** Format: int64 */
+            applicationId: number;
+            /** @enum {string} */
+            contractType: "TEMPLATE" | "FILE";
+            /** Format: date-time */
+            shootStartAt: string;
+            /** Format: date-time */
+            shootEndAt: string;
+            location: string;
+            payment: number;
+            /** @enum {string} */
+            payType: "CASH" | "SERVICE";
+            usageScope: string;
+            memo?: string;
+            pdfUrl?: string;
+        };
+        ContractResponse: {
+            /** Format: int64 */
+            id?: number;
+            /** Format: int64 */
+            applicationId?: number;
+            /** @enum {string} */
+            contractType?: "TEMPLATE" | "FILE";
+            /** Format: date-time */
+            shootStartAt?: string;
+            /** Format: date-time */
+            shootEndAt?: string;
+            location?: string;
+            payment?: number;
+            /** @enum {string} */
+            payType?: "CASH" | "SERVICE";
+            usageScope?: string;
+            memo?: string;
+            pdfUrl?: string;
+            signedPdfUrl?: string;
+            /** @enum {string} */
+            status?: "DRAFT" | "NOTIFIED" | "VIEWED" | "AGREED" | "REJECTED" | "CONFIRMED" | "CANCELLED";
+        };
+        ModelRegisterRequest: {
+            email: string;
+            password: string;
+            region: string;
+            name: string;
+            /** Format: int32 */
+            height?: number;
+            /** Format: int32 */
+            weight?: number;
+            /** Format: int32 */
+            age?: number;
+            gender: boolean;
+        };
+        ApiResponseVoid: {
+            resultCode?: string;
+            msg?: string;
+            data?: unknown;
+        };
+        ClientRegisterRequest: {
+            email: string;
+            password: string;
+            region: string;
+            companyName: string;
+            companyNumber: string;
+            /** @enum {string} */
+            clientType: "INDIVIDUAL" | "ORGANIZATION";
+        };
+        LoginRequest: {
+            email: string;
+            password: string;
+        };
+        ApiResponseLoginResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["LoginResponse"];
+        };
+        LoginResponse: {
+            item: components["schemas"]["UserDto"];
+        };
+        UserDto: {
+            /** Format: int64 */
+            id: number;
+            /** Format: date-time */
+            createDate: string;
+            /** Format: date-time */
+            modifyDate: string;
+            /** @enum {string} */
+            role: "MODEL" | "CLIENT" | "ADMIN";
+        };
+        EmailVerifyRequest: {
+            email: string;
+        };
+        EmailVerifyConfirmRequest: {
+            email: string;
+            code: string;
+        };
+        JobPostingUpdateRequest: {
+            title: string;
+            content: string;
+            /** @enum {string} */
+            category: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            /** @enum {string} */
+            region: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
+            /** @enum {string} */
+            requiredSex?: "M" | "F" | "ANY";
+            /** Format: int32 */
+            ageMin?: number;
+            /** Format: int32 */
+            ageMax?: number;
+            /** Format: int32 */
+            heightMin?: number;
+            /** Format: int32 */
+            heightMax?: number;
+            /** Format: int32 */
+            weightMin?: number;
+            /** Format: int32 */
+            weightMax?: number;
+            /** Format: int32 */
+            minCareerMonths?: number;
+            payment?: number;
+            /** @enum {string} */
+            payType?: "CASH" | "SERVICE" | "FREE";
+            /** Format: date-time */
+            shootDate?: string;
+        };
+        RejectRequest: {
+            reason: string;
+        };
+        ModelDto: {
+            /** Format: int64 */
+            id: number;
+            /** Format: date-time */
+            createdDate: string;
+            /** Format: date-time */
+            modifiedDate: string;
+            name: string;
+            /** Format: int32 */
+            height: number;
+            /** Format: int32 */
+            weight: number;
+            gender: boolean;
+            /** Format: int32 */
+            age: number;
+            categories?: string[];
+            tags?: string[];
+            introduction?: string;
+            profileImageUrl?: string;
+            /** Format: double */
+            avgRating: number;
+            /** Format: int32 */
+            reviewCount: number;
+            portfolios?: components["schemas"]["PortfolioDto"][];
+        };
+        RsDataListModelDto: {
+            resultCode: string;
+            msg: string;
+            data: components["schemas"]["ModelDto"][];
+        };
+        RsDataModelDto: {
+            resultCode: string;
+            msg: string;
+            data: components["schemas"]["ModelDto"];
+        };
+        Pageable: {
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+            sort?: string[];
+        };
+        ApiResponsePageJobPostingListResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["PageJobPostingListResponse"];
+        };
+        JobPostingListResponse: {
+            /** Format: int64 */
+            id?: number;
+            title?: string;
+            /** @enum {string} */
+            category?: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            /** @enum {string} */
+            region?: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
+            /** @enum {string} */
+            status?: "RECRUITING" | "SHOOTING" | "COMPLETED" | "CANCELLED" | "ON_HOLD" | "CLOSED";
+            /** @enum {string} */
+            requiredSex?: "M" | "F" | "ANY";
+            payment?: number;
+            /** @enum {string} */
+            payType?: "CASH" | "SERVICE" | "FREE";
+            /** Format: date-time */
+            shootDate?: string;
+            /** Format: date-time */
+            createdDate?: string;
+        };
+        PageJobPostingListResponse: {
+            /** Format: int64 */
+            totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
+            /** Format: int32 */
+            size?: number;
+            content?: components["schemas"]["JobPostingListResponse"][];
+            /** Format: int32 */
+            number?: number;
+            sort?: components["schemas"]["SortObject"];
+            first?: boolean;
+            last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
+            pageable?: components["schemas"]["PageableObject"];
+            empty?: boolean;
+        };
+        PageableObject: {
+            paged?: boolean;
+            /** Format: int64 */
+            offset?: number;
+            sort?: components["schemas"]["SortObject"];
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int32 */
+            pageNumber?: number;
+            unpaged?: boolean;
+        };
+        SortObject: {
+            sorted?: boolean;
+            empty?: boolean;
+            unsorted?: boolean;
+        };
+        ApiResponseObject: {
+            resultCode?: string;
+            msg?: string;
+            data?: unknown;
+        };
+        ApiResponseListJobPostingTemplateResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["JobPostingTemplateResponse"][];
+        };
+        JobPostingTemplateResponse: {
+            /** Format: int64 */
+            id?: number;
+            category?: string;
+            title?: string;
+            content?: string;
+        };
+        ClientDto: {
+            /** Format: int64 */
+            id: number;
+            /** Format: date-time */
+            createdDate: string;
+            /** Format: date-time */
+            modifiedDate: string;
+            clientType: string;
+            companyName: string;
+            componyNumber?: string;
+            introduction?: string;
+            profileImageUrl?: string;
+            /** Format: double */
+            avgRating?: number;
+            /** Format: int32 */
+            reviewCount?: number;
+        };
+        RsDataListClientDto: {
+            resultCode: string;
+            msg: string;
+            data: components["schemas"]["ClientDto"][];
+        };
+        RsDataClientDto: {
+            resultCode: string;
+            msg: string;
+            data: components["schemas"]["ClientDto"];
+        };
+        ApiResponseListPendingClientResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["PendingClientResponse"][];
+        };
+        PendingClientResponse: {
+            /** Format: int64 */
+            userId?: number;
+            email?: string;
+            companyName?: string;
+            companyNumber?: string;
+            /** @enum {string} */
+            clientType?: "INDIVIDUAL" | "ORGANIZATION";
+            region?: string;
+            /** Format: date-time */
+            createdDate?: string;
+        };
     };
-    JobPostingUpdateRequest: {
-      title: string;
-      content: string;
-      /** @enum {string} */
-      category:
-        | "HAIR"
-        | "MAKEUP"
-        | "CLOTHING"
-        | "FITTING"
-        | "HAND"
-        | "FOOD"
-        | "PRODUCT"
-        | "ETC";
-      /** @enum {string} */
-      region:
-        | "SEOUL"
-        | "BUSAN"
-        | "DAEGU"
-        | "INCHEON"
-        | "GWANGJU"
-        | "DAEJEON"
-        | "ULSAN"
-        | "SEJONG"
-        | "GYEONGGI"
-        | "GANGWON"
-        | "CHUNGBUK"
-        | "CHUNGNAM"
-        | "JEONBUK"
-        | "JEONNAM"
-        | "GYEONGBUK"
-        | "GYEONGNAM"
-        | "JEJU";
-      /** @enum {string} */
-      requiredSex?: "M" | "F" | "ANY";
-      ageMin?: number;
-      ageMax?: number;
-      heightMin?: number;
-      heightMax?: number;
-      weightMin?: number;
-      weightMax?: number;
-      minCareerMonths?: number;
-      payment?: number;
-      /** @enum {string} */
-      payType?: "CASH" | "SERVICE" | "FREE";
-      /** Format: date */
-      shootDate?: string;
-    };
-    JobPostingResponse: {
-      /** Format: int64 */
-      id: number;
-      /** Format: int64 */
-      clientId: number;
-      title: string;
-      content: string;
-      /** @enum {string} */
-      category:
-        | "HAIR"
-        | "MAKEUP"
-        | "CLOTHING"
-        | "FITTING"
-        | "HAND"
-        | "FOOD"
-        | "PRODUCT"
-        | "ETC";
-      /** @enum {string} */
-      region:
-        | "SEOUL"
-        | "BUSAN"
-        | "DAEGU"
-        | "INCHEON"
-        | "GWANGJU"
-        | "DAEJEON"
-        | "ULSAN"
-        | "SEJONG"
-        | "GYEONGGI"
-        | "GANGWON"
-        | "CHUNGBUK"
-        | "CHUNGNAM"
-        | "JEONBUK"
-        | "JEONNAM"
-        | "GYEONGBUK"
-        | "GYEONGNAM"
-        | "JEJU";
-      /** @enum {string} */
-      status:
-        | "RECRUITING"
-        | "SHOOTING"
-        | "COMPLETED"
-        | "CANCELLED"
-        | "ON_HOLD"
-        | "CLOSED";
-      /** @enum {string} */
-      requiredSex?: "M" | "F" | "ANY";
-      ageMin?: number;
-      ageMax?: number;
-      heightMin?: number;
-      heightMax?: number;
-      weightMin?: number;
-      weightMax?: number;
-      minCareerMonths?: number;
-      payment?: number;
-      /** @enum {string} */
-      payType?: "CASH" | "SERVICE" | "FREE";
-      /** Format: date */
-      shootDate?: string;
-      /** Format: date-time */
-      createdDate?: string;
-    };
-    JobPostingListResponse: {
-      id: number;
-      title: string;
-      /** @enum {string} */
-      category:
-        | "HAIR"
-        | "MAKEUP"
-        | "CLOTHING"
-        | "FITTING"
-        | "HAND"
-        | "FOOD"
-        | "PRODUCT"
-        | "ETC";
-      /** @enum {string} */
-      region:
-        | "SEOUL"
-        | "BUSAN"
-        | "DAEGU"
-        | "INCHEON"
-        | "GWANGJU"
-        | "DAEJEON"
-        | "ULSAN"
-        | "SEJONG"
-        | "GYEONGGI"
-        | "GANGWON"
-        | "CHUNGBUK"
-        | "CHUNGNAM"
-        | "JEONBUK"
-        | "JEONNAM"
-        | "GYEONGBUK"
-        | "GYEONGNAM"
-        | "JEJU";
-      /** @enum {string} */
-      status:
-        | "RECRUITING"
-        | "SHOOTING"
-        | "COMPLETED"
-        | "CANCELLED"
-        | "ON_HOLD"
-        | "CLOSED";
-      /** @enum {string} */
-      requiredSex?: "M" | "F" | "ANY";
-      payment?: number;
-      /** @enum {string} */
-      payType?: "CASH" | "SERVICE" | "FREE";
-      /** Format: date */
-      shootDate?: string;
-      /** Format: date-time */
-      createdDate?: string;
-    };
-    JobPostingModelDetailResponse: {
-      id: number;
-      title: string;
-      content: string;
-      /** @enum {string} */
-      category:
-        | "HAIR"
-        | "MAKEUP"
-        | "CLOTHING"
-        | "FITTING"
-        | "HAND"
-        | "FOOD"
-        | "PRODUCT"
-        | "ETC";
-      /** @enum {string} */
-      region:
-        | "SEOUL"
-        | "BUSAN"
-        | "DAEGU"
-        | "INCHEON"
-        | "GWANGJU"
-        | "DAEJEON"
-        | "ULSAN"
-        | "SEJONG"
-        | "GYEONGGI"
-        | "GANGWON"
-        | "CHUNGBUK"
-        | "CHUNGNAM"
-        | "JEONBUK"
-        | "JEONNAM"
-        | "GYEONGBUK"
-        | "GYEONGNAM"
-        | "JEJU";
-      /** @enum {string} */
-      status:
-        | "RECRUITING"
-        | "SHOOTING"
-        | "COMPLETED"
-        | "CANCELLED"
-        | "ON_HOLD"
-        | "CLOSED";
-      /** @enum {string} */
-      requiredSex?: "M" | "F" | "ANY";
-      ageMin?: number;
-      ageMax?: number;
-      heightMin?: number;
-      heightMax?: number;
-      weightMin?: number;
-      weightMax?: number;
-      minCareerMonths?: number;
-      payment?: number;
-      /** @enum {string} */
-      payType?: "CASH" | "SERVICE" | "FREE";
-      /** Format: date */
-      shootDate?: string;
-      /** Format: date-time */
-      createdDate?: string;
-      favorited: boolean;
-    };
-    JobPostingClientDetailResponse: {
-      id: number;
-      clientId: number;
-      title: string;
-      content: string;
-      /** @enum {string} */
-      category:
-        | "HAIR"
-        | "MAKEUP"
-        | "CLOTHING"
-        | "FITTING"
-        | "HAND"
-        | "FOOD"
-        | "PRODUCT"
-        | "ETC";
-      /** @enum {string} */
-      region:
-        | "SEOUL"
-        | "BUSAN"
-        | "DAEGU"
-        | "INCHEON"
-        | "GWANGJU"
-        | "DAEJEON"
-        | "ULSAN"
-        | "SEJONG"
-        | "GYEONGGI"
-        | "GANGWON"
-        | "CHUNGBUK"
-        | "CHUNGNAM"
-        | "JEONBUK"
-        | "JEONNAM"
-        | "GYEONGBUK"
-        | "GYEONGNAM"
-        | "JEJU";
-      /** @enum {string} */
-      status:
-        | "RECRUITING"
-        | "SHOOTING"
-        | "COMPLETED"
-        | "CANCELLED"
-        | "ON_HOLD"
-        | "CLOSED";
-      /** @enum {string} */
-      requiredSex?: "M" | "F" | "ANY";
-      ageMin?: number;
-      ageMax?: number;
-      heightMin?: number;
-      heightMax?: number;
-      weightMin?: number;
-      weightMax?: number;
-      minCareerMonths?: number;
-      payment?: number;
-      /** @enum {string} */
-      payType?: "CASH" | "SERVICE" | "FREE";
-      /** Format: date */
-      shootDate?: string;
-      /** Format: date-time */
-      createdDate?: string;
-      recommendedModelIds: number[];
-    };
-    JobPostingOtherDetailResponse: {
-      id: number;
-      title: string;
-      content: string;
-      /** @enum {string} */
-      category:
-        | "HAIR"
-        | "MAKEUP"
-        | "CLOTHING"
-        | "FITTING"
-        | "HAND"
-        | "FOOD"
-        | "PRODUCT"
-        | "ETC";
-      /** @enum {string} */
-      region:
-        | "SEOUL"
-        | "BUSAN"
-        | "DAEGU"
-        | "INCHEON"
-        | "GWANGJU"
-        | "DAEJEON"
-        | "ULSAN"
-        | "SEJONG"
-        | "GYEONGGI"
-        | "GANGWON"
-        | "CHUNGBUK"
-        | "CHUNGNAM"
-        | "JEONBUK"
-        | "JEONNAM"
-        | "GYEONGBUK"
-        | "GYEONGNAM"
-        | "JEJU";
-      /** @enum {string} */
-      status:
-        | "RECRUITING"
-        | "SHOOTING"
-        | "COMPLETED"
-        | "CANCELLED"
-        | "ON_HOLD"
-        | "CLOSED";
-      /** @enum {string} */
-      requiredSex?: "M" | "F" | "ANY";
-      payment?: number;
-      /** @enum {string} */
-      payType?: "CASH" | "SERVICE" | "FREE";
-      /** Format: date */
-      shootDate?: string;
-      /** Format: date-time */
-      createdDate?: string;
-    };
-    JobPostingTemplateResponse: {
-      /** Format: int64 */
-      id: number;
-      category: string;
-      title: string;
-      content: string;
-    };
-
-    // ─── Contract Schemas ───
-    /** @description 계약서 생성 요청 */
-    ContractCreateRequest: {
-      /** Format: int64 */
-      applicationId: number;
-      /** @enum {string} */
-      contractType: "TEMPLATE" | "FILE";
-      /** Format: date-time */
-      shootStartAt: string;
-      /** Format: date-time */
-      shootEndAt: string;
-      location: string;
-      payment: number;
-      /** @enum {string} */
-      payType: "CASH" | "SERVICE";
-      usageScope: string;
-      memo?: string;
-      pdfUrl?: string;
-    };
-    ContractResponse: {
-      /** Format: int64 */
-      id?: number;
-      /** Format: int64 */
-      applicationId?: number;
-      /** @enum {string} */
-      contractType?: "TEMPLATE" | "FILE";
-      /** Format: date-time */
-      shootStartAt?: string;
-      /** Format: date-time */
-      shootEndAt?: string;
-      location?: string;
-      payment?: number;
-      /** @enum {string} */
-      payType?: "CASH" | "SERVICE";
-      usageScope?: string;
-      memo?: string;
-      pdfUrl?: string;
-      signedPdfUrl?: string;
-      /** @enum {string} */
-      status?:
-        | "DRAFT"
-        | "NOTIFIED"
-        | "VIEWED"
-        | "AGREED"
-        | "REJECTED"
-        | "CONFIRMED"
-        | "CANCELLED";
-    };
-
-    // ─── Auth & User Schemas ───
-    ModelRegisterRequest: {
-      email: string;
-      password: string;
-      region: string;
-      name: string;
-      /** Format: int32 */
-      height?: number;
-      /** Format: int32 */
-      weight?: number;
-      /** Format: int32 */
-      age?: number;
-      gender: boolean;
-    };
-    ClientRegisterRequest: {
-      email: string;
-      password: string;
-      region: string;
-      companyName: string;
-      companyNumber: string;
-      /** @enum {string} */
-      clientType: "INDIVIDUAL" | "ORGANIZATION";
-    };
-    LoginRequest: {
-      email: string;
-      password: string;
-    };
-    LoginResponse: {
-      item: components["schemas"]["UserDto"];
-    };
-    UserDto: {
-      /** Format: int64 */
-      id: number;
-      /** Format: date-time */
-      createDate: string;
-      /** Format: date-time */
-      modifyDate: string;
-      /** @enum {string} */
-      role: "MODEL" | "CLIENT" | "ADMIN";
-    };
-    EmailVerifyRequest: {
-      email: string;
-    };
-    EmailVerifyConfirmRequest: {
-      email: string;
-      code: string;
-    };
-
-    // ─── Admin Schemas ───
-    RejectRequest: {
-      reason: string;
-    };
-    PendingClientResponse: {
-      /** Format: int64 */
-      userId?: number;
-      email?: string;
-      companyName?: string;
-      companyNumber?: string;
-      /** @enum {string} */
-      clientType?: "INDIVIDUAL" | "ORGANIZATION";
-      region?: string;
-      /** Format: date-time */
-      createdDate?: string;
-    };
-
-    // ─── API Response Wrappers ───
-    ApiResponseVoid: {
-      resultCode?: string;
-      msg?: string;
-      data?: unknown;
-    };
-    ApiResponseLoginResponse: {
-      resultCode?: string;
-      msg?: string;
-      data?: components["schemas"]["LoginResponse"];
-    };
-    ApiResponsePageJobPostingList: {
-      resultCode: string;
-      msg: string;
-      data: {
-        content: components["schemas"]["JobPostingListResponse"][];
-        totalPages: number;
-        totalElements: number;
-        number: number;
-        size: number;
-        first: boolean;
-        last: boolean;
-        empty: boolean;
-      };
-    };
-    ApiResponseJobPostingResponse: {
-      resultCode: string;
-      msg: string;
-      data: components["schemas"]["JobPostingResponse"];
-    };
-    ApiResponseJobPostingDetail: {
-      resultCode: string;
-      msg: string;
-      data:
-        | components["schemas"]["JobPostingModelDetailResponse"]
-        | components["schemas"]["JobPostingClientDetailResponse"]
-        | components["schemas"]["JobPostingOtherDetailResponse"];
-    };
-    ApiResponseListJobPostingTemplateResponse: {
-      resultCode: string;
-      msg: string;
-      data: components["schemas"]["JobPostingTemplateResponse"][];
-    };
-    ApiResponseListPendingClientResponse: {
-      resultCode: string;
-      msg: string;
-      data: components["schemas"]["PendingClientResponse"][];
-    };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
-
 export type $defs = Record<string, never>;
-
 export interface operations {
-  // ─── Jobs Operations ───
-  listJobPostings: {
-    parameters: {
-      query?: {
-        region?: string;
-        category?: string;
-        page?: number;
-        size?: number;
-        sort?: string;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: {
-          "*/*": components["schemas"]["ApiResponsePageJobPostingList"];
+    getMyItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-    };
-  };
-  createJobPosting: {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["JobPostingCreateRequest"];
-      };
-    };
-    responses: {
-      201: {
-        headers: { [name: string]: unknown };
-        content: {
-          "*/*": components["schemas"]["ApiResponseJobPostingResponse"];
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataModelDto"];
+                };
+            };
         };
-      };
     };
-  };
-  getJobPosting: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: { id: number };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: {
-          "*/*": components["schemas"]["ApiResponseJobPostingDetail"];
+    modifyMyItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-    };
-  };
-  updateJobPosting: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: { id: number };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["JobPostingUpdateRequest"];
-      };
-    };
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: {
-          "*/*": components["schemas"]["ApiResponseJobPostingResponse"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelModifyReqBody"];
+            };
         };
-      };
-    };
-  };
-  deleteJobPosting: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: { id: number };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: { "*/*": components["schemas"]["ApiResponseVoid"] };
-      };
-    };
-  };
-  listJobPostingTemplates: {
-    parameters: {
-      query?: { category: string };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: {
-          "*/*": components["schemas"]["ApiResponseListJobPostingTemplateResponse"];
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataVoid"];
+                };
+            };
         };
-      };
     };
-  };
-
-  // ─── Contracts Operations ───
-  createContract: {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["ContractCreateRequest"];
-      };
-    };
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: { "*/*": components["schemas"]["ContractResponse"] };
-      };
-    };
-  };
-
-  // ─── Auth Operations ───
-  registerModel: {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["ModelRegisterRequest"];
-      };
-    };
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: { "*/*": components["schemas"]["ApiResponseVoid"] };
-      };
-    };
-  };
-  registerClient: {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["ClientRegisterRequest"];
-      };
-    };
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: { "*/*": components["schemas"]["ApiResponseVoid"] };
-      };
-    };
-  };
-  reissue: {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: { "*/*": components["schemas"]["ApiResponseVoid"] };
-      };
-    };
-  };
-  logout: {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: { "*/*": components["schemas"]["ApiResponseVoid"] };
-      };
-    };
-  };
-  login: {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    requestBody: {
-      content: { "application/json": components["schemas"]["LoginRequest"] };
-    };
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: { "*/*": components["schemas"]["ApiResponseLoginResponse"] };
-      };
-    };
-  };
-  sendVerificationCode: {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["EmailVerifyRequest"];
-      };
-    };
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: { "*/*": components["schemas"]["ApiResponseVoid"] };
-      };
-    };
-  };
-  confirmVerificationCode: {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["EmailVerifyConfirmRequest"];
-      };
-    };
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: { "*/*": components["schemas"]["ApiResponseVoid"] };
-      };
-    };
-  };
-
-  // ─── Admin Operations ───
-  getPendingClients: {
-    parameters: { query?: never; header?: never; path?: never; cookie?: never };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: {
-          "*/*": components["schemas"]["ApiResponseListPendingClientResponse"];
+    getMyItem_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataClientDto"];
+                };
+            };
+        };
     };
-  };
-  approveClient: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: { userId: number };
-      cookie?: never;
+    modifyMyItem_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClientModifyReqBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataVoid"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: { "*/*": components["schemas"]["ApiResponseVoid"] };
-      };
+    uploadPortfolios: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    files: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataListPortfolioDto"];
+                };
+            };
+        };
     };
-  };
-  rejectClient: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: { userId: number };
-      cookie?: never;
+    getJobPostings: {
+        parameters: {
+            query: {
+                region?: string;
+                category?: string;
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponsePageJobPostingListResponse"];
+                };
+            };
+        };
     };
-    requestBody: {
-      content: { "application/json": components["schemas"]["RejectRequest"] };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JobPostingCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseJobPostingResponse"];
+                };
+            };
+        };
     };
-    responses: {
-      200: {
-        headers: { [name: string]: unknown };
-        content: { "*/*": components["schemas"]["ApiResponseVoid"] };
-      };
+    uploadImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
     };
-  };
+    createContract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContractCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ContractResponse"];
+                };
+            };
+        };
+    };
+    registerModel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelRegisterRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    registerClient: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClientRegisterRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    reissue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseLoginResponse"];
+                };
+            };
+        };
+    };
+    sendVerificationCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailVerifyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    confirmVerificationCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailVerifyConfirmRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    getJobPostingDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseObject"];
+                };
+            };
+        };
+    };
+    delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JobPostingUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseJobPostingResponse"];
+                };
+            };
+        };
+    };
+    rejectClient: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    approveClient: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    getItems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataListModelDto"];
+                };
+            };
+        };
+    };
+    getItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataModelDto"];
+                };
+            };
+        };
+    };
+    delete_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataModelDto"];
+                };
+            };
+        };
+    };
+    getTemplates: {
+        parameters: {
+            query: {
+                category: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListJobPostingTemplateResponse"];
+                };
+            };
+        };
+    };
+    getItems_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataListClientDto"];
+                };
+            };
+        };
+    };
+    getItem_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataClientDto"];
+                };
+            };
+        };
+    };
+    delete_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataClientDto"];
+                };
+            };
+        };
+    };
+    getPendingClients: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListPendingClientResponse"];
+                };
+            };
+        };
+    };
+    deletePortfolio: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RsDataVoid"];
+                };
+            };
+        };
+    };
 }
