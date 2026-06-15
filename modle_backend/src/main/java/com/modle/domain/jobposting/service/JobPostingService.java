@@ -155,6 +155,14 @@ public class JobPostingService {
         return JobPostingResponse.from(jobPosting);
     }
 
+    public List<JobPostingListResponse> getMyRecruitingJobPostings(Long clientId) {
+        return jobPostingRepository
+                .findByClientIdAndStatusOrderByCreatedDateDesc(clientId, JobPostingStatus.RECRUITING)
+                .stream()
+                .map(JobPostingListResponse::from)
+                .toList();
+    }
+
     // JOB-006~008: 뷰어 타입에 따라 다른 공고 상세 정보를 반환한다.
     public Object getJobPostingDetail(Long jobPostingId, ViewerType viewerType) {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)

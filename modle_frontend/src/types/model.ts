@@ -5,6 +5,7 @@ export interface Portfolio {
 }
 export interface Model {
   id: number;
+  userId: number;
   name: string;
   region?: string;
   rating: number;

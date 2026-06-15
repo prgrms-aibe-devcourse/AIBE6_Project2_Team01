@@ -75,6 +75,17 @@ public class JobPostingController {
         return ApiResponse.ok("공고 목록 조회 성공", jobPostingService.getJobPostings(region, category, pageable));
     }
 
+    @GetMapping("/mine/recruiting")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ApiResponse<List<JobPostingListResponse>> getMyRecruitingJobPostings(
+            @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        return ApiResponse.ok(
+                "내 모집 중 공고 목록 조회 성공",
+                jobPostingService.getMyRecruitingJobPostings(securityUser.getId())
+        );
+    }
+
     // JOB-009: 공고 상태 변경 (CLIENT 본인만 가능).
     @PreAuthorize("hasRole('CLIENT')")
     @PatchMapping("/{id}/status")

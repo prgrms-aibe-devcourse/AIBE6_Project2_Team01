@@ -81,7 +81,7 @@ export default function EditJobPage({
       .catch(() => {
         setLoadError("공고 데이터를 불러오지 못했습니다.");
       });
-  }, [postingId]);
+  }, [postingId, authLoading, user]);
 
   const handleSubmit = async (formData: JobPostingFormState) => {
     const { response } = await client.PATCH("/api/v1/jobs/{id}", {

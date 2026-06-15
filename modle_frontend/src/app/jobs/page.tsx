@@ -82,18 +82,16 @@ export default function JobsPage() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
 
     client
       .GET("/api/v1/jobs", {
         params: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           query: {
             region: region || undefined,
             category: category || undefined,
             page,
             size: 10,
-          } as any,
+          },
         },
       })
       .then(({ data }) => {
@@ -112,9 +110,15 @@ export default function JobsPage() {
   }, [region, category, page]);
 
   const handleFilterChange = (nextRegion: string, nextCategory: string) => {
+    setLoading(true);
     setPage(0);
     setRegion(nextRegion);
     setCategory(nextCategory);
+  };
+
+  const handlePageChange = (i: number) => {
+    setLoading(true);
+    setPage(i);
   };
 
   const items = pageData?.content ?? [];
@@ -251,7 +255,7 @@ export default function JobsPage() {
               <button
                 key={i}
                 type="button"
-                onClick={() => setPage(i)}
+                onClick={() => handlePageChange(i)}
                 className={`h-9 w-9 rounded-md border text-[13px] font-semibold transition ${
                   i === currentPage
                     ? "border-primary bg-primary text-on-primary"

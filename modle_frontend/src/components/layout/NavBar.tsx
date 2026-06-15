@@ -37,6 +37,14 @@ export function NavBar() {
                 관리자
               </Link>
             )}
+            {user.role !== "ADMIN" && (
+              <Link
+                href="/messages"
+                className="inline-flex h-11 items-center px-2 text-[15px] font-semibold leading-6 text-ink"
+              >
+                쪽지
+              </Link>
+            )}
             <span className="text-[13px] leading-5 text-body">
               {ROLE_LABEL[user.role] ?? user.role} 계정
             </span>

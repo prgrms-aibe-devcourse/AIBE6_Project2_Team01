@@ -156,7 +156,7 @@ export default function JobDetailPage({
         setError("공고를 불러오지 못했습니다.");
         setLoading(false);
       });
-  }, [postingId]);
+  }, [postingId, authLoading, user]);
 
   const handleStatusChange = async () => {
     if (!selectedStatus) return;

@@ -19,6 +19,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -129,26 +132,25 @@ public class UserService {
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
+    public List<User> findAllByIds(Collection<Long> ids) {
+        return userRepository.findAllById(ids);
+    }
+
     @Transactional
     public void completeSignup(Long userId, AdditionalInfoRequest request) {
-        // 유저가 있는지 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        // 상태가 미완료인지 체크
         if (user.getStatus() != UserStatus.INCOMPLETE) {
             throw new CustomException(ErrorCode.INVALID_STATUS_CHANGE);
         }
 
-        // role 검증 — ADMIN 차단
         if (!request.role().isSelectable()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        // 유저 DB 갱신
         user.completeOAuthSignup(request.role(), request.region());
 
-        // 역할에 맞춰 객체 생성
         if (request.role() == Role.MODEL) {
             if (request.name() == null || request.height() == null ||
                     request.weight() == null || request.age() == null || request.gender() == null) {
