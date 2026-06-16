@@ -36,7 +36,8 @@ public class ModelController {
                 @RequestParam(required = false) String gender,
                 @RequestParam(required = false) List<Category> categories,
                 @RequestParam(required = false) List<String> regions, // 지역 파라미터 추가
-                @RequestParam(required = false) List<String> tags
+                @RequestParam(required = false) List<String> tags,
+                @RequestParam(required = false) String sort // 정렬 파라미터 추가
         ) {
                 // 성별 파라미터 처리
                 Boolean genderParam = null;
@@ -46,7 +47,7 @@ public class ModelController {
                         genderParam = false;
                 }
                 // Service 호출
-                List<Model> items = modelService.getList(query, genderParam, categories, regions, tags);
+                List<Model> items = modelService.getList(query, genderParam, categories, regions, tags, sort);
                 // DTO 변환
                 List<ModelDto> dtoList = items.stream().map(ModelDto::new).toList();
                 return new ApiResponse<>("200-1", "조회 성공", dtoList);

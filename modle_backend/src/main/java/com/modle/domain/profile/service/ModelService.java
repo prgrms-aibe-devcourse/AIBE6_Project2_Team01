@@ -12,7 +12,7 @@ import com.modle.domain.user.repository.ModelSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
+import org.springframework.data.domain.Sort;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class ModelService {
         return modelRepository.count();
     }
 
-    public List<Model> getList(String query, Boolean gender, List<Category> categories, List<String> regions, List<String> tags) {
+    public List<Model> getList(String query, Boolean gender, List<Category> categories, List<String> regions, List<String> tags, String sortType) {
         List<Specification<Model>> specs = new ArrayList<>();
         // 1. 이름 검색 (query)
         if (query != null && !query.trim().isEmpty()) {
@@ -49,7 +49,17 @@ public class ModelService {
             specs.add(ModelSpecification.hasTags(tags));
         }
         Specification<Model> finalSpec = Specification.allOf(specs);
-        return modelRepository.findAll(finalSpec);
+        
+        Sort sortObj;
+        if ("RATING".equalsIgnoreCase(sortType)) {
+            sortObj = Sort.by(Sort.Direction.DESC, "avgRating");
+        } else if ("RECOMMENDED".equalsIgnoreCase(sortType)) {
+            sortObj = Sort.by(Sort.Direction.DESC, "avgRating").and(Sort.by(Sort.Direction.DESC, "reviewCount"));
+        } else {
+            sortObj = Sort.by(Sort.Direction.DESC, "createdDate");
+        }
+        
+        return modelRepository.findAll(finalSpec, sortObj);
     }
 
     public Model findById(Long id) {
