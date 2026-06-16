@@ -2,6 +2,7 @@
 
 import { MyProfileView } from '@/components/model/MyProfileView';
 import { PortfolioGallery } from '@/components/portfolio/PortfolioGallery';
+import { BookmarkedJobs } from '@/components/profile/BookmarkedJobs';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ProfileTabs } from '@/components/profile/ProfileTabs';
 import { Model } from '@/types/model';
@@ -34,9 +35,10 @@ export function MyProfileContainer({ initialData }: Props) {
       <div className="max-w-[1200px] mx-auto px-6 py-10">
         {activeTab === 'profile' && <MyProfileView data={initialData} />}
         {activeTab === 'portfolio' && <PortfolioGallery modelId={initialData.id} initialPortfolios={initialData.portfolios} />}
-        
+        {activeTab === 'favorites' && <BookmarkedJobs />}
+
         {/* 임시 처리 (나머지 탭) */}
-        {['applications', 'favorites', 'contracts'].includes(activeTab) && (
+        {['applications', 'contracts'].includes(activeTab) && (
           <div className="py-20 text-center text-sm text-gray-500">
             아직 준비 중인 탭입니다.
           </div>
