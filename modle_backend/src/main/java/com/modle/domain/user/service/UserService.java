@@ -50,8 +50,21 @@ public class UserService {
 
         // 4. 모델 프로필 생성
         Model model = Model.create(user, request.name(), request.height(),
-                request.weight(), request.gender(), request.age());
+                request.weight(), request.sex(), request.age());
         modelRepository.save(model);
+
+        // MVP: User.region을 초기 model_region으로 1개 복사
+        if (user.getRegion() != null && !user.getRegion().isBlank()) {
+            try {
+                com.modle.domain.jobposting.entity.Region regionEnum = com.modle.domain.jobposting.entity.Region.valueOf(user.getRegion());
+                com.modle.domain.profile.entity.ModelRegion modelRegion = new com.modle.domain.profile.entity.ModelRegion();
+                modelRegion.setModel(model);
+                modelRegion.setRegion(regionEnum);
+                model.getModelRegions().add(modelRegion);
+                modelRepository.save(model); // Cascade 옵션이 있다면 여기서 저장됨
+            } catch (IllegalArgumentException e) {
+            }
+        }
 
         // 5. 인증 완료 표시 삭제 (재사용 방지)
         emailVerifyService.deleteVerified(request.email());
@@ -153,12 +166,24 @@ public class UserService {
 
         if (request.role() == Role.MODEL) {
             if (request.name() == null || request.height() == null ||
-                    request.weight() == null || request.age() == null || request.gender() == null) {
+                    request.weight() == null || request.age() == null || request.sex() == null) {
                 throw new CustomException(ErrorCode.INVALID_REQUEST);
             }
             Model model = Model.create(user, request.name(), request.height(),
-                    request.weight(), request.gender(), request.age());
+                    request.weight(), request.sex(), request.age());
             modelRepository.save(model);
+            
+            if (user.getRegion() != null && !user.getRegion().isBlank()) {
+                try {
+                    com.modle.domain.jobposting.entity.Region regionEnum = com.modle.domain.jobposting.entity.Region.valueOf(user.getRegion());
+                    com.modle.domain.profile.entity.ModelRegion modelRegion = new com.modle.domain.profile.entity.ModelRegion();
+                    modelRegion.setModel(model);
+                    modelRegion.setRegion(regionEnum);
+                    model.getModelRegions().add(modelRegion);
+                    modelRepository.save(model);
+                } catch (IllegalArgumentException e) {
+                }
+            }
         } else if (request.role() == Role.CLIENT) {
             if (request.companyName() == null || request.companyNumber() == null
                     || request.clientType() == null) {
@@ -168,5 +193,13 @@ public class UserService {
                     request.companyName(), request.companyNumber());
             clientRepository.save(client);
         }
+    }
+
+    @Transactional
+    public void resetPassword(String email, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        user.changePassword(passwordEncoder.encode(newPassword));
     }
 }

@@ -17,7 +17,7 @@ export function ModelEditForm({ initialData }: Props) {
     age: initialData.age,
     height: initialData.height,
     weight: initialData.weight,
-    gender: initialData.gender,
+    sex: initialData.sex,
     field: initialData.field || '',
     tags: initialData.tags || [],
     introduction: initialData.introduction || '',
@@ -52,8 +52,6 @@ export function ModelEditForm({ initialData }: Props) {
     let parsedValue: string | number | boolean | undefined = value;
     if (type === 'number') {
       parsedValue = value ? Number(value) : undefined;
-    } else if (name === 'gender') {
-      parsedValue = value === 'true';
     }
 
     setFormData(prev => ({ ...prev, [name]: parsedValue }));
@@ -197,13 +195,13 @@ export function ModelEditForm({ initialData }: Props) {
         <div>
           <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">성별 (Gender)</label>
           <select
-            name="gender"
-            value={formData.gender !== undefined ? String(formData.gender) : 'true'}
+            name="sex"
+            value={formData.sex || 'M'}
             onChange={handleChange}
             className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors appearance-none"
           >
-            <option value="true">남성</option>
-            <option value="false">여성</option>
+            <option value="M">남성</option>
+            <option value="F">여성</option>
           </select>
         </div>
       </div>

@@ -1,6 +1,8 @@
 package com.modle.domain.contract.controller;
 
 import com.modle.domain.contract.dto.request.ContractCreateRequest;
+import com.modle.domain.contract.dto.request.ContractPdfCreateRequest;
+import com.modle.domain.contract.dto.response.ContractPdfResponse;
 import com.modle.domain.contract.dto.response.ContractResponse;
 import com.modle.domain.contract.dto.response.ContractTemplateResponse;
 import com.modle.domain.contract.service.ContractService;
@@ -44,6 +46,18 @@ public class ContractController {
         return ApiResponse.ok(
                 "계약서 템플릿 목록 조회 성공",
                 contractService.getTemplates()
+        );
+    }
+
+    @PostMapping("/pdf")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ApiResponse<ContractPdfResponse> createContractPdf(
+             @AuthenticationPrincipal SecurityUser securityUser,
+             @Valid @RequestBody ContractPdfCreateRequest request
+    ){
+        return ApiResponse.ok(
+                "계약서 PDF 생성 성공",
+                contractService.generatePdf(securityUser.getId(), request)
         );
     }
 

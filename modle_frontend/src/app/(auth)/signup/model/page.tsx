@@ -9,6 +9,7 @@ import Link from "next/link";
 import { client } from "@/lib/api/client";
 import { getErrorMessage } from "@/lib/api/error";
 import { GENDER_OPTIONS } from "@/lib/constants/gender";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 
 type FormState = {
   email: string;
@@ -170,8 +171,7 @@ export default function ModelSignupPage() {
           ) : null}
 
           <Field label="비밀번호" required>
-            <input
-              type="password"
+            <PasswordInput
               required
               minLength={5}
               maxLength={50}
