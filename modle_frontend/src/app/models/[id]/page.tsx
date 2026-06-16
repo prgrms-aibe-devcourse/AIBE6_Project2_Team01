@@ -1,6 +1,7 @@
 import { ClientProposalButton } from "@/components/message/ClientProposalButton";
 import { DetailLookbook } from "@/components/model/detail/DetailLookbook";
 import { ProfileGallery } from "@/components/model/detail/ProfileGallery";
+import { ModelBookmarkButton } from "@/components/ui/ModelBookmarkButton";
 import { ReportButton } from "@/components/ui/ReportButton";
 import { getModel } from "@/lib/api/model";
 import { notFound } from "next/navigation";
@@ -104,9 +105,10 @@ export default async function ModelDetailPage({ params }: PageProps) {
             </div>
 
             <div className="mt-8 md:mt-auto pt-8 flex gap-2">
-              <button className="flex-[1] bg-white border border-gray-300 hover:border-black text-black font-bold py-4 text-center transition-colors">
-                ♡ 관심 모델
-              </button>
+              <ModelBookmarkButton
+                modelId={modelData.id}
+                className="flex-[1] bg-white border border-gray-300 hover:border-black text-black font-bold py-4 text-center transition-colors disabled:opacity-50"
+              />
               <ClientProposalButton
                 recipientUserId={modelData.userId}
                 className="flex-[2] bg-black hover:bg-gray-800 text-white font-bold py-4 text-center transition-colors"
