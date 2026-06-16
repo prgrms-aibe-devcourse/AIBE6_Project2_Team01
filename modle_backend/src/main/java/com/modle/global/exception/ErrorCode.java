@@ -61,6 +61,13 @@ public enum ErrorCode {
     MESSAGE_INVALID_PARENT(HttpStatus.BAD_REQUEST, "MSG-007", "답신 대상 쪽지가 현재 대화방에 속하지 않습니다."),
     MESSAGE_POST_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "MSG-008", "선택한 공고를 대화에 연결할 수 없습니다."),
 
+    // 신고
+    REPORT_TARGET_NOT_FOUND(HttpStatus.NOT_FOUND, "404-4", "신고 대상이 존재하지 않습니다."),
+    REPORT_ALREADY_EXISTS(HttpStatus.CONFLICT, "409-5", "이미 신고한 대상입니다."),
+    REPORT_SELF_NOT_ALLOWED(HttpStatus.FORBIDDEN, "403-8", "자신을 신고할 수 없습니다."),
+    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "404-5", "신고 내역을 찾을 수 없습니다."),
+    REPORT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "403-9", "해당 콘텐츠에 대한 신고 권한이 없습니다."),
+
     // 잘못된 접근
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "403-6", "권한이 없습니다."),
     DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "404-3", "존재하지 않는 데이터에 접근했습니다.");
