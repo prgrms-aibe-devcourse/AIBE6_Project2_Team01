@@ -107,6 +107,10 @@ public class AiRecommendService {
         JobPosting jobPosting = findJobPosting(postId);
         Optional<PostEmbedding> postEmbedding = ensurePostEmbedding(jobPosting);
         List<Model> candidates = findCandidates(jobPosting);
+        if (candidates.isEmpty()) {
+            recommendationRepository.deleteByPostId(postId);
+            return;
+        }
         Map<Long, ModelEmbedding> embeddingMap = modelEmbeddingRepository
                 .findByModelIdIn(candidates.stream().map(Model::getId).toList())
                 .stream()

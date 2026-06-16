@@ -1,6 +1,7 @@
 package com.modle.global.exception;
 
 import com.modle.global.response.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -15,6 +16,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
     // 커스텀 예외 처리
     @ExceptionHandler(CustomException.class)
@@ -68,6 +70,7 @@ public class GlobalExceptionHandler {
     // 그 외 예외
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handle(Exception e) {
+        log.error("Unhandled exception occurred.", e);
         return new ResponseEntity<>(
                 ApiResponse.fail("500-1", "서버 오류가 발생했습니다."),
                 org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
