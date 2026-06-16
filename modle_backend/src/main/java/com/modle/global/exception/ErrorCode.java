@@ -16,13 +16,14 @@ public enum ErrorCode {
     USER_SUSPENDED(HttpStatus.FORBIDDEN, "403-1", "정지된 계정입니다."),
     USER_WITHDRAWN(HttpStatus.FORBIDDEN, "403-2", "탈퇴한 계정입니다."),
     USER_REJECTED(HttpStatus.FORBIDDEN, "403-3", "가입이 반려된 계정입니다."),
-    PASSWORD_RESET_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "400-9", "이메일 인증이 필요합니다."),
 
     // 이메일 인증
     EMAIL_CODE_NOT_FOUND(HttpStatus.BAD_REQUEST, "400-1", "인증 코드가 만료되었거나 존재하지 않습니다."),
     EMAIL_CODE_INVALID(HttpStatus.BAD_REQUEST, "400-2", "인증 코드가 올바르지 않습니다."),
     INVALID_STATUS_CHANGE(HttpStatus.BAD_REQUEST, "400-3", "유효하지 않은 상태 변경입니다."),
     EMAIL_NOT_VERIFIED(HttpStatus.FORBIDDEN, "403-4", "이메일 인증이 완료되지 않았습니다."),
+    PASSWORD_RESET_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "400-9", "이메일 인증이 필요합니다."),
+    EMAIL_CODE_ATTEMPTS_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "429-1", "인증 코드 입력 시도 횟수를 초과했습니다. 잠시 후 다시 시도해주세요."),
 
     // 입력값 검증
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "400-5", "필수 입력값이 누락되었습니다."),

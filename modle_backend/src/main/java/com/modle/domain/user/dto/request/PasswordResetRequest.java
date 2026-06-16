@@ -9,5 +9,8 @@ public record PasswordResetRequest(
         String email,
 
         @NotBlank
+        String resetToken,
+
+        @NotBlank
         String newPassword
 ) {}

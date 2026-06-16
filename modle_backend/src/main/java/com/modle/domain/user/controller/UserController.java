@@ -3,6 +3,7 @@ package com.modle.domain.user.controller;
 import com.modle.domain.user.dto.UserDto;
 import com.modle.domain.user.dto.request.*;
 import com.modle.domain.user.dto.response.LoginResponse;
+import com.modle.domain.user.dto.response.PasswordResetResponse;
 import com.modle.domain.user.entity.User;
 import com.modle.domain.user.service.UserService;
 import com.modle.global.auth.SecurityUser;
@@ -151,18 +152,18 @@ public class UserController {
     }
 
     @PostMapping("/password/reset/confirm")
-    public ApiResponse<Void> confirmPasswordResetCode(
+    public ApiResponse<PasswordResetResponse> confirmPasswordResetCode(
             @Valid @RequestBody EmailVerifyConfirmRequest request
     ) {
-        emailVerifyService.verifyPasswordResetCode(request.email(), request.code());
-        return new ApiResponse<>("200-1", "이메일 인증이 완료되었습니다.");
+        String resetToken = emailVerifyService.verifyPasswordResetCode(request.email(), request.code());
+        return new ApiResponse<>("200-1", "이메일 인증이 완료되었습니다.", new PasswordResetResponse(resetToken));
     }
 
     @PostMapping("/password/reset")
     public ApiResponse<Void> resetPassword(
             @Valid @RequestBody PasswordResetRequest request
     ) {
-        emailVerifyService.checkPasswordResetVerified(request.email());
+        emailVerifyService.checkPasswordResetVerified(request.email(), request.resetToken());
         userService.resetPassword(request.email(), request.newPassword());
         emailVerifyService.clearPasswordResetVerified(request.email());
         return new ApiResponse<>("200-1", "비밀번호가 재설정되었습니다.");
