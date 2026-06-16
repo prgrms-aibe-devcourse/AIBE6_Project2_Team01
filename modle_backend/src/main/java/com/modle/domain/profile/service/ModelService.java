@@ -14,14 +14,20 @@ import com.modle.domain.user.entity.type.Sex;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.ModelSpecification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class ModelService {
     private final ModelRepository modelRepository;
     private final TagRepository tagRepository;
@@ -108,20 +114,14 @@ public class ModelService {
         Model savedModel = modelRepository.save(model);
         
         // MVP: User.region을 초기 model_region으로 1개 복사
-        if (user.getRegion() != null && !user.getRegion().isBlank()) {
-            try {
-                Region regionEnum = Region.valueOf(user.getRegion());
+        toRegion(user.getRegion()).ifPresent(regionEnum -> {
                 ModelRegion modelRegion = new ModelRegion();
                 modelRegion.setModel(savedModel);
                 modelRegion.setRegion(regionEnum);
                 savedModel.getModelRegions().add(modelRegion);
-            } catch (IllegalArgumentException e) {
-                // Ignore if User.region is not a valid Region enum (like just "서울" instead of "SEOUL")
-                // Wait, User.region usually holds display names or keys? Let's assume it's valid enum names.
-            }
-        }
+        });
         
-        aiRecommendService.upsertModelEmbedding(savedModel.getId());
+        requestModelEmbeddingRefresh(savedModel.getId());
         return savedModel;
     }
 
@@ -141,19 +141,25 @@ public class ModelService {
             List<String> activeRegions
         ) {
         model.update(name, height, weight, sex, age, introduction, profileImageUrl, careerStartDate);
-        model.getUser().updateRegion(region);
+        if (region != null && !region.isBlank()) {
+            model.getUser().updateRegion(region);
+        }
         
         // 2. 활동 지역(ModelRegion) 업데이트
         model.getModelRegions().clear();
-        if (activeRegions != null) {
-            for (String regionName : activeRegions) {
-                try {
-                    Region regionEnum = Region.valueOf(regionName.toUpperCase());
+        List<String> regionNames = activeRegions;
+        if ((regionNames == null || regionNames.isEmpty()) && region != null && !region.isBlank()) {
+            regionNames = List.of(region);
+        }
+        if (regionNames != null) {
+            for (String regionName : regionNames) {
+                Optional<Region> regionEnum = toRegion(regionName);
+                if (regionEnum.isPresent()) {
                     ModelRegion modelRegion = new ModelRegion();
                     modelRegion.setModel(model);
-                    modelRegion.setRegion(regionEnum);
+                    modelRegion.setRegion(regionEnum.get());
                     model.getModelRegions().add(modelRegion);
-                } catch (IllegalArgumentException e) {
+                } else {
                     System.err.println("지원하지 않는 지역: " + regionName);
                 }
             }
@@ -193,10 +199,44 @@ public class ModelService {
                 }
             }
         }
-        aiRecommendService.upsertModelEmbedding(model.getId());
+        requestModelEmbeddingRefresh(model.getId());
     }
 
     public void delete(Model model) {
         modelRepository.delete(model);
+    }
+
+    private void requestModelEmbeddingRefresh(Long modelId) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    refreshModelEmbedding(modelId);
+                }
+            });
+            return;
+        }
+        refreshModelEmbedding(modelId);
+    }
+
+    private void refreshModelEmbedding(Long modelId) {
+        try {
+            aiRecommendService.upsertModelEmbedding(modelId);
+        } catch (RuntimeException error) {
+            log.warn("Model embedding refresh failed. modelId={}", modelId, error);
+        }
+    }
+
+    private Optional<Region> toRegion(String regionName) {
+        if (regionName == null || regionName.isBlank()) {
+            return Optional.empty();
+        }
+        for (Region region : Region.values()) {
+            if (region.name().equalsIgnoreCase(regionName)
+                    || region.getDisplayName().equals(regionName)) {
+                return Optional.of(region);
+            }
+        }
+        return Optional.empty();
     }
 }

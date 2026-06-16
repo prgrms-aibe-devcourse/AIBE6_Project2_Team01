@@ -9,7 +9,6 @@ import com.modle.domain.jobposting.dto.response.JobPostingResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingTemplateGenerateResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingTemplateResponse;
 import com.modle.domain.jobposting.dto.response.RecommendationListResponse;
-import com.modle.domain.jobposting.entity.ViewerType;
 import com.modle.domain.jobposting.service.AiRecommendService;
 import com.modle.domain.jobposting.entity.type.ViewerType;
 import com.modle.domain.jobposting.service.JobPostingService;

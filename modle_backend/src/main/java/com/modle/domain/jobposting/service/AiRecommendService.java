@@ -6,12 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.modle.domain.jobposting.dto.response.RecommendationCardResponse;
 import com.modle.domain.jobposting.dto.response.RecommendationListResponse;
 import com.modle.domain.jobposting.entity.JobPosting;
-import com.modle.domain.jobposting.entity.JobPostingStatus;
 import com.modle.domain.jobposting.entity.ModelEmbedding;
 import com.modle.domain.jobposting.entity.PostEmbedding;
 import com.modle.domain.jobposting.entity.Recommendation;
 import com.modle.domain.jobposting.entity.RecommendationUnlock;
-import com.modle.domain.jobposting.entity.RequiredSex;
+import com.modle.domain.jobposting.entity.type.JobPostingStatus;
+import com.modle.domain.jobposting.entity.type.RequiredSex;
 import com.modle.domain.jobposting.event.JobPostingCreatedEvent;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.jobposting.repository.ModelEmbeddingRepository;
@@ -80,7 +80,7 @@ public class AiRecommendService {
         }
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void upsertModelEmbedding(Long modelId) {
         try {
             Model model = modelRepository.findById(modelId)
