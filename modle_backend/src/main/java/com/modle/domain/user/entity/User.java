@@ -1,14 +1,21 @@
 package com.modle.domain.user.entity;
 
+import java.time.LocalDateTime;
+
 import com.modle.domain.user.entity.type.Provider;
 import com.modle.domain.user.entity.type.Role;
 import com.modle.domain.user.entity.type.UserStatus;
 import com.modle.global.entity.BaseEntity;
-import jakarta.persistence.*;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user")
@@ -30,7 +37,7 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Provider provider;  // LOCAL, GOOGLE, KAKAO
+    private Provider provider; // LOCAL, GOOGLE, KAKAO
 
     private String providerId;
 
@@ -90,7 +97,12 @@ public class User extends BaseEntity {
     public void updateStatus(UserStatus userStatus) {
         this.status = userStatus;
     }
+
     public void updateRegion(String region) {
         this.region = region;
+    }
+
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
     }
 }

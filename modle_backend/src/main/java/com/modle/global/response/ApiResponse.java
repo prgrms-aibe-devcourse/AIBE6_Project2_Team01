@@ -14,7 +14,7 @@ public record ApiResponse<T>(
     }
 
     public ApiResponse(String resultCode, String msg, T data) {
-        this(resultCode, Integer.parseInt(resultCode.split("-", 2)[0]), msg, data);
+        this(resultCode, parseStatusCode(resultCode), msg, data);
     }
 
     public static <T> ApiResponse<T> ok(String msg, T data) {
@@ -27,5 +27,13 @@ public record ApiResponse<T>(
 
     public static <T> ApiResponse<T> fail(String resultCode, String msg) {
         return new ApiResponse<>(resultCode, msg, null);
+    }
+
+    private static int parseStatusCode(String resultCode) {
+        try {
+            return Integer.parseInt(resultCode.split("-", 2)[0]);
+        } catch (NumberFormatException ignored) {
+            return 0;
+        }
     }
 }

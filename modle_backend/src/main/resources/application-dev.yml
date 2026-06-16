@@ -7,7 +7,7 @@ spring:
   cloud:
     gcp:
       storage:
-        enabled: false
+        enabled: true
 
 jwt:
   secret: ${JWT_SECRET}

@@ -12,7 +12,10 @@ export async function getClientProfile(id: string | number): Promise<Client> {
     throw new Error((error as { msg?: string })?.msg || '클라이언트 정보를 불러오는데 실패했습니다.');
   }
   
-  const item = (data as { data?: unknown })?.data;
+  const item = (data as { data?: Partial<Client> })?.data;
+  if (!item?.id) {
+    throw new Error('클라이언트 정보가 올바르지 않습니다.');
+  }
   
   return {
     id: item.id,

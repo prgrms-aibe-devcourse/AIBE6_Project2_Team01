@@ -1,6 +1,7 @@
 package com.modle.domain.jobposting.service;
 
 import com.modle.domain.jobposting.dto.request.JobPostingCreateRequest;
+import com.modle.domain.jobposting.dto.request.JobPostingStatusUpdateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
 import com.modle.domain.jobposting.dto.response.JobPostingClientDetailResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingListResponse;
@@ -82,12 +83,12 @@ public class JobPostingService {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
-        if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
-            throw new CustomException(ErrorCode.JOB_POSTING_NOT_EDITABLE);
-        }
-
         if (!jobPosting.getClientId().equals(clientId)) {
             throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
+        }
+
+        if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
+            throw new CustomException(ErrorCode.JOB_POSTING_NOT_EDITABLE);
         }
 
         jobPosting.update(request.title(), request.content(), request.category(), request.region(),
@@ -106,12 +107,13 @@ public class JobPostingService {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
-        if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
-            throw new CustomException(ErrorCode.JOB_POSTING_NOT_EDITABLE);
-        }
-
         if (!jobPosting.getClientId().equals(clientId)) {
             throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
+        }
+
+        JobPostingStatus status = jobPosting.getStatus();
+        if (status != JobPostingStatus.RECRUITING && status != JobPostingStatus.CANCELLED) {
+            throw new CustomException(ErrorCode.JOB_POSTING_NOT_EDITABLE);
         }
 
         jobPostingRepository.delete(jobPosting);
@@ -119,10 +121,46 @@ public class JobPostingService {
 
     // JOB-005: 지역·카테고리 필터를 적용한 공고 목록을 반환한다.
     public Page<JobPostingListResponse> getJobPostings(String region, String category, Pageable pageable) {
-        Region regionEnum = (region != null && !region.isBlank()) ? Region.valueOf(region) : null;
-        Category categoryEnum = (category != null && !category.isBlank()) ? Category.valueOf(category) : null;
+        Region regionEnum = parseEnum(Region.class, region);
+        Category categoryEnum = parseEnum(Category.class, category);
         return jobPostingRepository.findByFilter(regionEnum, categoryEnum, pageable)
                 .map(JobPostingListResponse::from);
+    }
+
+    private <E extends Enum<E>> E parseEnum(Class<E> enumClass, String value) {
+        if (value == null || value.isBlank()) return null;
+        try {
+            return Enum.valueOf(enumClass, value);
+        } catch (IllegalArgumentException e) {
+            throw new CustomException(ErrorCode.JOB_POSTING_INVALID_FILTER_VALUE);
+        }
+    }
+
+    // JOB-009: 공고 상태를 변경한다. 허용된 전환만 가능하며 본인 공고만 변경 가능.
+    @Transactional
+    public JobPostingResponse updateJobPostingStatus(Long jobPostingId, Long clientId, JobPostingStatusUpdateRequest request) {
+        JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
+
+        if (!jobPosting.getClientId().equals(clientId)) {
+            throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
+        }
+
+        if (!jobPosting.getStatus().canTransitionTo(request.status())) {
+            throw new CustomException(ErrorCode.JOB_POSTING_INVALID_STATUS_TRANSITION);
+        }
+
+        jobPosting.updateStatus(request.status());
+        // TODO(지원 도메인): SHOOTING 전환 시 해당 공고의 지원 비활성화 처리
+        return JobPostingResponse.from(jobPosting);
+    }
+
+    public List<JobPostingListResponse> getMyRecruitingJobPostings(Long clientId) {
+        return jobPostingRepository
+                .findByClientIdAndStatusOrderByCreatedDateDesc(clientId, JobPostingStatus.RECRUITING)
+                .stream()
+                .map(JobPostingListResponse::from)
+                .toList();
     }
 
     // JOB-006~008: 뷰어 타입에 따라 다른 공고 상세 정보를 반환한다.

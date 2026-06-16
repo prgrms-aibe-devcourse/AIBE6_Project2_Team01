@@ -1,4 +1,4 @@
-package com.modle.domain.contract.entity;
+package com.modle.domain.contract.entity.type;
 
 public enum ContractStatus {
     DRAFT,

@@ -1,5 +1,6 @@
 import { DetailLookbook } from '@/components/model/detail/DetailLookbook';
 import { ProfileGallery } from '@/components/model/detail/ProfileGallery';
+import { ClientProposalButton } from '@/components/message/ClientProposalButton';
 import { getModel } from '@/lib/api/model';
 import { notFound } from 'next/navigation';
 
@@ -94,9 +95,10 @@ export default async function ModelDetailPage({ params }: PageProps) {
                   <button className="flex-[1] bg-white border border-gray-300 hover:border-black text-black font-bold py-4 text-center transition-colors">
                     ♡ 관심 모델
                   </button>
-                  <button className="flex-[2] bg-black hover:bg-gray-800 text-white font-bold py-4 text-center transition-colors">
-                    섭외 문의하기
-                  </button>
+                  <ClientProposalButton
+                    recipientUserId={modelData.userId}
+                    className="flex-[2] bg-black hover:bg-gray-800 text-white font-bold py-4 text-center transition-colors"
+                  />
                </div>
             </div>
           </div>

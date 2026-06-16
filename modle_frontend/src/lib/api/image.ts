@@ -19,7 +19,7 @@ export async function uploadImage(file: File): Promise<string> {
     }
     // 백엔드에서 반환한 응답이 그대로 data에 들어옵니다. (ex. { "imageUrl": "..." })
     return (data as { imageUrl?: string })?.imageUrl || '';
-  } catch {
+  } catch (error) {
     console.error("이미지 업로드 오류:", error);
     throw error;
   }

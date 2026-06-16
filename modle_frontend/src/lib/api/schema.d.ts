@@ -140,6 +140,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/signup/additional": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["signupAdditional"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/reissue": {
         parameters: {
             query?: never;
@@ -150,6 +166,54 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["reissue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/reset/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sendPasswordResetCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/reset/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirmPasswordResetCode"];
         delete?: never;
         options?: never;
         head?: never;
@@ -236,6 +300,22 @@ export interface paths {
         patch: operations["update"];
         trace?: never;
     };
+    "/api/v1/jobs/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateStatus"];
+        trace?: never;
+    };
     "/api/v1/admin/clients/{userId}/reject": {
         parameters: {
             query?: never;
@@ -319,6 +399,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/contracts/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getTemplates_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/clients": {
         parameters: {
             query?: never;
@@ -349,6 +445,22 @@ export interface paths {
         post?: never;
         /** 삭제 */
         delete: operations["delete_2"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["me"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -511,10 +623,15 @@ export interface components {
             location: string;
             payment: number;
             /** @enum {string} */
-            payType: "CASH" | "SERVICE";
+            payType: "CASH" | "SERVICE" | "FREE";
             usageScope: string;
             memo?: string;
             pdfUrl?: string;
+        };
+        ApiResponseContractResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["ContractResponse"];
         };
         ContractResponse: {
             /** Format: int64 */
@@ -530,7 +647,7 @@ export interface components {
             location?: string;
             payment?: number;
             /** @enum {string} */
-            payType?: "CASH" | "SERVICE";
+            payType?: "CASH" | "SERVICE" | "FREE";
             usageScope?: string;
             memo?: string;
             pdfUrl?: string;
@@ -560,6 +677,43 @@ export interface components {
             /** @enum {string} */
             clientType: "INDIVIDUAL" | "ORGANIZATION";
         };
+        AdditionalInfoRequest: {
+            /** @enum {string} */
+            role: "MODEL" | "CLIENT" | "ADMIN";
+            region: string;
+            name?: string;
+            /** Format: int32 */
+            height?: number;
+            /** Format: int32 */
+            weight?: number;
+            /** Format: int32 */
+            age?: number;
+            gender?: boolean;
+            companyName?: string;
+            companyNumber?: string;
+            /** @enum {string} */
+            clientType?: "INDIVIDUAL" | "ORGANIZATION";
+        };
+        PasswordResetRequest: {
+            email: string;
+            resetToken: string;
+            newPassword: string;
+        };
+        PasswordResetResponse: {
+            resetToken: string;
+        };
+        ApiResponsePasswordResetResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["PasswordResetResponse"];
+        };
+        EmailVerifyRequest: {
+            email: string;
+        };
+        EmailVerifyConfirmRequest: {
+            email: string;
+            code: string;
+        };
         LoginRequest: {
             email: string;
             password: string;
@@ -580,14 +734,9 @@ export interface components {
             /** Format: date-time */
             modifyDate: string;
             /** @enum {string} */
-            role: "MODEL" | "CLIENT" | "ADMIN";
-        };
-        EmailVerifyRequest: {
-            email: string;
-        };
-        EmailVerifyConfirmRequest: {
-            email: string;
-            code: string;
+            role?: "MODEL" | "CLIENT" | "ADMIN";
+            /** @enum {string} */
+            status?: "INCOMPLETE" | "PENDING" | "ACTIVE" | "SUSPENDED" | "WITHDRAWN" | "REJECTED";
         };
         JobPostingUpdateRequest: {
             title: string;
@@ -617,6 +766,10 @@ export interface components {
             payType?: "CASH" | "SERVICE" | "FREE";
             /** Format: date-time */
             shootDate?: string;
+        };
+        JobPostingStatusUpdateRequest: {
+            /** @enum {string} */
+            status: "RECRUITING" | "SHOOTING" | "COMPLETED" | "CANCELLED" | "ON_HOLD" | "CLOSED";
         };
         RejectRequest: {
             reason: string;
@@ -911,7 +1064,9 @@ export interface operations {
             query: {
                 region?: string;
                 category?: string;
-                pageable: components["schemas"]["Pageable"];
+                page?: number;
+                size?: number;
+                sort?: string[];
             };
             header?: never;
             path?: never;
@@ -996,13 +1151,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Created */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ContractResponse"];
+                    "*/*": components["schemas"]["ApiResponseContractResponse"];
                 };
             };
         };
@@ -1055,6 +1210,30 @@ export interface operations {
             };
         };
     };
+    signupAdditional: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdditionalInfoRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
     reissue: {
         parameters: {
             query?: never;
@@ -1071,6 +1250,78 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    resetPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordResetRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    sendPasswordResetCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailVerifyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    confirmPasswordResetCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailVerifyConfirmRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponsePasswordResetResponse"];
                 };
             };
         };
@@ -1237,6 +1488,32 @@ export interface operations {
             };
         };
     };
+    updateStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JobPostingStatusUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseJobPostingResponse"];
+                };
+            };
+        };
+    };
     rejectClient: {
         parameters: {
             query?: never;
@@ -1367,6 +1644,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseListJobPostingTemplateResponse"];
+                };
+            };
+        };
+    };
+    getTemplates_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListContractTemplateResponse"];
                 };
             };
         };

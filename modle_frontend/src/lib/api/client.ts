@@ -28,6 +28,30 @@ export function setSessionExpiredHandler(handler: (() => void) | null) {
   sessionExpiredHandler = handler;
 }
 
+export async function authenticatedFetch(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<Response> {
+  const request = new Request(input, { ...init, credentials: "include" });
+  const response = await fetch(request.clone());
+
+  if (response.status !== 401) {
+    return response;
+  }
+
+  const reissueResponse = await fetch("/api/v1/auth/reissue", {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!reissueResponse.ok) {
+    sessionExpiredHandler?.();
+    return response;
+  }
+
+  return fetch(request);
+}
+
 // onRequest 시점에 요청 바디가 소비되기 전에 복제해두고, onResponse에서 재시도용으로 사용
 const pendingRequests = new Map<string, Request>();
 
