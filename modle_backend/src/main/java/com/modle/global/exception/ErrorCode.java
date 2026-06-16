@@ -68,6 +68,10 @@ public enum ErrorCode {
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "404-5", "신고 내역을 찾을 수 없습니다."),
     REPORT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "403-9", "해당 콘텐츠에 대한 신고 권한이 없습니다."),
 
+    // 지원
+    APPLICATION_JOB_NOT_RECRUITING(HttpStatus.BAD_REQUEST, "400-11", "모집 중인 공고에만 지원할 수 있습니다."),
+    APPLICATION_ALREADY_EXISTS(HttpStatus.CONFLICT, "409-6", "이미 지원한 공고입니다."),
+
     // 잘못된 접근
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "403-6", "권한이 없습니다."),
     DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "404-3", "존재하지 않는 데이터에 접근했습니다.");
