@@ -33,7 +33,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
             <div className="w-full md:w-[45%] lg:w-[40%] max-w-[450px] mx-auto md:mx-0">
                <ProfileGallery 
                  portfolios={modelData.portfolios || []} 
-                 mainFallback={modelData.profileImageUrl || '/images/default-avatar.png'} 
+                 mainFallback={modelData.profileImageUrl || '/placeholder.png'} 
                />
             </div>
 

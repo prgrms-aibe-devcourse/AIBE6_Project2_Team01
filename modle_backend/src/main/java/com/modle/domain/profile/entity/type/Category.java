@@ -6,5 +6,7 @@ public enum Category {
     HAND,
     FITTING,
     CLOTHING,
+    FOOD,
+    PRODUCT,
     ETC
 }

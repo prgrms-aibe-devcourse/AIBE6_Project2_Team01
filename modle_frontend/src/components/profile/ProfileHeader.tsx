@@ -16,12 +16,12 @@ export function ProfileHeader({ data }: Props) {
       {/* Profile Image with Pencil Overlay */}
       <div className="relative w-36 h-36 shrink-0">
         <Image
-          src={data.profileImageUrl || '/images/default-avatar.png'}
+          src={data.profileImageUrl || '/placeholder.png'}
           alt="Profile Image"
           fill
           className="object-cover border border-gray-200 bg-gray-50"
           onError={(e) => {
-            e.currentTarget.srcset = '/images/default-avatar.png';
+            e.currentTarget.srcset = '/placeholder.png';
           }}
         />
       </div>

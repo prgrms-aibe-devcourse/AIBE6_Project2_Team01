@@ -4,9 +4,9 @@ import Image from 'next/image';
 export function ModelCard({ model }: { model: Model }) {
   // 포트폴리오 배열이 있다면 가장 마지막(최근) 사진을 메인으로 사용, 없으면 프로필 이미지, 그것도 없으면 기본 이미지
   const latestPortfolioImage = 
-    (model.portfolios && model.portfolios.length > 0)
-      ? model.portfolios[model.portfolios.length - 1].imgUrl
-      : (model.profileImageUrl || '/placeholder.png');
+    (model.portfolios && model.portfolios.length > 0 && model.portfolios[model.portfolios.length - 1].imgUrl)
+      || model.profileImageUrl 
+      || '/placeholder.png';
 
   return (
     <div className="group cursor-pointer">
