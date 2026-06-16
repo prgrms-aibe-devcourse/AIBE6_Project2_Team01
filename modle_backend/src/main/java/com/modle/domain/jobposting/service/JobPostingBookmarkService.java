@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class JobPostingBookmarkService {
     private final JobPostingBookmarkRepository bookmarkRepository;
-    private JobPostingRepository jobPostingRepository;
+    private final JobPostingRepository jobPostingRepository;
 
     // 북마크 추가
     @Transactional
