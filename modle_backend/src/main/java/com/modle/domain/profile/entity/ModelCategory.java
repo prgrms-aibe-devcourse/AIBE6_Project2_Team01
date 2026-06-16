@@ -22,5 +22,7 @@ public class ModelCategory{
     @ManyToOne
     @JoinColumn(name = "model_id")
     Model model;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     Category category;
 }

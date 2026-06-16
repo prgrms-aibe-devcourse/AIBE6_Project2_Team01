@@ -5,6 +5,7 @@ import com.modle.domain.profile.entity.ModelTag;
 import com.modle.domain.profile.entity.Tag;
 import com.modle.domain.profile.entity.type.Category;
 import com.modle.domain.profile.repository.TagRepository;
+import com.modle.domain.jobposting.service.AiRecommendService;
 import com.modle.domain.user.entity.Model;
 import com.modle.domain.user.entity.User;
 import com.modle.domain.profile.entity.ModelRegion;
@@ -23,6 +24,7 @@ import java.util.List;
 public class ModelService {
     private final ModelRepository modelRepository;
     private final TagRepository tagRepository;
+    private final AiRecommendService aiRecommendService;
 
     public long count(){
         return modelRepository.count();
@@ -118,6 +120,7 @@ public class ModelService {
             }
         }
         
+        aiRecommendService.upsertModelEmbedding(savedModel.getId());
         return savedModel;
     }
 
@@ -189,10 +192,10 @@ public class ModelService {
                 }
             }
         }
+        aiRecommendService.upsertModelEmbedding(model.getId());
     }
 
     public void delete(Model model) {
         modelRepository.delete(model);
     }
 }
-

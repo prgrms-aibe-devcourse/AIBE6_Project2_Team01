@@ -6,7 +6,9 @@ import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
 import com.modle.domain.jobposting.dto.response.JobPostingListResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingTemplateResponse;
+import com.modle.domain.jobposting.dto.response.RecommendationListResponse;
 import com.modle.domain.jobposting.entity.ViewerType;
+import com.modle.domain.jobposting.service.AiRecommendService;
 import com.modle.domain.jobposting.service.JobPostingService;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.response.ApiResponse;
@@ -29,6 +31,7 @@ import java.util.List;
 public class JobPostingController {
 
     private final JobPostingService jobPostingService;
+    private final AiRecommendService aiRecommendService;
 
     // JOB-001: 카테고리별 공고 템플릿 목록 반환.
     @GetMapping("/templates")
@@ -83,6 +86,30 @@ public class JobPostingController {
         return ApiResponse.ok(
                 "내 모집 중 공고 목록 조회 성공",
                 jobPostingService.getMyRecruitingJobPostings(securityUser.getId())
+        );
+    }
+
+    @GetMapping("/{id}/recommendations")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ApiResponse<RecommendationListResponse> getRecommendations(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        return ApiResponse.ok(
+                "추천 모델 목록 조회 성공",
+                aiRecommendService.getOrCreateRecommendations(id, securityUser.getId())
+        );
+    }
+
+    @PostMapping("/{id}/recommendations/unlock")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ApiResponse<RecommendationListResponse> unlockRecommendations(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        return ApiResponse.ok(
+                "추천 모델 잠금 해제 성공",
+                aiRecommendService.unlockRecommendations(id, securityUser.getId())
         );
     }
 
