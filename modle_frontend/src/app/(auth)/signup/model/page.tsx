@@ -19,7 +19,7 @@ type FormState = {
   height: string;
   weight: string;
   age: string;
-  gender: boolean;
+  sex: "M" | "F";
 };
 
 const initialForm: FormState = {
@@ -30,7 +30,7 @@ const initialForm: FormState = {
   height: "",
   weight: "",
   age: "",
-  gender: true,
+  sex: "M",
 };
 
 export default function ModelSignupPage() {
@@ -65,7 +65,7 @@ export default function ModelSignupPage() {
         height: Number(form.height),
         weight: Number(form.weight),
         age: Number(form.age),
-        gender: form.gender,
+        sex: form.sex,
       },
     });
 
@@ -242,9 +242,9 @@ export default function ModelSignupPage() {
                 <button
                   key={String(option.value)}
                   type="button"
-                  onClick={() => updateField("gender", option.value)}
+                  onClick={() => updateField("sex", option.value)}
                   className={`h-11 rounded-md border px-4 text-[15px] font-semibold leading-6 transition ${
-                    form.gender === option.value
+                    form.sex === option.value
                       ? "border-primary bg-primary text-on-primary"
                       : "border-hairline bg-surface text-body hover:border-hairline-strong"
                   }`}

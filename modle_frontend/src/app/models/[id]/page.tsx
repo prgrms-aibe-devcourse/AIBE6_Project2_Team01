@@ -1,6 +1,7 @@
 import { DetailLookbook } from '@/components/model/detail/DetailLookbook';
 import { ProfileGallery } from '@/components/model/detail/ProfileGallery';
 import { ClientProposalButton } from '@/components/message/ClientProposalButton';
+import { ReportButton } from '@/components/ui/ReportButton';
 import { getModel } from '@/lib/api/model';
 import { notFound } from 'next/navigation';
 
@@ -46,7 +47,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
                </div>
                
                <h1 className="text-2xl md:text-3xl font-extrabold text-black mt-3 mb-4 tracking-tight">
-                  {modelData.name} <span className="font-normal text-gray-400 text-lg ml-1">({modelData.gender ? '남성' : '여성'})</span>
+                  {modelData.name} <span className="font-normal text-gray-400 text-lg ml-1">({modelData.sex === "M" ? '남성' : '여성'})</span>
                </h1>
                
                <div className="flex items-center gap-4 text-sm font-medium border-b border-gray-100 pb-6 mb-6">
@@ -98,6 +99,11 @@ export default async function ModelDetailPage({ params }: PageProps) {
                   <ClientProposalButton
                     recipientUserId={modelData.userId}
                     className="flex-[2] bg-black hover:bg-gray-800 text-white font-bold py-4 text-center transition-colors"
+                  />
+                  <ReportButton
+                    targetType="PROFILE"
+                    targetId={modelData.userId}
+                    className="px-4 bg-white border border-gray-300 hover:border-red-400 hover:text-red-500 text-gray-400 text-sm font-bold py-4 text-center transition-colors"
                   />
                </div>
             </div>

@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { client } from "@/lib/api/client";
+import { ReportModal } from "@/components/ui/ReportModal";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useRef, useState } from "react";
@@ -128,6 +129,7 @@ export default function JobDetailPage({
   const [favorited, setFavorited] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [statusChanging, setStatusChanging] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -287,9 +289,23 @@ export default function JobDetailPage({
                 >
                   지원하기
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setReportOpen(true)}
+                  className="h-10 rounded-lg border border-hairline bg-surface px-4 text-[14px] font-semibold text-mute transition hover:border-red-300 hover:text-red-500"
+                >
+                  신고
+                </button>
               </div>
             ) : null}
           </div>
+          {reportOpen && (
+            <ReportModal
+              targetType="JOB_POSTING"
+              targetId={postingId}
+              onClose={() => setReportOpen(false)}
+            />
+          )}
         </header>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
