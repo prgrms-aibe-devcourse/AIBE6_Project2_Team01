@@ -131,6 +131,7 @@ export function JobPostingForm({
   const [message, setMessage] = useState("");
   const [aiState, setAiState] = useState<"idle" | "generating">("idle");
   const [aiError, setAiError] = useState("");
+  const [aiGenerated, setAiGenerated] = useState(false);
 
   useEffect(() => {
     if (externalCategory) {
@@ -167,6 +168,7 @@ export function JobPostingForm({
         ageMax: form.ageMax ? Number(form.ageMax) : undefined,
       });
       updateField("content", content);
+      setAiGenerated(true);
     } catch (err) {
       setAiError(err instanceof Error ? err.message : "AI 본문 생성에 실패했습니다.");
     } finally {
@@ -247,11 +249,28 @@ export function JobPostingForm({
                 ) : null}
               </div>
             ) : (
-              <textarea
-                className="min-h-32 w-full resize-y rounded-md border border-hairline bg-canvas-soft px-3 py-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
-                value={form.content}
-                onChange={(e) => updateField("content", e.target.value)}
-              />
+              <div className="flex flex-col gap-2">
+                {aiGenerated && (
+                  <div className="flex items-start gap-2 rounded-md border border-hairline bg-canvas-soft px-3 py-2 text-[13px] leading-5 text-mute">
+                    <p className="flex-1">✦ AI가 생성한 초안입니다. 내용을 검토하고 필요한 경우 수정 후 등록해주세요.</p>
+                    <button
+                      type="button"
+                      onClick={() => setAiGenerated(false)}
+                      className="shrink-0 hover:text-ink"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+                <textarea
+                  className="min-h-32 w-full resize-y rounded-md border border-hairline bg-canvas-soft px-3 py-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
+                  value={form.content}
+                  onChange={(e) => {
+                    updateField("content", e.target.value);
+                    setAiGenerated(false);
+                  }}
+                />
+              </div>
             )}
           </Field>
 

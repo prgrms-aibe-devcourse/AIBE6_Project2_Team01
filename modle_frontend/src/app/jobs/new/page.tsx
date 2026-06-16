@@ -1,6 +1,6 @@
 "use client";
 
-import { client } from "@/lib/api/client";
+import { authenticatedFetch, API_BASE_URL, client } from "@/lib/api/client";
 import {
   AiGenerateParams,
   Category,
@@ -41,9 +41,18 @@ export default function NewJobPage() {
     setTemplateCategory((cur) => (cur === value ? "" : value));
   };
 
-  const handleAiGenerate = async (_params: AiGenerateParams): Promise<string> => {
-    // TODO: POST /api/v1/jobs/templates/generate (Gemini 연동 후 구현)
-    throw new Error("AI 본문 생성 기능은 준비 중입니다.");
+  const handleAiGenerate = async (params: AiGenerateParams): Promise<string> => {
+    const res = await authenticatedFetch(
+      `${API_BASE_URL}/api/v1/jobs/templates/generate`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      },
+    );
+    if (!res.ok) throw new Error("AI 본문 생성에 실패했습니다.");
+    const json = await res.json();
+    return json.data?.content ?? "";
   };
 
   const handleSubmit = async (formData: JobPostingFormState) => {
