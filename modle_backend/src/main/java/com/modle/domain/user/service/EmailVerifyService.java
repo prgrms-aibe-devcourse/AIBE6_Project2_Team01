@@ -36,6 +36,9 @@ public class EmailVerifyService {
 
     // 인증 코드 생성 → Redis 저장 → 이메일 발송
     public void sendVerificationCode(String email) {
+        // 기존 횟수 제거
+        deleteAttempt(email);
+
         String code = generateCode();
         String key = CODE_PREFIX + email;
 
@@ -102,8 +105,15 @@ public class EmailVerifyService {
         return String.valueOf(100000 + secureRandom.nextInt(900000));
     }
 
+    public void deleteAttempt(String email) {
+        redisTemplate.delete(ATTEMPT_PREFIX + email);
+    }
+
     // 비밀번호 재설정용 인증 코드 발송
     public void sendPasswordResetCode(String email) {
+        // 새로 전송 시 기존 횟수 제거
+        deleteAttempt(email);
+        // 키 발송
         userRepository.findByEmail(email)
                 .filter(user -> user.getProvider() == Provider.LOCAL)
                 .ifPresent(user -> sendVerificationCode(email));
