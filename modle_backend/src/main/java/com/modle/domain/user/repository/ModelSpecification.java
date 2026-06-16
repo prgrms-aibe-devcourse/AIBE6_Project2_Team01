@@ -29,6 +29,16 @@ public class ModelSpecification {
         return (root, criteriaQuery, criteriaBuilder) ->
                 criteriaBuilder.greaterThanOrEqualTo(root.get("height"), minHeight);
     }
+    
+    public static Specification<Model> heightLessThan(int maxHeight) {
+        return (root, criteriaQuery, criteriaBuilder) ->
+                criteriaBuilder.lessThan(root.get("height"), maxHeight);
+    }
+    
+    public static Specification<Model> heightBetween(int minHeight, int maxHeight) {
+        return (root, criteriaQuery, criteriaBuilder) ->
+                criteriaBuilder.between(root.get("height"), minHeight, maxHeight);
+    }
     // 카테고리 다중 필터 (선택한 카테고리 중 하나라도 일치하면 검색 - OR 조건)
     public static Specification<Model> hasCategories(List<Category> categories) {
         return (root, query, criteriaBuilder) -> {
@@ -37,12 +47,11 @@ public class ModelSpecification {
             return categoryJoin.get("category").in(categories);
         };
     }
-    // 지역 다중 필터 (선택한 지역 중 하나라도 일치하면 검색 - OR 조건)
+    // 지역 다중 필터 (거주지 User.region 우선 검색, 추후 필요시 ModelRegion 조인 추가 가능)
     public static Specification<Model> hasRegions(List<String> regions) {
         return (root, query, criteriaBuilder) -> {
-            // Model과 User 엔티티 Join
+            query.distinct(true);
             Join<Model, User> userJoin = root.join("user", JoinType.INNER);
-            // User의 region 속성이 전달된 리스트(regions) 안에 포함되는지 검사
             return userJoin.get("region").in(regions);
         };
     }

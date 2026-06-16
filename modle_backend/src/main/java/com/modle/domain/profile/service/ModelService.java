@@ -28,7 +28,7 @@ public class ModelService {
         return modelRepository.count();
     }
 
-    public List<Model> getList(String query, com.modle.domain.user.entity.type.Sex sex, List<Category> categories, List<String> regions, List<String> tags, String sortType) {
+    public List<Model> getList(String query, com.modle.domain.user.entity.type.Sex sex, List<Category> categories, List<String> regions, List<String> tags, String height, String sortType) {
         List<Specification<Model>> specs = new ArrayList<>();
         // 1. 이름 검색 (query)
         if (query != null && !query.trim().isEmpty()) {
@@ -56,6 +56,23 @@ public class ModelService {
         // 5. 일반 태그 (tags) - ModelTag 엔티티 기반
         if (tags != null && !tags.isEmpty()) {
             specs.add(ModelSpecification.hasTags(tags));
+        }
+        // 6. 키 (height)
+        if (height != null && !height.isBlank()) {
+            switch (height) {
+                case "under-160":
+                    specs.add(ModelSpecification.heightLessThan(160));
+                    break;
+                case "160-170":
+                    specs.add(ModelSpecification.heightBetween(160, 169)); // 170 미만으로 처리
+                    break;
+                case "170-180":
+                    specs.add(ModelSpecification.heightBetween(170, 179)); // 180 미만으로 처리
+                    break;
+                case "over-180":
+                    specs.add(ModelSpecification.heightGreaterThanEqual(180));
+                    break;
+            }
         }
         Specification<Model> finalSpec = Specification.allOf(specs);
         
