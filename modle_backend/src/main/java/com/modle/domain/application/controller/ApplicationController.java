@@ -8,13 +8,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/v1")
 public class ApplicationController {
 
     private final ApplicationService applicationService;
@@ -22,7 +20,7 @@ public class ApplicationController {
     // MATCH-001: 모델이 모집 중인 공고에 지원한다 (MODEL 전용).
     @PreAuthorize("hasRole('MODEL')")
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/api/jobs/{id}/apply")
+    @PostMapping("/jobs/{id}/apply")
     public ApiResponse<ApplicationResponse> apply(
             @PathVariable Long id,
             @AuthenticationPrincipal SecurityUser securityUser) {
