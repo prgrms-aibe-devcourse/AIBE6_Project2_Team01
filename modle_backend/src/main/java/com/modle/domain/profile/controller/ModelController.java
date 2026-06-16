@@ -5,6 +5,7 @@ import com.modle.domain.profile.dto.request.ModelModifyReqBody;
 import com.modle.domain.profile.entity.type.Category;
 import com.modle.domain.profile.service.ModelService;
 import com.modle.domain.user.entity.Model;
+import com.modle.domain.user.entity.type.Sex;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
@@ -41,11 +42,11 @@ public class ModelController {
                 @RequestParam(required = false) String sort // 정렬 파라미터 추가
         ) {
                 // 성별 파라미터 처리
-                com.modle.domain.user.entity.type.Sex sexParam = null;
+                Sex sexParam = null;
                 if ("M".equalsIgnoreCase(gender) || "MALE".equalsIgnoreCase(gender)) {
-                        sexParam = com.modle.domain.user.entity.type.Sex.M;
+                        sexParam = Sex.M;
                 } else if ("F".equalsIgnoreCase(gender) || "FEMALE".equalsIgnoreCase(gender)) {
-                        sexParam = com.modle.domain.user.entity.type.Sex.F;
+                        sexParam = Sex.F;
                 }
                 // Service 호출
                 List<Model> items = modelService.getList(query, sexParam, categories, regions, tags, height, sort);

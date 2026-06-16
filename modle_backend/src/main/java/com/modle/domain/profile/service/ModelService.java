@@ -9,6 +9,7 @@ import com.modle.domain.user.entity.Model;
 import com.modle.domain.user.entity.User;
 import com.modle.domain.profile.entity.ModelRegion;
 import com.modle.domain.jobposting.entity.Region;
+import com.modle.domain.user.entity.type.Sex;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.ModelSpecification;
 import lombok.RequiredArgsConstructor;
@@ -126,7 +127,7 @@ public class ModelService {
             String name,
             int height,
             int weight,
-            com.modle.domain.user.entity.type.Sex sex,
+            Sex sex,
             int age,
             List<String> categories,
             List<String> tags,

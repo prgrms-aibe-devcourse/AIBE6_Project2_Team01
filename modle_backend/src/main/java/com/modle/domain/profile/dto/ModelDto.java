@@ -1,6 +1,7 @@
 package com.modle.domain.profile.dto;
 
 import com.modle.domain.user.entity.Model;
+import com.modle.domain.user.entity.type.Sex;
 import org.springframework.lang.NonNull;
 
 import java.time.LocalDateTime;
@@ -14,7 +15,7 @@ public record ModelDto(
         @NonNull String name,
         @NonNull int height,
         @NonNull int weight,
-        @NonNull com.modle.domain.user.entity.type.Sex sex,
+        @NonNull Sex sex,
         @NonNull int age,
         List<String> categories,
         List<String> tags,
