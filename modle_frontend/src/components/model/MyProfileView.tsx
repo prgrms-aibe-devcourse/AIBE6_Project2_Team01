@@ -28,7 +28,7 @@ export function MyProfileView({ data }: Props) {
           
           <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-6">
             <span className="px-4 py-1 border border-black bg-white text-black text-xs font-bold uppercase tracking-widest">
-              {data.gender ? '남성' : '여성'}
+              {data.sex === 'M' ? '남성' : '여성'}
             </span>
             <span className="px-4 py-1 border border-black bg-white text-black text-xs font-bold uppercase tracking-widest">
               {data.age ? `${data.age}세` : '나이 미상'}

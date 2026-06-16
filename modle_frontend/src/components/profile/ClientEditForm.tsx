@@ -51,10 +51,7 @@ export function ClientEditForm({ initialData }: Props) {
       let imageUrlToSubmit = formData.profileImageUrl;
 
       if (selectedFile) {
-        const fileExt = selectedFile.name.split('.').pop() || 'png';
-        const fileType = selectedFile.type || 'image/png';
-        
-        const uploadedUrl = await uploadImage(selectedFile, fileExt, fileType, 'CLIENT');
+        const uploadedUrl = await uploadImage(selectedFile);
         if (uploadedUrl) {
           imageUrlToSubmit = uploadedUrl;
         } else {
