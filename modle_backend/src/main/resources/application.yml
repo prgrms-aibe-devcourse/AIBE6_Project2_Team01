@@ -102,3 +102,5 @@ cookie:
   secure: true
   domain: localhost
   same-site: Strict
+gemini:
+  api-key: ${GEMINI_API_KEY}
