@@ -270,6 +270,10 @@ export default function JobDetailPage({
   }, [user, postingId]);
 
   const handleBookmarkToggle = async () => {
+    if (!user) {
+      requireLogin();
+      return;
+    }
     const was = favorited;
     setFavorited(!was);
     try {

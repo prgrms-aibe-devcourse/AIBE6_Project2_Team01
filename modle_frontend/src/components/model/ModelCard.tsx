@@ -2,16 +2,11 @@ import { Model } from '@/types/model';
 import Image from 'next/image';
 import { MouseEvent } from 'react';
 
-type ModelCardProps = {
-  model: Model;
-  showFavoriteButton?: boolean;
-};
-
-export function ModelCard({ model, showFavoriteButton = true }: ModelCardProps) {
-  // 포트폴리오 배열이 있다면 가장 마지막(최근) 사진을 메인으로 사용, 없으면 프로필 이미지, 그것도 없으면 기본 이미지
-  const latestPortfolioImage = 
 interface Props {
   model: Model;
+  // 장식용 ♡ (비활성 플레이스홀더) — 추천 카드 등에서 false로 숨김
+  showFavoriteButton?: boolean;
+  // 기능형 북마크 (CLIENT 전용)
   bookmarked?: boolean;
   onBookmarkToggle?: (e: MouseEvent) => void;
   showBookmark?: boolean;
@@ -19,10 +14,12 @@ interface Props {
 
 export function ModelCard({
   model,
+  showFavoriteButton = false,
   bookmarked = false,
   onBookmarkToggle,
   showBookmark = false,
 }: Props) {
+  // 포트폴리오가 있으면 가장 최근 사진, 없으면 프로필 이미지, 그것도 없으면 기본 이미지
   const latestPortfolioImage =
     (model.portfolios && model.portfolios.length > 0 && model.portfolios[model.portfolios.length - 1].imgUrl)
       || model.profileImageUrl
@@ -38,17 +35,9 @@ export function ModelCard({
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-700"
         />
-        
-        {showFavoriteButton ? (
-          <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <button className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-black hover:bg-black hover:text-white transition-colors border border-gray-200 shadow-sm">
-              ♡
-            </button>
-          </div>
-        ) : null}
 
-        {/* 북마크 버튼 (CLIENT만, 호버 시 노출) */}
-        {showBookmark && onBookmarkToggle && (
+        {/* 북마크 버튼 (CLIENT만, 호버 시 노출) — 없으면 장식용 ♡ */}
+        {showBookmark && onBookmarkToggle ? (
           <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <button
               type="button"
@@ -60,7 +49,16 @@ export function ModelCard({
               {bookmarked ? "♥" : "♡"}
             </button>
           </div>
-        )}
+        ) : showFavoriteButton ? (
+          <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <button
+              type="button"
+              className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-black hover:bg-black hover:text-white transition-colors border border-gray-200 shadow-sm"
+            >
+              ♡
+            </button>
+          </div>
+        ) : null}
       </div>
 
       {/* 하단 텍스트 */}
