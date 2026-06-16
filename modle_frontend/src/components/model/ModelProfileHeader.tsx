@@ -55,9 +55,9 @@ export function ModelProfileHeader({ model }: Props) {
                 {model.weight}kg
               </span>
             )}
-            {model.gender !== undefined && (
-              <span className="px-3 py-1 bg-surface rounded-md border border-hairline text-body-sm text-body">
-                {model.gender ? '남성' : '여성'}
+            {model.sex !== undefined && (
+              <span className="px-3 py-1 bg-surface rounded-md border border-hairline text-ink font-semibold">
+                {model.sex === 'M' ? '남성' : '여성'}
               </span>
             )}
           </div>

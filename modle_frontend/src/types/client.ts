@@ -9,6 +9,7 @@ export interface Client {
   profileImageUrl: string;
   avgRating: number;
   reviewCount: number;
+  region?: string;
 }
 
 export interface ClientListResponse {
