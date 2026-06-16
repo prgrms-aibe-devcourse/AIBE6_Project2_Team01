@@ -32,6 +32,11 @@ public class ClientService {
         clientRepository.delete(client);
     }
 
-    public void update(Client client, @NotBlank @Size(min = 2, max = 100) String componyName, ClientType clientType, String introduction,String region,String newImageUrl) {
+    public void update(Client client, @NotBlank @Size(min = 2, max = 100) String companyName, ClientType clientType, String introduction, String region, String newImageUrl) {
+        client.update(companyName, client.getCompanyNumber(), clientType, introduction, newImageUrl);
+        if (region != null) {
+            client.getUser().updateRegion(region);
+        }
+        clientRepository.save(client);
     }
 }
