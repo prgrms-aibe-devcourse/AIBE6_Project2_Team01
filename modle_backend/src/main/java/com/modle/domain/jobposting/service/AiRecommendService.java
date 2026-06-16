@@ -289,6 +289,7 @@ public class AiRecommendService {
         }
 
         List<String> categories = model.getModelCategories().stream()
+                .filter(modelCategory -> modelCategory.getCategory() != null)
                 .map(modelCategory -> modelCategory.getCategory().name())
                 .toList();
         String region = model.getModelRegions().stream()
@@ -391,6 +392,7 @@ public class AiRecommendService {
 
     private String sourceText(Model model) {
         String categories = model.getModelCategories().stream()
+                .filter(modelCategory -> modelCategory.getCategory() != null)
                 .map(modelCategory -> modelCategory.getCategory().name())
                 .collect(Collectors.joining(" "));
         String tags = model.getModelTags().stream()
