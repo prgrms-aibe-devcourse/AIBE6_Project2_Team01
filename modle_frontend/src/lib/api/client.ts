@@ -39,7 +39,7 @@ export async function authenticatedFetch(
     return response;
   }
 
-  const reissueResponse = await fetch("/api/v1/auth/reissue", {
+  const reissueResponse = await fetch(`${API_BASE_URL}/api/v1/auth/reissue`, {
     method: "POST",
     credentials: "include",
   });

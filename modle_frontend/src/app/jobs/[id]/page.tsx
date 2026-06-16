@@ -1,10 +1,13 @@
 "use client";
 
+import { ClientProposalButton } from "@/components/message/ClientProposalButton";
+import { ModelCard } from "@/components/model/ModelCard";
 import { useAuth } from "@/hooks/useAuth";
-import { client } from "@/lib/api/client";
+import { API_BASE_URL, authenticatedFetch, client } from "@/lib/api/client";
+import type { Model } from "@/types/model";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { use, useEffect, useRef, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 
 type ClientDetail = {
   id: number;
@@ -67,6 +70,34 @@ type OtherDetail = {
 
 type DetailData = ClientDetail | ModelDetail | OtherDetail;
 
+type RecommendationCardItem = {
+  rank: number;
+  locked: boolean;
+  modelId: number | null;
+  userId: number | null;
+  name: string | null;
+  profileImageUrl: string | null;
+  age: number | null;
+  height: number | null;
+  categories: string[];
+  region: string | null;
+  avgRating: number | null;
+  alreadyApplied: boolean;
+};
+
+type RecommendationList = {
+  postId: number;
+  unlocked: boolean;
+  reasonCode: string | null;
+  items: RecommendationCardItem[];
+};
+
+type ApiEnvelope<T> = {
+  resultCode?: string;
+  msg?: string;
+  data?: T;
+};
+
 function isClientDetail(d: unknown): d is ClientDetail {
   return typeof d === "object" && d !== null && "clientId" in d;
 }
@@ -128,6 +159,69 @@ export default function JobDetailPage({
   const [favorited, setFavorited] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [statusChanging, setStatusChanging] = useState(false);
+  const [recommendations, setRecommendations] =
+    useState<RecommendationList | null>(null);
+  const [recommendationLoading, setRecommendationLoading] = useState(false);
+  const [recommendationError, setRecommendationError] = useState("");
+  const [unlockingRecommendations, setUnlockingRecommendations] =
+    useState(false);
+
+  const isOwner = Boolean(
+    detail && isClientDetail(detail) && user?.id === detail.clientId,
+  );
+
+  const loadRecommendations = useCallback(async () => {
+    setRecommendationLoading(true);
+    setRecommendationError("");
+
+    try {
+      const response = await authenticatedFetch(
+        `${API_BASE_URL}/api/v1/jobs/${postingId}/recommendations`,
+        { credentials: "include" },
+      );
+      const body = (await response.json().catch(() => null)) as
+        | ApiEnvelope<RecommendationList>
+        | null;
+
+      if (!response.ok) {
+        throw new Error(body?.msg || "추천 모델을 불러오지 못했습니다.");
+      }
+
+      setRecommendations(body?.data ?? null);
+    } catch {
+      setRecommendationError("추천 모델을 불러오지 못했습니다.");
+    } finally {
+      setRecommendationLoading(false);
+    }
+  }, [postingId]);
+
+  const handleUnlockRecommendations = async () => {
+    setUnlockingRecommendations(true);
+    setRecommendationError("");
+
+    try {
+      const response = await authenticatedFetch(
+        `${API_BASE_URL}/api/v1/jobs/${postingId}/recommendations/unlock`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
+      const body = (await response.json().catch(() => null)) as
+        | ApiEnvelope<RecommendationList>
+        | null;
+
+      if (!response.ok) {
+        throw new Error(body?.msg || "추천 모델 잠금 해제에 실패했습니다.");
+      }
+
+      setRecommendations(body?.data ?? null);
+    } catch {
+      setRecommendationError("추천 모델 잠금 해제에 실패했습니다.");
+    } finally {
+      setUnlockingRecommendations(false);
+    }
+  };
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -157,6 +251,14 @@ export default function JobDetailPage({
         setLoading(false);
       });
   }, [postingId, authLoading, user]);
+
+  useEffect(() => {
+    if (!isOwner) return;
+    const timerId = window.setTimeout(() => {
+      void loadRecommendations();
+    }, 0);
+    return () => window.clearTimeout(timerId);
+  }, [isOwner, loadRecommendations]);
 
   const handleStatusChange = async () => {
     if (!selectedStatus) return;
@@ -226,7 +328,6 @@ export default function JobDetailPage({
     );
   }
 
-  const isOwner = isClientDetail(detail) && user?.id === detail.clientId;
   const hasRangeInfo = !isOtherDetail(detail);
   const nextStatuses = isOwner
     ? (STATUS_TRANSITIONS[(detail as ClientDetail).status] ?? [])
@@ -403,28 +504,19 @@ export default function JobDetailPage({
                 </div>
               </section>
             ) : null}
-
-            {/* CLIENT 뷰 본인 공고: AI 추천 모델 */}
-            {isOwner ? (
-              <section className="rounded-xl border border-hairline bg-surface p-6">
-                <h2 className="text-[15px] font-semibold leading-6 text-ink">
-                  AI 추천 모델
-                </h2>
-                {(detail as ClientDetail).recommendedModelIds.length === 0 ? (
-                  <p className="mt-3 text-[13px] text-mute">추천 없음</p>
-                ) : (
-                  <ul className="mt-3 space-y-1">
-                    {(detail as ClientDetail).recommendedModelIds.map((mid) => (
-                      <li key={mid} className="text-[13px] text-ink">
-                        모델 ID: {mid}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-            ) : null}
           </aside>
         </div>
+
+        {isOwner ? (
+          <RecommendationSection
+            recommendations={recommendations}
+            loading={recommendationLoading}
+            error={recommendationError}
+            unlocking={unlockingRecommendations}
+            onUnlock={handleUnlockRecommendations}
+            onRetry={loadRecommendations}
+          />
+        ) : null}
 
         <div className="pt-4">
           <Link
@@ -437,6 +529,196 @@ export default function JobDetailPage({
       </div>
     </main>
   );
+}
+
+function RecommendationSection({
+  recommendations,
+  loading,
+  error,
+  unlocking,
+  onUnlock,
+  onRetry,
+}: {
+  recommendations: RecommendationList | null;
+  loading: boolean;
+  error: string;
+  unlocking: boolean;
+  onUnlock: () => void;
+  onRetry: () => void;
+}) {
+  const items = recommendations?.items ?? [];
+  const hasLockedItems = items.some((item) => item.locked);
+
+  return (
+    <section className="rounded-2xl border border-hairline bg-surface p-5 shadow-sm sm:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-primary">
+            AI MATCHING
+          </p>
+          <h2 className="mt-1 text-[20px] font-bold leading-7 text-ink">
+            추천 모델
+          </h2>
+          <p className="mt-2 text-[13px] leading-5 text-mute">
+            공고 조건과 포트폴리오 정보를 기준으로 최대 5명의 모델을 추천합니다.
+          </p>
+        </div>
+
+        {hasLockedItems && !recommendations?.unlocked ? (
+          <button
+            type="button"
+            onClick={onUnlock}
+            disabled={unlocking}
+            className="h-10 rounded-lg bg-ink px-5 text-[13px] font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {unlocking ? "처리 중..." : "결제하기"}
+          </button>
+        ) : null}
+      </div>
+
+      {loading ? (
+        <p className="mt-6 rounded-xl bg-canvas-soft px-4 py-6 text-center text-[13px] text-mute">
+          추천 모델을 불러오는 중입니다.
+        </p>
+      ) : error ? (
+        <div className="mt-6 rounded-xl border border-error/30 bg-red-50 px-4 py-4">
+          <p className="text-[13px] text-error">{error}</p>
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-3 rounded-lg border border-error/30 bg-white px-3 py-2 text-[12px] font-semibold text-error"
+          >
+            다시 불러오기
+          </button>
+        </div>
+      ) : items.length === 0 ? (
+        <p className="mt-6 rounded-xl bg-canvas-soft px-4 py-6 text-center text-[13px] text-mute">
+          추천 가능한 모델이 아직 없습니다.
+        </p>
+      ) : (
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {items.map((item) =>
+            item.locked ? (
+              <LockedRecommendationCard
+                key={`locked-${item.rank}`}
+                item={item}
+                unlocking={unlocking}
+                onUnlock={onUnlock}
+              />
+            ) : (
+              <VisibleRecommendationCard
+                key={item.modelId ?? `visible-${item.rank}`}
+                item={item}
+              />
+            ),
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function VisibleRecommendationCard({ item }: { item: RecommendationCardItem }) {
+  const model = toModel(item);
+
+  return (
+    <article className="rounded-xl border border-hairline bg-white p-3 shadow-sm">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary">
+          #{item.rank} 추천
+        </span>
+        {item.alreadyApplied ? (
+          <span className="rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700">
+            이미 지원함
+          </span>
+        ) : null}
+      </div>
+
+      <Link href={`/models/${model.id}`}>
+        <ModelCard model={model} showFavoriteButton={false} />
+      </Link>
+
+      {item.userId ? (
+        <ClientProposalButton
+          recipientUserId={item.userId}
+          className="mt-4 flex h-10 w-full items-center justify-center rounded-lg bg-primary text-[13px] font-semibold text-on-primary transition hover:bg-primary-hover"
+        />
+      ) : null}
+    </article>
+  );
+}
+
+function LockedRecommendationCard({
+  item,
+  unlocking,
+  onUnlock,
+}: {
+  item: RecommendationCardItem;
+  unlocking: boolean;
+  onUnlock: () => void;
+}) {
+  return (
+    <article className="flex min-h-[260px] flex-col justify-between rounded-xl border border-dashed border-hairline-strong bg-canvas-soft p-4">
+      <div>
+        <div className="flex items-center justify-between">
+          <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-mute">
+            #{item.rank} 잠금
+          </span>
+          <span className="text-[11px] font-semibold text-mute">LOCKED</span>
+        </div>
+
+        <div className="mt-5 rounded-xl border border-hairline bg-white/70 p-4">
+          <div className="mx-auto h-12 w-12 rounded-full bg-slate-200 blur-[1px]" />
+          <p className="mt-4 text-center text-[13px] font-semibold text-ink">
+            최적합 모델 정보가 잠겨있습니다.
+          </p>
+          <p className="mt-2 text-center text-[12px] leading-5 text-mute">
+            결제 후 이름, 프로필, 상세 정보를 확인할 수 있습니다.
+          </p>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {item.categories.map((category) => (
+            <span
+              key={category}
+              className="rounded-full border border-hairline bg-white px-2 py-1 text-[10px] font-semibold text-mute"
+            >
+              {category}
+            </span>
+          ))}
+          {item.region ? (
+            <span className="rounded-full border border-hairline bg-white px-2 py-1 text-[10px] font-semibold text-mute">
+              {item.region}
+            </span>
+          ) : null}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onUnlock}
+        disabled={unlocking}
+        className="mt-5 h-10 rounded-lg bg-ink text-[13px] font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {unlocking ? "처리 중..." : "결제하기"}
+      </button>
+    </article>
+  );
+}
+
+function toModel(item: RecommendationCardItem): Model {
+  return {
+    id: item.modelId ?? 0,
+    userId: item.userId ?? 0,
+    name: item.name || "이름 비공개",
+    region: item.region || "지역 미상",
+    rating: item.avgRating ?? 0,
+    reviewCount: 0,
+    profileImageUrl: item.profileImageUrl || "/placeholder.png",
+    categories: item.categories,
+    age: item.age ?? undefined,
+    height: item.height ?? undefined,
+  };
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {

@@ -1,7 +1,12 @@
 import { Model } from '@/types/model';
 import Image from 'next/image';
 
-export function ModelCard({ model }: { model: Model }) {
+type ModelCardProps = {
+  model: Model;
+  showFavoriteButton?: boolean;
+};
+
+export function ModelCard({ model, showFavoriteButton = true }: ModelCardProps) {
   // 포트폴리오 배열이 있다면 가장 마지막(최근) 사진을 메인으로 사용, 없으면 프로필 이미지, 그것도 없으면 기본 이미지
   const latestPortfolioImage = 
     (model.portfolios && model.portfolios.length > 0 && model.portfolios[model.portfolios.length - 1].imgUrl)
@@ -19,12 +24,13 @@ export function ModelCard({ model }: { model: Model }) {
           className="object-cover group-hover:scale-105 transition-transform duration-700"
         />
         
-        {/* 호버 시 나타나는 찜(하트) 버튼 */}
-        <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-black hover:bg-black hover:text-white transition-colors border border-gray-200 shadow-sm">
-            ♡
-          </button>
-        </div>
+        {showFavoriteButton ? (
+          <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <button className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-black hover:bg-black hover:text-white transition-colors border border-gray-200 shadow-sm">
+              ♡
+            </button>
+          </div>
+        ) : null}
       </div>
 
       {/* 하단 텍스트 영역 */}
