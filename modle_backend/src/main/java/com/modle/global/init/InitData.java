@@ -79,7 +79,7 @@ public class InitData {
                                 Role.MODEL);
                 userRepository.save(user);
 
-                Model model = Model.create(user, "테스트모델", 170, 55, true, 25);
+                Model model = Model.create(user, "테스트모델", 170, 55, com.modle.domain.user.entity.type.Sex.M, 25);
                 modelRepository.save(model);
         }
 
@@ -119,10 +119,10 @@ public class InitData {
                                 "서울",
                                 Role.MODEL);
                 userRepository.save(user1);
-                Model model1 = modelService.create(user1, "홍길동", 180, 75, true, 25);
-                modelService.update(model1, "홍길동", 180, 75, true, 25, List.of("FITTING"), List.of("tag1"),
+                Model model1 = modelService.create(user1, "홍길동", 180, 75, com.modle.domain.user.entity.type.Sex.M, 25);
+                modelService.update(model1, "홍길동", 180, 75, com.modle.domain.user.entity.type.Sex.M, 25, List.of("FITTING"), List.of("tag1"),
                                 "안녕하세요, 홍길동입니다.",
-                                "서울", "");
+                                "서울", "", null, List.of("SEOUL"));
 
                 User user2 = User.createLocal(
                                 "model2@modle.com",
@@ -130,10 +130,10 @@ public class InitData {
                                 "부산",
                                 Role.MODEL);
                 userRepository.save(user2);
-                Model model2 = modelService.create(user2, "김철수", 175, 68, true, 30);
-                modelService.update(model2, "김철수", 175, 68, true, 30, List.of("HAIR"), List.of("tag2"),
+                Model model2 = modelService.create(user2, "김철수", 175, 68, com.modle.domain.user.entity.type.Sex.M, 30);
+                modelService.update(model2, "김철수", 175, 68, com.modle.domain.user.entity.type.Sex.M, 30, List.of("HAIR"), List.of("tag2"),
                                 "안녕하세요, 김철수입니다.",
-                                "부산", "");
+                                "부산", "", java.time.LocalDate.of(2020, 1, 1), List.of("BUSAN"));
 
                 User user3 = User.createLocal(
                                 "model3@modle.com",
@@ -141,10 +141,10 @@ public class InitData {
                                 "대전",
                                 Role.MODEL);
                 userRepository.save(user3);
-                Model model3 = modelService.create(user3, "이영희", 165, 55, false, 28);
-                modelService.update(model3, "이영희", 165, 55, false, 28, List.of("MAKEUP"), List.of("tag3"),
+                Model model3 = modelService.create(user3, "이영희", 165, 55, com.modle.domain.user.entity.type.Sex.F, 28);
+                modelService.update(model3, "이영희", 165, 55, com.modle.domain.user.entity.type.Sex.F, 28, List.of("MAKEUP"), List.of("tag3"),
                                 "안녕하세요, 이영희입니다.",
-                                "대전", "");
+                                "대전", "", null, List.of("DAEJEON"));
         }
 
         @Transactional

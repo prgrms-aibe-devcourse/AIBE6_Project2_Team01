@@ -17,7 +17,7 @@ public record AdditionalInfoRequest(
         Integer height,
         Integer weight,
         Integer age,
-        Boolean gender,
+        com.modle.domain.user.entity.type.Sex sex,
 
         // 의뢰인 전용
         String companyName,

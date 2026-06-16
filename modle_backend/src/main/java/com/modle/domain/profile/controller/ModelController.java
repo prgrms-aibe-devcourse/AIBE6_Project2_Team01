@@ -40,14 +40,14 @@ public class ModelController {
                 @RequestParam(required = false) String sort // 정렬 파라미터 추가
         ) {
                 // 성별 파라미터 처리
-                Boolean genderParam = null;
-                if ("MALE".equalsIgnoreCase(gender)) {
-                        genderParam = true;
-                } else if ("FEMALE".equalsIgnoreCase(gender)) {
-                        genderParam = false;
+                com.modle.domain.user.entity.type.Sex sexParam = null;
+                if ("M".equalsIgnoreCase(gender) || "MALE".equalsIgnoreCase(gender)) {
+                        sexParam = com.modle.domain.user.entity.type.Sex.M;
+                } else if ("F".equalsIgnoreCase(gender) || "FEMALE".equalsIgnoreCase(gender)) {
+                        sexParam = com.modle.domain.user.entity.type.Sex.F;
                 }
                 // Service 호출
-                List<Model> items = modelService.getList(query, genderParam, categories, regions, tags, sort);
+                List<Model> items = modelService.getList(query, sexParam, categories, regions, tags, sort);
                 // DTO 변환
                 List<ModelDto> dtoList = items.stream().map(ModelDto::new).toList();
                 return new ApiResponse<>("200-1", "조회 성공", dtoList);
@@ -105,13 +105,15 @@ public class ModelController {
                                 reqBody.name(),
                                 reqBody.height(),
                                 reqBody.weight(),
-                                reqBody.gender(),
+                                reqBody.sex(),
                                 reqBody.age(),
                                 reqBody.categories(),
                                 reqBody.tags(),
                                 reqBody.introduction(),
                                 reqBody.region(),
-                                newImageUrl);
+                                newImageUrl,
+                                reqBody.careerStartDate(),
+                                reqBody.activeRegions());
                 return new ApiResponse<>(
                                 "200-1",
                                 "내 프로필이 수정되었습니다.");

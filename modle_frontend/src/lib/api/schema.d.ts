@@ -508,13 +508,18 @@ export interface components {
             height: number;
             /** Format: int32 */
             weight: number;
-            gender: boolean;
+            /** @enum {string} */
+            sex: "M" | "F";
             /** Format: int32 */
             age: number;
             categories?: string[];
             tags?: string[];
             introduction?: string;
+            region?: string;
             profileImageUrl?: string;
+            /** Format: date */
+            careerStartDate?: string;
+            activeRegions?: string[];
         };
         ApiResponseVoid: {
             resultCode?: string;
@@ -666,7 +671,8 @@ export interface components {
             weight?: number;
             /** Format: int32 */
             age?: number;
-            gender: boolean;
+            /** @enum {string} */
+            sex?: "M" | "F";
         };
         ClientRegisterRequest: {
             email: string;
@@ -688,7 +694,8 @@ export interface components {
             weight?: number;
             /** Format: int32 */
             age?: number;
-            gender?: boolean;
+            /** @enum {string} */
+            sex?: "M" | "F";
             companyName?: string;
             companyNumber?: string;
             /** @enum {string} */
@@ -791,13 +798,17 @@ export interface components {
             height: number;
             /** Format: int32 */
             weight: number;
-            gender: boolean;
+            /** @enum {string} */
+            sex: "M" | "F";
             /** Format: int32 */
             age: number;
             categories?: string[];
             tags?: string[];
             introduction?: string;
             profileImageUrl?: string;
+            /** Format: date */
+            careerStartDate?: string;
+            activeRegions?: string[];
             /** Format: double */
             avgRating: number;
             /** Format: int32 */

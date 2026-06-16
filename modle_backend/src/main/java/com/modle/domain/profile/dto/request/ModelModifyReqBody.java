@@ -18,7 +18,7 @@ public record ModelModifyReqBody (
         int weight,
 
         @NotNull
-        boolean gender,
+        com.modle.domain.user.entity.type.Sex sex,
 
         @NotNull
         int age,
@@ -28,6 +28,9 @@ public record ModelModifyReqBody (
 
         String introduction,
         String region,
-        String profileImageUrl
+        String profileImageUrl,
+        
+        java.time.LocalDate careerStartDate,
+        List<String> activeRegions
 
 ) {}

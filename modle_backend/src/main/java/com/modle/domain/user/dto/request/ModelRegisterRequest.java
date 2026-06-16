@@ -28,10 +28,10 @@ public record ModelRegisterRequest (
         @Min(1)
         int weight,
 
-        @Min(1)
+        @NotNull
         int age,
 
         @NotNull
-        boolean gender
+        com.modle.domain.user.entity.type.Sex sex
 ) {
 }

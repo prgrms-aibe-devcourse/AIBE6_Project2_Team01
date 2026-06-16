@@ -14,7 +14,7 @@ public record ModelDto(
         @NonNull String name,
         @NonNull int height,
         @NonNull int weight,
-        @NonNull boolean gender,
+        @NonNull com.modle.domain.user.entity.type.Sex sex,
         @NonNull int age,
         List<String> categories,
         List<String> tags,
@@ -22,6 +22,10 @@ public record ModelDto(
 
         String introduction,
         String profileImageUrl,
+        
+        java.time.LocalDate careerStartDate,
+        List<String> activeRegions,
+        
         @NonNull double avgRating,
         @NonNull int reviewCount,
         List<PortfolioDto> portfolios
@@ -35,7 +39,7 @@ public record ModelDto(
                 model.getName(),
                 model.getHeight(),
                 model.getWeight(),
-                model.isGender(),
+                model.getSex(),
                 model.getAge(),
 
                 //  연관관계 엔티티에서 문자열 이름만 추출해서 List로 반환
@@ -51,6 +55,11 @@ public record ModelDto(
                 model.getUser() != null ? model.getUser().getRegion() : null,
                 model.getIntroduction(),
                 model.getProfileImageUrl(),
+                model.getCareerStartDate(),
+                model.getModelRegions() != null ? 
+                        model.getModelRegions().stream()
+                        .map(mr -> mr.getRegion().name())
+                        .toList() : List.of(),
                 model.getAvgRating(),
                 model.getReviewCount(),
                 model.getPortfolios() != null ?

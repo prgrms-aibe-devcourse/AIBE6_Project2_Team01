@@ -18,10 +18,10 @@ public class ModelSpecification {
         return (root, criteriaQuery, criteriaBuilder) ->
                 criteriaBuilder.like(root.get("name"), "%" + query + "%");
     }
-    // 성별 필터 (현재 엔티티 기준 boolean)
-    public static Specification<Model> genderEquals(boolean gender) {
+    // 성별 필터
+    public static Specification<Model> sexEquals(com.modle.domain.user.entity.type.Sex sex) {
         return (root, criteriaQuery, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get("gender"), gender);
+                criteriaBuilder.equal(root.get("sex"), sex);
     }
 
     // 예: 최소 키 필터

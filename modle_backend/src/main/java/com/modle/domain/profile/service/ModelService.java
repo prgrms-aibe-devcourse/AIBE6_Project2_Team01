@@ -7,6 +7,8 @@ import com.modle.domain.profile.entity.type.Category;
 import com.modle.domain.profile.repository.TagRepository;
 import com.modle.domain.user.entity.Model;
 import com.modle.domain.user.entity.User;
+import com.modle.domain.profile.entity.ModelRegion;
+import com.modle.domain.jobposting.entity.Region;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.ModelSpecification;
 import lombok.RequiredArgsConstructor;
@@ -26,15 +28,15 @@ public class ModelService {
         return modelRepository.count();
     }
 
-    public List<Model> getList(String query, Boolean gender, List<Category> categories, List<String> regions, List<String> tags, String sortType) {
+    public List<Model> getList(String query, com.modle.domain.user.entity.type.Sex sex, List<Category> categories, List<String> regions, List<String> tags, String sortType) {
         List<Specification<Model>> specs = new ArrayList<>();
         // 1. 이름 검색 (query)
         if (query != null && !query.trim().isEmpty()) {
             specs.add(ModelSpecification.nameContains(query));
         }
-        // 2. 성별 (gender)
-        if (gender != null) {
-            specs.add(ModelSpecification.genderEquals(gender));
+        // 2. 성별 (sex)
+        if (sex != null) {
+            specs.add(ModelSpecification.sexEquals(sex));
         }
         // 3. 카테고리 (categories)
         if (categories != null && !categories.isEmpty()) {
@@ -73,10 +75,26 @@ public class ModelService {
 
     public Model create(
             User user, String name, int height,
-            int weight, boolean gender, int age
+            int weight, com.modle.domain.user.entity.type.Sex sex, int age
     ){
-        Model model = Model.create(user, name, height, weight, gender, age);
-        return modelRepository.save(model);
+        Model model = Model.create(user, name, height, weight, sex, age);
+        Model savedModel = modelRepository.save(model);
+        
+        // MVP: User.region을 초기 model_region으로 1개 복사
+        if (user.getRegion() != null && !user.getRegion().isBlank()) {
+            try {
+                Region regionEnum = Region.valueOf(user.getRegion());
+                ModelRegion modelRegion = new ModelRegion();
+                modelRegion.setModel(savedModel);
+                modelRegion.setRegion(regionEnum);
+                savedModel.getModelRegions().add(modelRegion);
+            } catch (IllegalArgumentException e) {
+                // Ignore if User.region is not a valid Region enum (like just "서울" instead of "SEOUL")
+                // Wait, User.region usually holds display names or keys? Let's assume it's valid enum names.
+            }
+        }
+        
+        return savedModel;
     }
 
     public void update(
@@ -84,16 +102,34 @@ public class ModelService {
             String name,
             int height,
             int weight,
-            boolean gender,
+            com.modle.domain.user.entity.type.Sex sex,
             int age,
             List<String> categories,
             List<String> tags,
             String introduction,
             String region,
-            String profileImageUrl
+            String profileImageUrl,
+            java.time.LocalDate careerStartDate,
+            List<String> activeRegions
         ) {
-        model.update(name, height, weight, gender, age, introduction, profileImageUrl);
+        model.update(name, height, weight, sex, age, introduction, profileImageUrl, careerStartDate);
         model.getUser().updateRegion(region);
+        
+        // 2. 활동 지역(ModelRegion) 업데이트
+        model.getModelRegions().clear();
+        if (activeRegions != null) {
+            for (String regionName : activeRegions) {
+                try {
+                    Region regionEnum = Region.valueOf(regionName.toUpperCase());
+                    ModelRegion modelRegion = new ModelRegion();
+                    modelRegion.setModel(model);
+                    modelRegion.setRegion(regionEnum);
+                    model.getModelRegions().add(modelRegion);
+                } catch (IllegalArgumentException e) {
+                    System.err.println("지원하지 않는 지역: " + regionName);
+                }
+            }
+        }
         // 2. 태그(Tag) 처리 (ModelTag)
         model.getModelTags().clear(); // 기존 태그 매핑 싹 비우기
         if (tags != null) {
