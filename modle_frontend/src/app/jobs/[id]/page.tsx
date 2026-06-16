@@ -6,6 +6,7 @@ import { ClientProposalButton } from "@/components/message/ClientProposalButton"
 import { ModelCard } from "@/components/model/ModelCard";
 import { API_BASE_URL, authenticatedFetch, client } from "@/lib/api/client";
 import type { Model } from "@/types/model";
+import { addJobBookmark, getJobBookmarks, removeJobBookmark } from "@/lib/api/bookmark";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
@@ -236,7 +237,7 @@ export default function JobDetailPage({
         const loaded = (data?.data as DetailData) ?? null;
         setDetail(loaded);
         if (loaded && isModelDetail(loaded)) {
-          setFavorited(loaded.favorited);
+          setFavorited(loaded.favorited); // 빠른 초기값 (API 재확인 전 표시용)
         }
         if (loaded && isClientDetail(loaded)) {
           const transitions = STATUS_TRANSITIONS[loaded.status] ?? [];
@@ -257,6 +258,27 @@ export default function JobDetailPage({
     }, 0);
     return () => window.clearTimeout(timerId);
   }, [isOwner, loadRecommendations]);
+
+  // 북마크 실제 상태를 API로 동기화 (목록과 상세 간 불일치 방지)
+  useEffect(() => {
+    if (!user || user.role !== "MODEL") return;
+    getJobBookmarks()
+      .then((bookmarks) => {
+        setFavorited(bookmarks.some((b) => b.jobPostingId === postingId));
+      })
+      .catch(() => {});
+  }, [user, postingId]);
+
+  const handleBookmarkToggle = async () => {
+    const was = favorited;
+    setFavorited(!was);
+    try {
+      if (was) await removeJobBookmark(postingId);
+      else await addJobBookmark(postingId);
+    } catch {
+      setFavorited(was);
+    }
+  };
 
   const handleStatusChange = async () => {
     if (!selectedStatus) return;
@@ -370,13 +392,7 @@ export default function JobDetailPage({
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => {
-                    if (!user) {
-                      requireLogin();
-                      return;
-                    }
-                    setFavorited((f) => !f);
-                  }}
+                  onClick={handleBookmarkToggle}
                   className={`h-10 rounded-lg border px-5 text-[14px] font-semibold transition ${
                     favorited
                       ? "border-red-400 bg-red-50 text-red-500"
