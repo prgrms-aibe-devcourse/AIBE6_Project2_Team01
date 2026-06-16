@@ -1,14 +1,14 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { client } from "@/lib/api/client";
 import { ReportModal } from "@/components/ui/ReportModal";
+import { ClientProposalButton } from "@/components/message/ClientProposalButton";
+import { ModelCard } from "@/components/model/ModelCard";
 import { API_BASE_URL, authenticatedFetch, client } from "@/lib/api/client";
 import type { Model } from "@/types/model";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
-import { use, useCallback, useEffect, useRef, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
 
 type ClientDetail = {
   id: number;
@@ -144,7 +144,6 @@ export default function JobDetailPage({
   const postingId = Number(id);
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
-  const alertedRef = useRef(false);
 
   const requireLogin = () => {
     alert("로그인이 필요한 서비스입니다.");
