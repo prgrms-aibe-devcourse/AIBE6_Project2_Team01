@@ -1,9 +1,9 @@
 "use client";
 
 import { client } from "@/lib/api/client";
-import type { components } from "@/lib/api/schema";
 import {
-  defaultFormState,
+  AiGenerateParams,
+  Category,
   JobPostingForm,
   type JobPostingFormState,
 } from "@/components/jobposting/JobPostingForm";
@@ -11,9 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-type Template = components["schemas"]["JobPostingTemplateResponse"];
-
-const CATEGORY_OPTIONS = [
+const CATEGORY_OPTIONS: { value: Category; label: string }[] = [
   { value: "HAIR", label: "헤어" },
   { value: "MAKEUP", label: "메이크업" },
   { value: "CLOTHING", label: "의류" },
@@ -27,11 +25,7 @@ const CATEGORY_OPTIONS = [
 export default function NewJobPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
-  const [templateCategory, setTemplateCategory] = useState("");
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [formKey, setFormKey] = useState(0);
-  const [initialValues, setInitialValues] =
-    useState<Partial<JobPostingFormState>>(defaultFormState);
+  const [templateCategory, setTemplateCategory] = useState<Category | "">("");
 
   useEffect(() => {
     if (!isLoading && user?.role !== "CLIENT") {
@@ -43,25 +37,13 @@ export default function NewJobPage() {
     return <main className="min-h-screen bg-canvas" />;
   }
 
-  const loadTemplates = async (category: string) => {
-    setTemplateCategory(category);
-    if (!category) {
-      setTemplates([]);
-      return;
-    }
-    const { data } = await client.GET("/api/v1/jobs/templates", {
-      params: { query: { category } },
-    });
-    setTemplates(data?.data ?? []);
+  const handleTemplateCategory = (value: Category) => {
+    setTemplateCategory((cur) => (cur === value ? "" : value));
   };
 
-  const applyTemplate = (template: Template) => {
-    setInitialValues((cur) => ({
-      ...cur,
-      title: template.title ?? "",
-      content: template.content ?? "",
-    }));
-    setFormKey((k) => k + 1);
+  const handleAiGenerate = async (_params: AiGenerateParams): Promise<string> => {
+    // TODO: POST /api/v1/jobs/templates/generate (Gemini 연동 후 구현)
+    throw new Error("AI 본문 생성 기능은 준비 중입니다.");
   };
 
   const handleSubmit = async (formData: JobPostingFormState) => {
@@ -139,17 +121,23 @@ export default function NewJobPage() {
           </div>
         </header>
 
-        {/* 템플릿 선택 (선택 사항) */}
+        {/* AI 본문 템플릿 카테고리 선택 */}
         <section className="rounded-xl border border-hairline bg-surface p-6">
-          <h2 className="text-[15px] font-semibold leading-6 text-ink">
-            템플릿 불러오기 (선택)
-          </h2>
+          <div className="flex items-baseline gap-2">
+            <h2 className="text-[15px] font-semibold leading-6 text-ink">
+              AI 본문 템플릿
+            </h2>
+            <span className="text-[13px] text-mute">(선택)</span>
+          </div>
+          <p className="mt-1 text-[13px] leading-5 text-mute">
+            카테고리를 선택하면 필수 정보 입력 후 AI로 공고 본문을 자동 생성할 수 있습니다.
+          </p>
           <div className="mt-4 flex flex-wrap gap-2">
             {CATEGORY_OPTIONS.map((o) => (
               <button
                 key={o.value}
                 type="button"
-                onClick={() => loadTemplates(o.value)}
+                onClick={() => handleTemplateCategory(o.value)}
                 className={`rounded-full border px-4 py-2 text-[13px] font-semibold leading-5 transition ${
                   templateCategory === o.value
                     ? "border-primary bg-primary text-on-primary"
@@ -160,26 +148,16 @@ export default function NewJobPage() {
               </button>
             ))}
           </div>
-          {templates.length > 0 ? (
-            <ul className="mt-4 flex flex-col gap-2">
-              {templates.map((t) => (
-                <li key={t.id}>
-                  <button
-                    type="button"
-                    onClick={() => applyTemplate(t)}
-                    className="w-full rounded-md border border-hairline bg-canvas-soft px-4 py-3 text-left text-[14px] font-medium text-ink transition hover:border-hairline-strong"
-                  >
-                    {t.title}
-                  </button>
-                </li>
-              ))}
-            </ul>
+          {templateCategory ? (
+            <p className="mt-3 text-[12px] leading-5 text-mute">
+              선택된 카테고리를 다시 누르면 AI 템플릿이 해제되고 본문을 직접 작성할 수 있습니다.
+            </p>
           ) : null}
         </section>
 
         <JobPostingForm
-          key={formKey}
-          initialValues={initialValues}
+          externalCategory={templateCategory}
+          onAiGenerate={templateCategory ? handleAiGenerate : undefined}
           onSubmit={handleSubmit}
           submitLabel="공고 등록"
         />
