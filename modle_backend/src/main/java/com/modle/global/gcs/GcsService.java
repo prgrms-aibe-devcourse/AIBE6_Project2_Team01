@@ -31,6 +31,7 @@ public class GcsService {
         // 4. 저장된 이미지를 외부에서 볼 수 있는 구글 스토리지 URL 조합해서 반환
         return "https://storage.googleapis.com/" + bucketName + "/" + uuid;
     }
+
     public void deleteImage(String fileUrl) {
         if (fileUrl == null || fileUrl.isBlank()) return;
 
@@ -45,5 +46,15 @@ public class GcsService {
             // 삭제 실패 시 에러 로깅 (메인 로직에 지장을 주지 않도록 예외 처리)
             System.err.println("GCS 이미지 삭제 실패: " + e.getMessage());
         }
+    }
+
+    public String uploadPdf(byte[] fileBytes, String objectName) {
+        BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, objectName)
+                .setContentType("application/pdf")
+                .build();
+
+        storage.create(blobInfo, fileBytes);
+
+        return "https://storage.googleapis.com/" + bucketName + "/" + objectName;
     }
 }
