@@ -114,7 +114,7 @@ public class JobPostingController {
     public ApiResponse<Object> getJobPostingDetail(
             @PathVariable Long id,
             @AuthenticationPrincipal SecurityUser securityUser) {
-        ViewerType viewerType = switch (securityUser.getRole()) {
+        ViewerType viewerType = securityUser == null ? ViewerType.OTHER : switch (securityUser.getRole()) {
             case "MODEL" -> ViewerType.MODEL;
             case "CLIENT" -> ViewerType.CLIENT;
             default -> ViewerType.OTHER;
