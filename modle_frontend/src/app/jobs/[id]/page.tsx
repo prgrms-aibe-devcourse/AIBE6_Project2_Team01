@@ -5,7 +5,7 @@ import { client } from "@/lib/api/client";
 import { ReportModal } from "@/components/ui/ReportModal";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { use, useEffect, useRef, useState } from "react";
+import { use, useEffect, useState } from "react";
 
 type ClientDetail = {
   id: number;
@@ -113,15 +113,11 @@ export default function JobDetailPage({
   const postingId = Number(id);
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
-  const alertedRef = useRef(false);
 
-  useEffect(() => {
-    if (!authLoading && !user && !alertedRef.current) {
-      alertedRef.current = true;
-      alert("로그인이 필요한 서비스입니다.");
-      router.replace("/login");
-    }
-  }, [user, authLoading, router]);
+  const requireLogin = () => {
+    alert("로그인이 필요한 서비스입니다.");
+    router.push("/login");
+  };
 
   const [detail, setDetail] = useState<DetailData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -132,7 +128,7 @@ export default function JobDetailPage({
   const [reportOpen, setReportOpen] = useState(false);
 
   useEffect(() => {
-    if (authLoading || !user) return;
+    if (authLoading) return;
     client
       .GET("/api/v1/jobs/{id}", {
         params: { path: { id: postingId } },
@@ -206,7 +202,7 @@ export default function JobDetailPage({
     router.push("/jobs");
   };
 
-  if (authLoading || !user) {
+  if (authLoading) {
     return <main className="min-h-screen bg-canvas" />;
   }
 
@@ -269,11 +265,17 @@ export default function JobDetailPage({
                   삭제
                 </button>
               </div>
-            ) : isModelDetail(detail) ? (
+            ) : !user || isModelDetail(detail) ? (
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => setFavorited((f) => !f)}
+                  onClick={() => {
+                    if (!user) {
+                      requireLogin();
+                      return;
+                    }
+                    setFavorited((f) => !f);
+                  }}
                   className={`h-10 rounded-lg border px-5 text-[14px] font-semibold transition ${
                     favorited
                       ? "border-red-400 bg-red-50 text-red-500"
@@ -284,7 +286,13 @@ export default function JobDetailPage({
                 </button>
                 <button
                   type="button"
-                  onClick={() => alert("지원 기능은 준비 중입니다.")}
+                  onClick={() => {
+                    if (!user) {
+                      requireLogin();
+                      return;
+                    }
+                    alert("지원 기능은 준비 중입니다.");
+                  }}
                   className="h-10 rounded-lg bg-primary px-6 text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover"
                 >
                   지원하기
