@@ -1,9 +1,9 @@
 package com.modle.domain.jobposting.dto.request;
 
-import com.modle.domain.jobposting.entity.Category;
-import com.modle.domain.jobposting.entity.PayType;
-import com.modle.domain.jobposting.entity.Region;
-import com.modle.domain.jobposting.entity.RequiredSex;
+import com.modle.domain.jobposting.entity.type.Category;
+import com.modle.domain.jobposting.entity.type.PayType;
+import com.modle.domain.jobposting.entity.type.Region;
+import com.modle.domain.jobposting.entity.type.RequiredSex;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

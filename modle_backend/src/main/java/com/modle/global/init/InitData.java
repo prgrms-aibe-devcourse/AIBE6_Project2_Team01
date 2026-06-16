@@ -1,25 +1,9 @@
 package com.modle.global.init;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.modle.domain.contract.entity.ContractTemplate;
 import com.modle.domain.contract.repository.ContractTemplateRepository;
-import com.modle.domain.jobposting.entity.Category;
 import com.modle.domain.jobposting.entity.JobPosting;
-import com.modle.domain.jobposting.entity.JobPostingStatus;
-import com.modle.domain.jobposting.entity.PayType;
-import com.modle.domain.jobposting.entity.Region;
-import com.modle.domain.jobposting.entity.RequiredSex;
+import com.modle.domain.jobposting.entity.type.*;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.profile.service.ModelService;
 import com.modle.domain.user.entity.Client;
@@ -31,8 +15,18 @@ import com.modle.domain.user.entity.type.UserStatus;
 import com.modle.domain.user.repository.ClientRepository;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
