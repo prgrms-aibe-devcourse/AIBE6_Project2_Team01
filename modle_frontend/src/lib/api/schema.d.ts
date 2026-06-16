@@ -1364,7 +1364,9 @@ export interface operations {
             query: {
                 region?: string;
                 category?: string;
-                pageable: components["schemas"]["Pageable"];
+                page?: number;
+                size?: number;
+                sort?: string[];
             };
             header?: never;
             path?: never;
