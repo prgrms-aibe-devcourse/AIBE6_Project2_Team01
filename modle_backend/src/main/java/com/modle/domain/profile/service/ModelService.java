@@ -44,7 +44,14 @@ public class ModelService {
         }
         // 4. 지역 (regions) - User 엔티티 기반
         if (regions != null && !regions.isEmpty()) {
-            specs.add(ModelSpecification.hasRegions(regions));
+            List<String> mappedRegions = regions.stream().map(r -> {
+                try {
+                    return com.modle.domain.jobposting.entity.Region.valueOf(r).getDisplayName();
+                } catch (IllegalArgumentException e) {
+                    return r;
+                }
+            }).toList();
+            specs.add(ModelSpecification.hasRegions(mappedRegions));
         }
         // 5. 일반 태그 (tags) - ModelTag 엔티티 기반
         if (tags != null && !tags.isEmpty()) {

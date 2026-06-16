@@ -41,20 +41,34 @@ export function ModelFilterBar() {
 
   // 옵션 데이터
   const categories = [
-    { label: '의류 피팅', value: 'FITTING' },
     { label: '헤어', value: 'HAIR' },
     { label: '메이크업', value: 'MAKEUP' },
-    { label: '손/발/부분', value: 'HAND' },
-    { label: '기타 상업용', value: 'ETC' },
+    { label: '의류', value: 'CLOTHING' },
+    { label: '피팅', value: 'FITTING' },
+    { label: '핸드', value: 'HAND' },
+    { label: '음식', value: 'FOOD' },
+    { label: '제품', value: 'PRODUCT' },
+    { label: '기타', value: 'ETC' },
   ];
 
   const regions = [
-    { label: '서울', value: '서울' },
-    { label: '경기', value: '경기' },
-    { label: '인천', value: '인천' },
-    { label: '부산', value: '부산' },
-    { label: '대구', value: '대구' },
-    { label: '대전', value: '대전' },
+    { label: '서울', value: 'SEOUL' },
+    { label: '부산', value: 'BUSAN' },
+    { label: '대구', value: 'DAEGU' },
+    { label: '인천', value: 'INCHEON' },
+    { label: '광주', value: 'GWANGJU' },
+    { label: '대전', value: 'DAEJEON' },
+    { label: '울산', value: 'ULSAN' },
+    { label: '세종', value: 'SEJONG' },
+    { label: '경기', value: 'GYEONGGI' },
+    { label: '강원', value: 'GANGWON' },
+    { label: '충북', value: 'CHUNGBUK' },
+    { label: '충남', value: 'CHUNGNAM' },
+    { label: '전북', value: 'JEONBUK' },
+    { label: '전남', value: 'JEONNAM' },
+    { label: '경북', value: 'GYEONGBUK' },
+    { label: '경남', value: 'GYEONGNAM' },
+    { label: '제주', value: 'JEJU' },
   ];
 
   // 태그 입력 핸들러
