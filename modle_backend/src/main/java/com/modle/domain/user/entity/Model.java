@@ -80,7 +80,7 @@ public class Model extends BaseEntity {
         return model;
     }
 
-    public void update(String name, int height, int weight, com.modle.domain.user.entity.type.Sex sex,
+    public void update(String name, int height, int weight, Sex sex,
                        int age, String introduction, String profileImageUrl,
                        java.time.LocalDate careerStartDate) {
         this.name = name;

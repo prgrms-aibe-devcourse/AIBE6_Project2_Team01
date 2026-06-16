@@ -29,7 +29,7 @@ public class ModelService {
         return modelRepository.count();
     }
 
-    public List<Model> getList(String query, com.modle.domain.user.entity.type.Sex sex, List<Category> categories, List<String> regions, List<String> tags, String height, String sortType) {
+    public List<Model> getList(String query, Sex sex, List<Category> categories, List<String> regions, List<String> tags, String height, String sortType) {
         List<Specification<Model>> specs = new ArrayList<>();
         // 1. 이름 검색 (query)
         if (query != null && !query.trim().isEmpty()) {
@@ -100,7 +100,7 @@ public class ModelService {
 
     public Model create(
             User user, String name, int height,
-            int weight, com.modle.domain.user.entity.type.Sex sex, int age
+            int weight, Sex sex, int age
     ){
         Model model = Model.create(user, name, height, weight, sex, age);
         Model savedModel = modelRepository.save(model);
