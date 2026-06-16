@@ -1,12 +1,13 @@
 "use client";
 
-import { ClientProposalButton } from "@/components/message/ClientProposalButton";
-import { ModelCard } from "@/components/model/ModelCard";
 import { useAuth } from "@/hooks/useAuth";
+import { client } from "@/lib/api/client";
+import { ReportModal } from "@/components/ui/ReportModal";
 import { API_BASE_URL, authenticatedFetch, client } from "@/lib/api/client";
 import type { Model } from "@/types/model";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
 import { use, useCallback, useEffect, useRef, useState } from "react";
 
 type ClientDetail = {
@@ -145,13 +146,10 @@ export default function JobDetailPage({
   const { user, isLoading: authLoading } = useAuth();
   const alertedRef = useRef(false);
 
-  useEffect(() => {
-    if (!authLoading && !user && !alertedRef.current) {
-      alertedRef.current = true;
-      alert("로그인이 필요한 서비스입니다.");
-      router.replace("/login");
-    }
-  }, [user, authLoading, router]);
+  const requireLogin = () => {
+    alert("로그인이 필요한 서비스입니다.");
+    router.push("/login");
+  };
 
   const [detail, setDetail] = useState<DetailData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -159,6 +157,7 @@ export default function JobDetailPage({
   const [favorited, setFavorited] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [statusChanging, setStatusChanging] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [recommendations, setRecommendations] =
     useState<RecommendationList | null>(null);
   const [recommendationLoading, setRecommendationLoading] = useState(false);
@@ -224,7 +223,7 @@ export default function JobDetailPage({
   };
 
   useEffect(() => {
-    if (authLoading || !user) return;
+    if (authLoading) return;
     client
       .GET("/api/v1/jobs/{id}", {
         params: { path: { id: postingId } },
@@ -306,7 +305,7 @@ export default function JobDetailPage({
     router.push("/jobs");
   };
 
-  if (authLoading || !user) {
+  if (authLoading) {
     return <main className="min-h-screen bg-canvas" />;
   }
 
@@ -368,11 +367,17 @@ export default function JobDetailPage({
                   삭제
                 </button>
               </div>
-            ) : isModelDetail(detail) ? (
+            ) : !user || isModelDetail(detail) ? (
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => setFavorited((f) => !f)}
+                  onClick={() => {
+                    if (!user) {
+                      requireLogin();
+                      return;
+                    }
+                    setFavorited((f) => !f);
+                  }}
                   className={`h-10 rounded-lg border px-5 text-[14px] font-semibold transition ${
                     favorited
                       ? "border-red-400 bg-red-50 text-red-500"
@@ -383,14 +388,34 @@ export default function JobDetailPage({
                 </button>
                 <button
                   type="button"
-                  onClick={() => alert("지원 기능은 준비 중입니다.")}
+                  onClick={() => {
+                    if (!user) {
+                      requireLogin();
+                      return;
+                    }
+                    alert("지원 기능은 준비 중입니다.");
+                  }}
                   className="h-10 rounded-lg bg-primary px-6 text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover"
                 >
                   지원하기
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setReportOpen(true)}
+                  className="h-10 rounded-lg border border-hairline bg-surface px-4 text-[14px] font-semibold text-mute transition hover:border-red-300 hover:text-red-500"
+                >
+                  신고
+                </button>
               </div>
             ) : null}
           </div>
+          {reportOpen && (
+            <ReportModal
+              targetType="JOB_POSTING"
+              targetId={postingId}
+              onClose={() => setReportOpen(false)}
+            />
+          )}
         </header>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">

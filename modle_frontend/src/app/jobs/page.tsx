@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { client } from "@/lib/api/client";
+import { REGION_OPTIONS } from "@/lib/constants/region";
 import type { components } from "@/lib/api/schema";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -21,26 +22,7 @@ const CATEGORY_OPTIONS = [
   { value: "ETC", label: "기타" },
 ];
 
-const REGION_OPTIONS = [
-  { value: "", label: "전체 지역" },
-  { value: "SEOUL", label: "서울" },
-  { value: "BUSAN", label: "부산" },
-  { value: "DAEGU", label: "대구" },
-  { value: "INCHEON", label: "인천" },
-  { value: "GWANGJU", label: "광주" },
-  { value: "DAEJEON", label: "대전" },
-  { value: "ULSAN", label: "울산" },
-  { value: "SEJONG", label: "세종" },
-  { value: "GYEONGGI", label: "경기" },
-  { value: "GANGWON", label: "강원" },
-  { value: "CHUNGBUK", label: "충북" },
-  { value: "CHUNGNAM", label: "충남" },
-  { value: "JEONBUK", label: "전북" },
-  { value: "JEONNAM", label: "전남" },
-  { value: "GYEONGBUK", label: "경북" },
-  { value: "GYEONGNAM", label: "경남" },
-  { value: "JEJU", label: "제주" },
-];
+
 
 const STATUS_LABELS: Record<string, string> = {
   RECRUITING: "모집 중",
@@ -156,6 +138,7 @@ export default function JobsPage() {
             onChange={(e) => handleFilterChange(e.target.value, category)}
             className="h-10 rounded-md border border-hairline bg-surface px-3 text-[14px] text-ink outline-none transition focus:border-ink"
           >
+            <option value="">전체 지역</option>
             {REGION_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}

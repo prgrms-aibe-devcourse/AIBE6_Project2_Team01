@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { ReportModal } from "@/components/ui/ReportModal";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
@@ -91,6 +92,7 @@ export function MessageWorkspace() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [reportingMessageId, setReportingMessageId] = useState<number | null>(null);
 
   const selectedThread = useMemo(
     () => threads.find((thread) => thread.id === selectedId) ?? threads[0] ?? null,
@@ -384,12 +386,30 @@ export function MessageWorkspace() {
                   const showDate = !previous || date.toDateString() !== previous.toDateString();
                   return <div className="contents" key={message.id}>
                     {showDate && <div className="mx-auto rounded-full border border-hairline bg-white px-3 py-1 text-[11px] font-medium text-mute">{new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "long", day: "numeric" }).format(date)}</div>}
-                    <article className={`flex max-w-[82%] flex-col md:max-w-[68%] ${mine ? "ml-auto items-end" : "items-start"}`}>
+                    <article className={`group flex max-w-[82%] flex-col md:max-w-[68%] ${mine ? "ml-auto items-end" : "items-start"}`}>
                       <div className={`whitespace-pre-wrap rounded-xl px-3.5 py-2 text-sm leading-5 shadow-sm ${mine ? "rounded-br-sm bg-ink text-white" : "rounded-bl-sm border border-hairline bg-white text-ink"}`}>{message.content}</div>
-                      <time className="mt-1 px-1 text-[10px] text-mute">{new Intl.DateTimeFormat("ko-KR", { hour: "numeric", minute: "2-digit" }).format(date)}</time>
+                      <div className={`mt-1 flex items-center gap-2 px-1 ${mine ? "flex-row-reverse" : ""}`}>
+                        <time className="text-[10px] text-mute">{new Intl.DateTimeFormat("ko-KR", { hour: "numeric", minute: "2-digit" }).format(date)}</time>
+                        {!mine && (
+                          <button
+                            type="button"
+                            onClick={() => setReportingMessageId(message.id)}
+                            className="hidden text-[10px] text-mute transition hover:text-red-500 group-hover:inline-block"
+                          >
+                            신고
+                          </button>
+                        )}
+                      </div>
                     </article>
                   </div>;
                 })}
+              {reportingMessageId !== null && (
+                <ReportModal
+                  targetType="MESSAGE"
+                  targetId={reportingMessageId}
+                  onClose={() => setReportingMessageId(null)}
+                />
+              )}
           </div>
           <form className="shrink-0 border-t border-hairline bg-white px-4 py-2.5" onSubmit={submitMessage}>
             <div className="flex items-end gap-2 rounded-xl border border-hairline bg-canvas-soft p-1.5 transition focus-within:border-hairline-strong focus-within:bg-white">

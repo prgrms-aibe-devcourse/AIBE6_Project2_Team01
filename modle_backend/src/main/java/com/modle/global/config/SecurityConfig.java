@@ -42,6 +42,7 @@ public class SecurityConfig {
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .csrf(AbstractHttpConfigurer::disable)
                                 .formLogin(AbstractHttpConfigurer::disable)
                                 .logout(AbstractHttpConfigurer::disable)
@@ -65,7 +66,9 @@ public class SecurityConfig {
                                                                 "/api/v1/models",
                                                                 "/api/v1/models/{id}",
                                                                 "/api/v1/clients",
-                                                                "/api/v1/clients/{id}"
+                                                                "/api/v1/clients/{id}",
+                                                                "/api/v1/jobs",
+                                                                "/api/v1/jobs/{id}"
                                                 ).permitAll()
                                                 // 관리자만
                                                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
@@ -108,7 +111,7 @@ public class SecurityConfig {
         public UrlBasedCorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
                 configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-                configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
+                configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                 configuration.setAllowCredentials(true);
                 configuration.setAllowedHeaders(List.of("*"));
 

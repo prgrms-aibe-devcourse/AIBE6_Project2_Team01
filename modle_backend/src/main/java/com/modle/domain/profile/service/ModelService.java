@@ -9,7 +9,8 @@ import com.modle.domain.jobposting.service.AiRecommendService;
 import com.modle.domain.user.entity.Model;
 import com.modle.domain.user.entity.User;
 import com.modle.domain.profile.entity.ModelRegion;
-import com.modle.domain.jobposting.entity.Region;
+import com.modle.domain.jobposting.entity.type.Region;
+import com.modle.domain.user.entity.type.Sex;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.ModelSpecification;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class ModelService {
         return modelRepository.count();
     }
 
-    public List<Model> getList(String query, com.modle.domain.user.entity.type.Sex sex, List<Category> categories, List<String> regions, List<String> tags, String height, String sortType) {
+    public List<Model> getList(String query, Sex sex, List<Category> categories, List<String> regions, List<String> tags, String height, String sortType) {
         List<Specification<Model>> specs = new ArrayList<>();
         // 1. 이름 검색 (query)
         if (query != null && !query.trim().isEmpty()) {
@@ -48,7 +49,7 @@ public class ModelService {
         if (regions != null && !regions.isEmpty()) {
             List<String> mappedRegions = regions.stream().map(r -> {
                 try {
-                    return com.modle.domain.jobposting.entity.Region.valueOf(r).getDisplayName();
+                    return Region.valueOf(r).getDisplayName();
                 } catch (IllegalArgumentException e) {
                     return r;
                 }
@@ -101,7 +102,7 @@ public class ModelService {
 
     public Model create(
             User user, String name, int height,
-            int weight, com.modle.domain.user.entity.type.Sex sex, int age
+            int weight, Sex sex, int age
     ){
         Model model = Model.create(user, name, height, weight, sex, age);
         Model savedModel = modelRepository.save(model);
@@ -129,7 +130,7 @@ public class ModelService {
             String name,
             int height,
             int weight,
-            com.modle.domain.user.entity.type.Sex sex,
+            Sex sex,
             int age,
             List<String> categories,
             List<String> tags,

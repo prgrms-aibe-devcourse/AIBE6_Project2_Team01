@@ -70,6 +70,7 @@ public class GlobalExceptionHandler {
     // 그 외 예외
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handle(Exception e) {
+        log.error("Unhandled exception", e);
         log.error("Unhandled exception occurred.", e);
         return new ResponseEntity<>(
                 ApiResponse.fail("500-1", "서버 오류가 발생했습니다."),

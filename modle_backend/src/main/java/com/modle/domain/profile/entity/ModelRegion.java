@@ -1,6 +1,6 @@
 package com.modle.domain.profile.entity;
 
-import com.modle.domain.jobposting.entity.Region;
+import com.modle.domain.jobposting.entity.type.Region;
 import com.modle.domain.user.entity.Model;
 import com.modle.global.entity.BaseEntity;
 import jakarta.persistence.*;

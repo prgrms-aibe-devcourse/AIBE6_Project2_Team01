@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, ReactNode, useState } from "react";
+import { REGION_OPTIONS } from "@/lib/constants/region";
+import { FormEvent, ReactNode, useEffect, useState } from "react";
 
 export type Category =
   | "HAIR"
@@ -31,6 +32,15 @@ export type Region =
   | "JEJU";
 export type RequiredSex = "M" | "F" | "ANY";
 export type PayType = "CASH" | "SERVICE" | "FREE";
+
+export type AiGenerateParams = {
+  category: string;
+  title: string;
+  shootDate: string;
+  payType: string;
+  ageMin?: number;
+  ageMax?: number;
+};
 
 export type JobPostingFormState = {
   title: string;
@@ -79,39 +89,38 @@ const CATEGORY_OPTIONS: { value: Category; label: string }[] = [
   { value: "ETC", label: "기타" },
 ];
 
-const REGION_OPTIONS: { value: Region; label: string }[] = [
-  { value: "SEOUL", label: "서울" },
-  { value: "BUSAN", label: "부산" },
-  { value: "DAEGU", label: "대구" },
-  { value: "INCHEON", label: "인천" },
-  { value: "GWANGJU", label: "광주" },
-  { value: "DAEJEON", label: "대전" },
-  { value: "ULSAN", label: "울산" },
-  { value: "SEJONG", label: "세종" },
-  { value: "GYEONGGI", label: "경기" },
-  { value: "GANGWON", label: "강원" },
-  { value: "CHUNGBUK", label: "충북" },
-  { value: "CHUNGNAM", label: "충남" },
-  { value: "JEONBUK", label: "전북" },
-  { value: "JEONNAM", label: "전남" },
-  { value: "GYEONGBUK", label: "경북" },
-  { value: "GYEONGNAM", label: "경남" },
-  { value: "JEJU", label: "제주" },
-];
+
 
 type Props = {
   initialValues?: Partial<JobPostingFormState>;
   onSubmit: (data: JobPostingFormState) => Promise<void>;
   submitLabel: string;
+  externalCategory?: Category | "";
+  onAiGenerate?: (params: AiGenerateParams) => Promise<string>;
 };
 
-export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) {
+export function JobPostingForm({
+  initialValues,
+  onSubmit,
+  submitLabel,
+  externalCategory,
+  onAiGenerate,
+}: Props) {
   const [form, setForm] = useState<JobPostingFormState>({
     ...defaultFormState,
     ...initialValues,
   });
   const [status, setStatus] = useState<"idle" | "saving" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [aiState, setAiState] = useState<"idle" | "generating">("idle");
+  const [aiError, setAiError] = useState("");
+  const [aiGenerated, setAiGenerated] = useState(false);
+
+  useEffect(() => {
+    if (externalCategory) {
+      setForm((cur) => ({ ...cur, category: externalCategory }));
+    }
+  }, [externalCategory]);
 
   const updateField = <K extends keyof JobPostingFormState>(
     key: K,
@@ -120,8 +129,53 @@ export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) 
     setForm((cur) => ({ ...cur, [key]: value }));
   };
 
+  const handleAiGenerate = async () => {
+    setAiError("");
+    const errors: string[] = [];
+    if (!form.title.trim()) errors.push("제목을 입력해주세요.");
+    if (!form.shootDate) errors.push("촬영 예정일을 입력해주세요.");
+    if (!form.payType) errors.push("보수 유형을 선택해주세요.");
+    if (!form.ageMin && !form.ageMax) errors.push("나이 최소 또는 최대를 입력해주세요.");
+    if (errors.length > 0) {
+      setAiError(errors.join(" "));
+      return;
+    }
+    setAiState("generating");
+    try {
+      const content = await onAiGenerate!({
+        category: form.category,
+        title: form.title,
+        shootDate: form.shootDate,
+        payType: form.payType,
+        ageMin: form.ageMin ? Number(form.ageMin) : undefined,
+        ageMax: form.ageMax ? Number(form.ageMax) : undefined,
+      });
+      updateField("content", content);
+      setAiGenerated(true);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : "AI 본문 생성에 실패했습니다.");
+    } finally {
+      setAiState("idle");
+    }
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!form.content.trim()) {
+      setStatus("error");
+      setMessage("공고 본문을 입력해주세요.");
+      return;
+    }
+    if (!form.payType) {
+      setStatus("error");
+      setMessage("보수 유형을 선택해주세요.");
+      return;
+    }
+    if (!form.ageMin && !form.ageMax) {
+      setStatus("error");
+      setMessage("나이 최소 또는 최대를 입력해주세요.");
+      return;
+    }
     setStatus("saving");
     setMessage("");
     try {
@@ -141,6 +195,9 @@ export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) 
         : "border-hairline bg-surface text-body hover:border-hairline-strong"
     }`;
 
+  const aiMode = !!onAiGenerate && !!form.category;
+  const showAiButton = aiMode && !form.content;
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -158,12 +215,46 @@ export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) 
           </Field>
 
           <Field label="내용" required className="md:col-span-2">
-            <textarea
-              className="min-h-32 w-full resize-y rounded-md border border-hairline bg-canvas-soft px-3 py-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
-              value={form.content}
-              onChange={(e) => updateField("content", e.target.value)}
-              required
-            />
+            {showAiButton ? (
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={handleAiGenerate}
+                  disabled={aiState === "generating"}
+                  className="flex h-14 w-full items-center justify-center rounded-md border-2 border-dashed border-primary bg-canvas-soft text-[15px] font-semibold text-primary transition hover:bg-canvas disabled:opacity-50"
+                >
+                  {aiState === "generating" ? "AI 본문 생성 중..." : "✦ AI 본문 생성"}
+                </button>
+                {aiError ? (
+                  <p className="rounded-md bg-error-soft px-3 py-2 text-[13px] leading-5 text-error">
+                    {aiError}
+                  </p>
+                ) : null}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {aiGenerated && (
+                  <div className="flex items-start gap-2 rounded-md border border-hairline bg-canvas-soft px-3 py-2 text-[13px] leading-5 text-mute">
+                    <p className="flex-1">✦ AI가 생성한 초안입니다. 내용을 검토하고 필요한 경우 수정 후 등록해주세요.</p>
+                    <button
+                      type="button"
+                      onClick={() => setAiGenerated(false)}
+                      className="shrink-0 hover:text-ink"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+                <textarea
+                  className="min-h-32 w-full resize-y rounded-md border border-hairline bg-canvas-soft px-3 py-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
+                  value={form.content}
+                  onChange={(e) => {
+                    updateField("content", e.target.value);
+                    setAiGenerated(false);
+                  }}
+                />
+              </div>
+            )}
           </Field>
 
           <Field label="카테고리" required>
@@ -217,36 +308,46 @@ export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) 
             </div>
           </Field>
 
-          <Field label="촬영 예정일">
+          <Field label="촬영 예정일" required>
             <input
               className={inputClass}
               type="date"
               value={form.shootDate}
               onChange={(e) => updateField("shootDate", e.target.value)}
+              required
             />
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="최소 나이">
-              <input
-                className={inputClass}
-                type="number"
-                min={15}
-                max={80}
-                value={form.ageMin}
-                onChange={(e) => updateField("ageMin", e.target.value)}
-              />
-            </Field>
-            <Field label="최대 나이">
-              <input
-                className={inputClass}
-                type="number"
-                min={15}
-                max={80}
-                value={form.ageMax}
-                onChange={(e) => updateField("ageMax", e.target.value)}
-              />
-            </Field>
+          {/* 나이: 최소 또는 최대 중 하나 이상 필수 */}
+          <div className="md:col-span-2">
+            <span className="mb-2 block text-[13px] font-semibold leading-5 text-ink">
+              나이<span className="text-error"> *</span>
+              <span className="ml-1 font-normal text-mute">(최소 또는 최대 중 하나 이상)</span>
+            </span>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <span className="mb-1 block text-[12px] leading-5 text-mute">최소</span>
+                <input
+                  className={inputClass}
+                  type="number"
+                  min={15}
+                  max={80}
+                  value={form.ageMin}
+                  onChange={(e) => updateField("ageMin", e.target.value)}
+                />
+              </div>
+              <div>
+                <span className="mb-1 block text-[12px] leading-5 text-mute">최대</span>
+                <input
+                  className={inputClass}
+                  type="number"
+                  min={15}
+                  max={80}
+                  value={form.ageMax}
+                  onChange={(e) => updateField("ageMax", e.target.value)}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -306,7 +407,7 @@ export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) 
             />
           </Field>
 
-          <Field label="보수 유형">
+          <Field label="보수 유형" required>
             <div className="grid grid-cols-3 gap-2">
               {(["CASH", "SERVICE", "FREE"] as const).map((pt) => (
                 <button
