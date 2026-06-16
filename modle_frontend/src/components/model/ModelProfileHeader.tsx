@@ -1,5 +1,5 @@
-import Image from 'next/image';
-import { Model } from '@/types/model';
+import { Model } from "@/types/model";
+import Image from "next/image";
 
 interface Props {
   model: Model;
@@ -30,13 +30,14 @@ export function ModelProfileHeader({ model }: Props) {
           <div className="flex justify-between items-start mb-2">
             <h1 className="text-display-md text-ink">{model.name}</h1>
             <div className="flex items-center bg-primary-soft text-primary px-3 py-1 rounded-full text-body-sm font-semibold">
-              ★ {model.rating.toFixed(1)} <span className="text-mute ml-1">({model.reviewCount})</span>
+              ★ {model.rating.toFixed(1)}{" "}
+              <span className="text-mute ml-1">({model.reviewCount})</span>
             </div>
           </div>
-          
+
           <div className="text-body text-mute mb-4 flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-primary"></span>
-            {model.region || '지역 미상'}
+            {model.region || "지역 미상"}
           </div>
 
           <div className="flex flex-wrap gap-2 mb-6">
@@ -57,22 +58,31 @@ export function ModelProfileHeader({ model }: Props) {
             )}
             {model.sex !== undefined && (
               <span className="px-3 py-1 bg-surface rounded-md border border-hairline text-body-sm text-body">
-                {model.sex === "M" ? '남성' : '여성'}
+                {model.sex === "M" ? "남성" : "여성"}
               </span>
             )}
           </div>
 
-          {(model.categories && model.categories.length > 0) || (model.tags && model.tags.length > 0) ? (
+          {(model.categories && model.categories.length > 0) ||
+          (model.tags && model.tags.length > 0) ? (
             <div className="mb-6">
-              <h3 className="text-body-sm font-bold text-ink mb-2">카테고리 & 태그</h3>
+              <h3 className="text-body-sm font-bold text-ink mb-2">
+                카테고리 & 태그
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {model.categories?.map((cat, idx) => (
-                  <span key={`cat-${idx}`} className="px-2 py-1 bg-ink text-surface rounded text-body-sm">
+                  <span
+                    key={`cat-${idx}`}
+                    className="px-2 py-1 bg-ink text-surface rounded text-body-sm"
+                  >
                     {cat}
                   </span>
                 ))}
                 {model.tags?.map((tag, idx) => (
-                  <span key={`tag-${idx}`} className="px-2 py-1 bg-canvas-soft border border-hairline text-mute rounded text-body-sm">
+                  <span
+                    key={`tag-${idx}`}
+                    className="px-2 py-1 bg-canvas-soft border border-hairline text-mute rounded text-body-sm"
+                  >
                     #{tag}
                   </span>
                 ))}

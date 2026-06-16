@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import type { FormEvent, ReactNode } from "react";
+import { useState } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { client } from "@/lib/api/client";
 import { getErrorMessage } from "@/lib/api/error";
-import { GENDER_OPTIONS } from "@/lib/constants/gender";
+import { REGION_OPTIONS } from "@/lib/constants/region";
 
 type Role = "MODEL" | "CLIENT";
 type ClientType = "INDIVIDUAL" | "ORGANIZATION";
@@ -48,12 +48,15 @@ export default function AdditionalInfoPage() {
 
   const [role, setRole] = useState<Role | null>(null);
   const [form, setForm] = useState<FormState>(initialForm);
-  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">(
-    "idle",
-  );
+  const [status, setStatus] = useState<
+    "idle" | "submitting" | "success" | "error"
+  >("idle");
   const [message, setMessage] = useState("");
 
-  const updateField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
+  const updateField = <K extends keyof FormState>(
+    key: K,
+    value: FormState[K],
+  ) => {
     setForm((current) => ({ ...current, [key]: value }));
   };
 
@@ -66,26 +69,29 @@ export default function AdditionalInfoPage() {
     setStatus("submitting");
     setMessage("");
 
-    const { data, error } = await client.POST("/api/v1/auth/signup/additional", {
-      body:
-        role === "MODEL"
-          ? {
-              role: "MODEL",
-              region: form.region,
-              name: form.name,
-              height: Number(form.height),
-              weight: Number(form.weight),
-              age: Number(form.age),
-              sex: form.sex,
-            }
-          : {
-              role: "CLIENT",
-              region: form.region,
-              companyName: form.companyName,
-              companyNumber: form.companyNumber,
-              clientType: form.clientType,
-            },
-    });
+    const { data, error } = await client.POST(
+      "/api/v1/auth/signup/additional",
+      {
+        body:
+          role === "MODEL"
+            ? {
+                role: "MODEL",
+                region: form.region,
+                name: form.name,
+                height: Number(form.height),
+                weight: Number(form.weight),
+                age: Number(form.age),
+                sex: form.sex,
+              }
+            : {
+                role: "CLIENT",
+                region: form.region,
+                companyName: form.companyName,
+                companyNumber: form.companyNumber,
+                clientType: form.clientType,
+              },
+      },
+    );
 
     if (error) {
       setStatus("error");
@@ -131,7 +137,9 @@ export default function AdditionalInfoPage() {
     return (
       <main className="flex flex-1 items-center justify-center bg-canvas px-4 py-12 text-ink">
         <div className="w-full max-w-[480px]">
-          <h1 className="text-[28px] font-bold leading-9 text-ink">추가 정보 입력</h1>
+          <h1 className="text-[28px] font-bold leading-9 text-ink">
+            추가 정보 입력
+          </h1>
           <p className="mt-2 text-[15px] leading-6 text-body">
             구글 계정으로 가입을 완료하려면 역할을 선택하고 정보를 입력해주세요.
           </p>
@@ -180,14 +188,21 @@ export default function AdditionalInfoPage() {
 
         <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
           <Field label="활동 지역" required>
-            <input
-              type="text"
+            <select
               required
-              maxLength={50}
               value={form.region}
               onChange={(event) => updateField("region", event.target.value)}
               className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
-            />
+            >
+              <option value="" disabled>
+                지역을 선택하세요
+              </option>
+              {REGION_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </Field>
 
           {role === "MODEL" ? (
@@ -210,7 +225,9 @@ export default function AdditionalInfoPage() {
                     required
                     min={1}
                     value={form.height}
-                    onChange={(event) => updateField("height", event.target.value)}
+                    onChange={(event) =>
+                      updateField("height", event.target.value)
+                    }
                     className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
                   />
                 </Field>
@@ -220,7 +237,9 @@ export default function AdditionalInfoPage() {
                     required
                     min={1}
                     value={form.weight}
-                    onChange={(event) => updateField("weight", event.target.value)}
+                    onChange={(event) =>
+                      updateField("weight", event.target.value)
+                    }
                     className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
                   />
                 </Field>
@@ -238,20 +257,28 @@ export default function AdditionalInfoPage() {
 
               <Field label="성별" required>
                 <div className="grid grid-cols-2 gap-2">
-                  {GENDER_OPTIONS.map((option) => (
-                    <button
-                      key={String(option.value)}
-                      type="button"
-                      onClick={() => updateField("sex", option.value)}
-                      className={`h-11 rounded-md border px-4 text-[15px] font-semibold leading-6 transition ${
-                        form.sex === option.value
-                          ? "border-primary bg-primary text-on-primary"
-                          : "border-hairline bg-surface text-body hover:border-hairline-strong"
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
+                  <button
+                    type="button"
+                    onClick={() => updateField("sex", "M")}
+                    className={`h-11 rounded-md border px-4 text-[15px] font-semibold leading-6 transition ${
+                      form.sex === "M"
+                        ? "border-primary bg-primary text-on-primary"
+                        : "border-hairline bg-surface text-body hover:border-hairline-strong"
+                    }`}
+                  >
+                    남성
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateField("sex", "F")}
+                    className={`h-11 rounded-md border px-4 text-[15px] font-semibold leading-6 transition ${
+                      form.sex === "F"
+                        ? "border-primary bg-primary text-on-primary"
+                        : "border-hairline bg-surface text-body hover:border-hairline-strong"
+                    }`}
+                  >
+                    여성
+                  </button>
                 </div>
               </Field>
             </>
@@ -263,7 +290,9 @@ export default function AdditionalInfoPage() {
                   required
                   maxLength={100}
                   value={form.companyName}
-                  onChange={(event) => updateField("companyName", event.target.value)}
+                  onChange={(event) =>
+                    updateField("companyName", event.target.value)
+                  }
                   className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
                 />
               </Field>
@@ -274,7 +303,9 @@ export default function AdditionalInfoPage() {
                   required
                   maxLength={20}
                   value={form.companyNumber}
-                  onChange={(event) => updateField("companyNumber", event.target.value)}
+                  onChange={(event) =>
+                    updateField("companyNumber", event.target.value)
+                  }
                   className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
                 />
               </Field>

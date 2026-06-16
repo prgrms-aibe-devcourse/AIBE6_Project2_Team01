@@ -3,6 +3,7 @@
 import { uploadImage } from '@/lib/api/image';
 import { updateMyModel } from '@/lib/api/model';
 import { Model } from '@/types/model';
+import { REGION_OPTIONS } from '@/lib/constants/region';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -18,6 +19,7 @@ export function ModelEditForm({ initialData }: Props) {
     height: initialData.height,
     weight: initialData.weight,
     sex: initialData.sex,
+    region: initialData.region || '',
     field: initialData.field || '',
     tags: initialData.tags || [],
     introduction: initialData.introduction || '',
@@ -151,7 +153,7 @@ export function ModelEditForm({ initialData }: Props) {
                 alt="프로필 미리보기" 
                 className="w-full h-full object-cover" 
                 onError={(e) => {
-                  e.currentTarget.src = '/images/default-avatar.png';
+                  e.currentTarget.src = '/placeholder.png';
                 }}
               />
             ) : (
@@ -228,6 +230,25 @@ export function ModelEditForm({ initialData }: Props) {
             className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors"
             placeholder="예: 65"
           />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-6 mb-6">
+        <div>
+          <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">지역 (Region)</label>
+          <select
+            name="region"
+            value={formData.region || ''}
+            onChange={handleChange}
+            className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors appearance-none"
+          >
+            <option value="" disabled>지역을 선택하세요</option>
+            {REGION_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
