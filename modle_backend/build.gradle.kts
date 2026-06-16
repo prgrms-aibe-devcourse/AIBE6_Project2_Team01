@@ -47,6 +47,8 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
     // OAuth2
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    //pdf생성용 라이브러리
+    implementation("org.apache.pdfbox:pdfbox:3.0.3")
 }
 
 dependencyManagement {

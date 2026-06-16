@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
+import { REGION_OPTIONS } from '@/lib/constants/region';
 
 export function ModelFilterBar() {
   const router = useRouter();
@@ -51,25 +52,7 @@ export function ModelFilterBar() {
     { label: '기타', value: 'ETC' },
   ];
 
-  const regions = [
-    { label: '서울', value: 'SEOUL' },
-    { label: '부산', value: 'BUSAN' },
-    { label: '대구', value: 'DAEGU' },
-    { label: '인천', value: 'INCHEON' },
-    { label: '광주', value: 'GWANGJU' },
-    { label: '대전', value: 'DAEJEON' },
-    { label: '울산', value: 'ULSAN' },
-    { label: '세종', value: 'SEJONG' },
-    { label: '경기', value: 'GYEONGGI' },
-    { label: '강원', value: 'GANGWON' },
-    { label: '충북', value: 'CHUNGBUK' },
-    { label: '충남', value: 'CHUNGNAM' },
-    { label: '전북', value: 'JEONBUK' },
-    { label: '전남', value: 'JEONNAM' },
-    { label: '경북', value: 'GYEONGBUK' },
-    { label: '경남', value: 'GYEONGNAM' },
-    { label: '제주', value: 'JEJU' },
-  ];
+
 
   // 태그 입력 핸들러
   const handleTagInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -115,7 +98,7 @@ export function ModelFilterBar() {
       <div className="flex items-center gap-4">
         <span className="font-bold w-16 text-gray-400">지역</span>
         <div className="flex flex-wrap gap-2">
-          {regions.map((reg) => (
+          {REGION_OPTIONS.map((reg) => (
             <button
               key={reg.value}
               onClick={() => updateMultiFilter('regions', reg.value)}

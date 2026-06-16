@@ -39,6 +39,10 @@ public enum ErrorCode {
     INVALID_CONTRACT_SHOOT_TIME(HttpStatus.BAD_REQUEST, "400-5", "촬영 종료 시간은 촬영 시작 시간 이후여야 합니다."),
     INVALID_FILE_CONTRACT(HttpStatus.BAD_REQUEST, "400-6", "파일 첨부 방식 계약은 업로드된 계약서 정보가 필요합니다."),
     INVALID_CONTRACT_PAYMENT(HttpStatus.BAD_REQUEST, "400-7", "계약 보수 값이 보수 유형과 맞지 않습니다."),
+    INVALID_CONTRACT_STATUS(HttpStatus.BAD_REQUEST, "400-10", "DRAFT 상태의 계약서만 PDF 생성이 가능합니다."),
+    CONTRACT_NOT_FOUND(HttpStatus.NOT_FOUND, "404-4", "계약서를 찾을 수 없습니다."),
+    CONTRACT_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "404-5", "계약서 템플릿을 찾을 수 없습니다."),
+    CONTRACT_PDF_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "500-2", "계약서 PDF 생성에 실패했습니다."),
 
     // 공고
     JOB_POSTING_NOT_FOUND(HttpStatus.NOT_FOUND, "404-2", "공고를 찾을 수 없습니다."),
