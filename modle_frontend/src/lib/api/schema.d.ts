@@ -696,7 +696,16 @@ export interface components {
         };
         PasswordResetRequest: {
             email: string;
+            resetToken: string;
             newPassword: string;
+        };
+        PasswordResetResponse: {
+            resetToken: string;
+        };
+        ApiResponsePasswordResetResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["PasswordResetResponse"];
         };
         EmailVerifyRequest: {
             email: string;
@@ -1328,7 +1337,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseVoid"];
+                    "*/*": components["schemas"]["ApiResponsePasswordResetResponse"];
                 };
             };
         };

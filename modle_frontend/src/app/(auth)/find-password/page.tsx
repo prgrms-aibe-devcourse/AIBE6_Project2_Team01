@@ -14,6 +14,7 @@ export default function FindPasswordPage() {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
+  const [resetToken, setResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting">("idle");
@@ -42,7 +43,8 @@ export default function FindPasswordPage() {
     setError("");
 
     try {
-      await confirmPasswordResetCode(email, code);
+      const token = await confirmPasswordResetCode(email, code);
+      setResetToken(token);
       setMessage("");
       setStep("password");
     } catch (err) {
@@ -64,7 +66,7 @@ export default function FindPasswordPage() {
     setStatus("submitting");
 
     try {
-      await resetPassword(email, newPassword);
+      await resetPassword(email, resetToken, newPassword);
       setStep("done");
     } catch (err) {
       setError(err instanceof Error ? err.message : "비밀번호 재설정에 실패했습니다.");
@@ -159,6 +161,7 @@ export default function FindPasswordPage() {
               onClick={() => {
                 setStep("email");
                 setCode("");
+                setResetToken("");
                 setMessage("");
                 setError("");
               }}
