@@ -1,7 +1,7 @@
 package com.modle.domain.jobposting.dto.request;
 
-import com.modle.domain.jobposting.entity.Category;
-import com.modle.domain.jobposting.entity.PayType;
+import com.modle.domain.jobposting.entity.type.Category;
+import com.modle.domain.jobposting.entity.type.PayType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

@@ -8,7 +8,7 @@ import com.modle.domain.jobposting.dto.response.JobPostingListResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingTemplateGenerateResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingTemplateResponse;
-import com.modle.domain.jobposting.entity.ViewerType;
+import com.modle.domain.jobposting.entity.type.ViewerType;
 import com.modle.domain.jobposting.service.JobPostingService;
 import com.modle.domain.jobposting.service.JobPostingTemplateService;
 import com.modle.global.auth.SecurityUser;

@@ -8,7 +8,7 @@ import com.modle.domain.profile.repository.TagRepository;
 import com.modle.domain.user.entity.Model;
 import com.modle.domain.user.entity.User;
 import com.modle.domain.profile.entity.ModelRegion;
-import com.modle.domain.jobposting.entity.Region;
+import com.modle.domain.jobposting.entity.type.Region;
 import com.modle.domain.user.entity.type.Sex;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.ModelSpecification;
@@ -47,7 +47,7 @@ public class ModelService {
         if (regions != null && !regions.isEmpty()) {
             List<String> mappedRegions = regions.stream().map(r -> {
                 try {
-                    return com.modle.domain.jobposting.entity.Region.valueOf(r).getDisplayName();
+                    return Region.valueOf(r).getDisplayName();
                 } catch (IllegalArgumentException e) {
                     return r;
                 }

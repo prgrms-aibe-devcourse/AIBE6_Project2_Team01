@@ -1,8 +1,8 @@
 package com.modle.domain.jobposting.service;
 
 import com.modle.domain.jobposting.dto.request.JobPostingTemplateGenerateRequest;
-import com.modle.domain.jobposting.entity.Category;
-import com.modle.domain.jobposting.entity.PayType;
+import com.modle.domain.jobposting.entity.type.Category;
+import com.modle.domain.jobposting.entity.type.PayType;
 import com.modle.infra.ai.GroqApiClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

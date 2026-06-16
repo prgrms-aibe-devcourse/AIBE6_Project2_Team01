@@ -1,4 +1,4 @@
-package com.modle.domain.jobposting.entity;
+package com.modle.domain.jobposting.entity.type;
 
 import java.util.Set;
 

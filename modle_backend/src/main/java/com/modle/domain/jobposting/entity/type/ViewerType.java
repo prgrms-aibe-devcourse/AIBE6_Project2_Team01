@@ -1,4 +1,4 @@
-package com.modle.domain.jobposting.entity;
+package com.modle.domain.jobposting.entity.type;
 
 public enum ViewerType {
     MODEL,   // 모델: 공고 정보·지원하기·즐겨찾기 버튼 노출
