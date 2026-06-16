@@ -1,15 +1,5 @@
 package com.modle.global.init;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.modle.domain.profile.service.ModelService;
 import com.modle.domain.user.entity.Client;
 import com.modle.domain.user.entity.Model;
@@ -20,8 +10,16 @@ import com.modle.domain.user.entity.type.UserStatus;
 import com.modle.domain.user.repository.ClientRepository;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -117,7 +115,7 @@ public class InitData {
         userRepository.save(user1);
         Model model1 = modelService.create(user1, "홍길동", 180, 75, true, 25);
         modelService.update(model1, "홍길동", 180, 75, true, 25, List.of("FITTING"), List.of("tag1"), "안녕하세요, 홍길동입니다.",
-                "서울", "https://example.com/profile1.jpg");
+                "서울", "");
 
         User user2 = User.createLocal(
                 "model2@modle.com",
@@ -127,7 +125,7 @@ public class InitData {
         userRepository.save(user2);
         Model model2 = modelService.create(user2, "김철수", 175, 68, true, 30);
         modelService.update(model2, "김철수", 175, 68, true, 30, List.of("HAIR"), List.of("tag2"), "안녕하세요, 김철수입니다.",
-                "부산", "https://example.com/profile2.jpg");
+                "부산", "");
 
         User user3 = User.createLocal(
                 "model3@modle.com",
@@ -137,7 +135,7 @@ public class InitData {
         userRepository.save(user3);
         Model model3 = modelService.create(user3, "이영희", 165, 55, false, 28);
         modelService.update(model3, "이영희", 165, 55, false, 28, List.of("MAKEUP"), List.of("tag3"), "안녕하세요, 이영희입니다.",
-                "대전", "https://example.com/profile3.jpg");
+                "대전", "");
     }
 
     @Transactional
@@ -155,7 +153,7 @@ public class InitData {
         userRepository.save(user1);
         Client client1 = Client.create(user1, ClientType.ORGANIZATION, "무신사", "111-22-33333");
         client1.update("무신사", "111-22-33333", ClientType.ORGANIZATION, "대한민국 No.1 패션 플랫폼 무신사입니다.",
-                "https://image.msscdn.net/mfile_s01/2021/04/16/0919ec3116fc53e878ecdfab2d90eb11.jpg");
+                "");
         clientRepository.save(client1);
 
         User user2 = User.createLocal(
@@ -167,7 +165,7 @@ public class InitData {
         userRepository.save(user2);
         Client client2 = Client.create(user2, ClientType.ORGANIZATION, "지그재그", "222-33-44444");
         client2.update("지그재그", "222-33-44444", ClientType.ORGANIZATION, "나를 찾는 1020 여성 쇼핑앱 지그재그입니다.",
-                "https://example.com/zigzag.jpg");
+                "");
         clientRepository.save(client2);
 
         User user3 = User.createLocal(
@@ -179,7 +177,7 @@ public class InitData {
         userRepository.save(user3);
         Client client3 = Client.create(user3, ClientType.INDIVIDUAL, "에이블리", "333-44-55555");
         client3.update("에이블리", "333-44-55555", ClientType.INDIVIDUAL, "내 스타일을 가장 잘 아는 쇼핑몰 에이블리입니다.",
-                "https://example.com/ably.jpg");
+                "");
         clientRepository.save(client3);
     }
 }
