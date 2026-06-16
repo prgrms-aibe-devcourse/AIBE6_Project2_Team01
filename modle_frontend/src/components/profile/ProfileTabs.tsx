@@ -1,17 +1,23 @@
+interface TabItem {
+  id: string;
+  label: string;
+}
+
 interface Props {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  tabs?: TabItem[];
 }
 
-export function ProfileTabs({ activeTab, onTabChange }: Props) {
-  const tabs = [
-    { id: 'profile', label: '프로필' },
-    { id: 'portfolio', label: '포트폴리오' },
-    { id: 'applications', label: '지원한 공고' },
-    { id: 'favorites', label: '즐겨찾기' },
-    { id: 'contracts', label: '계약 내역' },
-  ];
+const DEFAULT_TABS: TabItem[] = [
+  { id: 'profile', label: '프로필' },
+  { id: 'portfolio', label: '포트폴리오' },
+  { id: 'applications', label: '지원한 공고' },
+  { id: 'favorites', label: '즐겨찾기' },
+  { id: 'contracts', label: '계약 내역' },
+];
 
+export function ProfileTabs({ activeTab, onTabChange, tabs = DEFAULT_TABS }: Props) {
   return (
     <div className="flex overflow-x-auto hide-scrollbar">
       {tabs.map((tab) => (

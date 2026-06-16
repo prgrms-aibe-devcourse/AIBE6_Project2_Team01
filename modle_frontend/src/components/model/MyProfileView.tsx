@@ -12,13 +12,13 @@ export function MyProfileView({ data }: Props) {
       <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10">
         <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0">
           <Image
-            src={data.profileImageUrl || '/images/default-avatar.png'}
+            src={data.profileImageUrl || '/placeholder.png'}
             alt="프로필 이미지"
             fill
             className="object-cover border border-gray-200 bg-gray-50"
             sizes="(max-width: 768px) 128px, 160px"
             onError={(e) => {
-              e.currentTarget.srcset = '/images/default-avatar.png';
+              e.currentTarget.srcset = '/placeholder.png';
             }}
           />
         </div>

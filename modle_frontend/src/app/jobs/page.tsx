@@ -89,8 +89,10 @@ export default function JobsPage() {
           query: {
             region: region || undefined,
             category: category || undefined,
-            page,
-            size: 10,
+            pageable: {
+              page,
+              size: 10,
+            } as any,
           },
         },
       })
