@@ -1,9 +1,9 @@
 package com.modle.domain.contract.dto.response;
 
 import com.modle.domain.contract.entity.Contract;
-import com.modle.domain.contract.entity.ContractStatus;
-import com.modle.domain.contract.entity.ContractType;
-import com.modle.domain.contract.entity.PayType;
+import com.modle.domain.contract.entity.type.ContractStatus;
+import com.modle.domain.contract.entity.type.ContractType;
+import com.modle.domain.contract.entity.type.PayType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

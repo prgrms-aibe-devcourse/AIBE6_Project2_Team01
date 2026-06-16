@@ -28,11 +28,19 @@ public class Model extends BaseEntity {
     @Column(nullable = false)
     private int weight;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private boolean gender;
+    private com.modle.domain.user.entity.type.Sex sex;
 
     @Column(nullable = false)
     private int age;
+
+    private java.time.LocalDate careerStartDate;
+
+
+
+    @OneToMany(mappedBy = "model", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<com.modle.domain.profile.entity.ModelRegion> modelRegions = new ArrayList<>();
 
     // 태그 매핑 리스트
     @OneToMany(mappedBy = "model", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -60,25 +68,27 @@ public class Model extends BaseEntity {
     private List<com.modle.domain.profile.entity.Portfolio> portfolios = new ArrayList<>();
 
     public static Model create(User user, String name, int height,
-                               int weight, boolean gender, int age) {
+                               int weight, com.modle.domain.user.entity.type.Sex sex, int age) {
         Model model = new Model();
         model.user = user;
         model.name = name;
         model.height = height;
         model.weight = weight;
-        model.gender = gender;
+        model.sex = sex;
         model.age = age;
         return model;
     }
 
-    public void update(String name, int height, int weight, boolean gender,
-                       int age, String introduction, String profileImageUrl) {
+    public void update(String name, int height, int weight, com.modle.domain.user.entity.type.Sex sex,
+                       int age, String introduction, String profileImageUrl,
+                       java.time.LocalDate careerStartDate) {
         this.name = name;
         this.height = height;
         this.weight = weight;
-        this.gender = gender;
+        this.sex = sex;
         this.age = age;
         this.introduction = introduction;
         this.profileImageUrl = profileImageUrl;
+        this.careerStartDate = careerStartDate;
     }
 }

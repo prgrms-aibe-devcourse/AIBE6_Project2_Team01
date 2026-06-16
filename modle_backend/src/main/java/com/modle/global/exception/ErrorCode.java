@@ -22,6 +22,8 @@ public enum ErrorCode {
     EMAIL_CODE_INVALID(HttpStatus.BAD_REQUEST, "400-2", "인증 코드가 올바르지 않습니다."),
     INVALID_STATUS_CHANGE(HttpStatus.BAD_REQUEST, "400-3", "유효하지 않은 상태 변경입니다."),
     EMAIL_NOT_VERIFIED(HttpStatus.FORBIDDEN, "403-4", "이메일 인증이 완료되지 않았습니다."),
+    PASSWORD_RESET_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "400-9", "이메일 인증이 필요합니다."),
+    EMAIL_CODE_ATTEMPTS_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "429-1", "인증 코드 입력 시도 횟수를 초과했습니다. 잠시 후 다시 시도해주세요."),
 
     // 입력값 검증
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "400-5", "필수 입력값이 누락되었습니다."),
@@ -35,15 +37,30 @@ public enum ErrorCode {
     //계약
     CONTRACT_ALREADY_EXISTS(HttpStatus.CONFLICT, "409-2", "이미 해당 지원 ID로 계약이 존재합니다."),
     INVALID_CONTRACT_SHOOT_TIME(HttpStatus.BAD_REQUEST, "400-5", "촬영 종료 시간은 촬영 시작 시간 이후여야 합니다."),
+    INVALID_FILE_CONTRACT(HttpStatus.BAD_REQUEST, "400-6", "파일 첨부 방식 계약은 업로드된 계약서 정보가 필요합니다."),
+    INVALID_CONTRACT_PAYMENT(HttpStatus.BAD_REQUEST, "400-7", "계약 보수 값이 보수 유형과 맞지 않습니다."),
 
     // 공고
     JOB_POSTING_NOT_FOUND(HttpStatus.NOT_FOUND, "404-2", "공고를 찾을 수 없습니다."),
     JOB_POSTING_NOT_EDITABLE(HttpStatus.CONFLICT, "409-3", "모집 중 상태에서만 수정/삭제할 수 있습니다."),
     JOB_POSTING_FORBIDDEN(HttpStatus.FORBIDDEN, "403-5", "공고에 대한 권한이 없습니다."),
+    JOB_POSTING_INVALID_FILTER_VALUE(HttpStatus.BAD_REQUEST, "400-8", "유효하지 않은 필터 값입니다."),
+    JOB_POSTING_INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "400-9", "유효하지 않은 상태 전환입니다."),
+
+    // 쪽지
+    MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG-001", "쪽지를 찾을 수 없습니다."),
+    MESSAGE_CONVERSATION_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG-002", "대화방을 찾을 수 없습니다."),
+    MESSAGE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "MSG-003", "대화방에 접근할 권한이 없습니다."),
+    MESSAGE_CONVERSATION_CREATE_FORBIDDEN(HttpStatus.FORBIDDEN, "MSG-004", "클라이언트만 모델과 대화를 시작할 수 있습니다."),
+    MESSAGE_MODEL_INITIAL_SEND_NOT_ALLOWED(HttpStatus.FORBIDDEN, "MSG-005", "모델은 받은 쪽지에만 답신할 수 있습니다."),
+    MESSAGE_SELF_SEND_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "MSG-006", "자기 자신과 대화방을 만들 수 없습니다."),
+    MESSAGE_INVALID_PARENT(HttpStatus.BAD_REQUEST, "MSG-007", "답신 대상 쪽지가 현재 대화방에 속하지 않습니다."),
+    MESSAGE_POST_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "MSG-008", "선택한 공고를 대화에 연결할 수 없습니다."),
 
     // 잘못된 접근
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "403-6", "권한이 없습니다."),
     DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "404-3", "존재하지 않는 데이터에 접근했습니다.");
+
 
     private final HttpStatus status;
     private final String resultCode;

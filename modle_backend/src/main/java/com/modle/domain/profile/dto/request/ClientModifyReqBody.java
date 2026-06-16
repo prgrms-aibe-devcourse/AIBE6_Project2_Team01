@@ -16,6 +16,6 @@ public record ClientModifyReqBody(
         ClientType clientType,
 
         String introduction,
-        
+        String region,
         String profileImageUrl
 ) {}

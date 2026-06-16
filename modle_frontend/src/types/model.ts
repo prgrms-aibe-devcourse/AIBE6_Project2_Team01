@@ -5,6 +5,7 @@ export interface Portfolio {
 }
 export interface Model {
   id: number;
+  userId: number;
   name: string;
   region?: string;
   rating: number;
@@ -14,7 +15,9 @@ export interface Model {
   age?: number;
   height?: number;
   weight?: number;
-  gender?: boolean;
+  sex?: "M" | "F";
+  careerStartDate?: string;
+  activeRegions?: string[];
   field?: string;
   tags?: string[];
   introduction?: string;

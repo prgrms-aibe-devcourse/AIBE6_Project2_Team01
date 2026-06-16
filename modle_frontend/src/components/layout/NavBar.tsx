@@ -1,9 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/hooks/useAuth";
+import { Toast, type ToastState } from "@/components/ui/Toast";
 
 const ROLE_LABEL: Record<string, string> = {
   MODEL: "모델",
@@ -11,12 +14,22 @@ const ROLE_LABEL: Record<string, string> = {
   ADMIN: "관리자",
 };
 
+const NAV_LINK_CLASS = "text-[13px] font-semibold leading-5 text-ink hover:underline";
+
 export function NavBar() {
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   const handleLogout = async () => {
     await logout();
+    setToast({ type: "success", message: "로그아웃되었습니다." });
     router.push("/");
   };
 
@@ -26,9 +39,31 @@ export function NavBar() {
         Modle
       </Link>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         {isLoading ? null : user ? (
           <>
+            {user.role === "ADMIN" ? (
+              <Link href="/admin" className={NAV_LINK_CLASS}>
+                관리자 페이지
+              </Link>
+            ) : (
+              <>
+                <Link href="/my/profile" className={NAV_LINK_CLASS}>
+                  마이페이지
+                </Link>
+                <Link href="/jobs" className={NAV_LINK_CLASS}>
+                  공고 목록
+                </Link>
+                {user.role === "CLIENT" ? (
+                  <Link href="/jobs/new" className={NAV_LINK_CLASS}>
+                    공고 등록
+                  </Link>
+                ) : null}
+                <Link href="/messages" className={NAV_LINK_CLASS}>
+                  쪽지
+                </Link>
+              </>
+            )}
             <span className="text-[13px] leading-5 text-body">
               {ROLE_LABEL[user.role] ?? user.role} 계정
             </span>
@@ -57,6 +92,8 @@ export function NavBar() {
           </>
         )}
       </div>
+
+      {toast ? <Toast toast={toast} /> : null}
     </header>
   );
 }

@@ -10,6 +10,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { client } from "@/lib/api/client";
 import { getErrorMessage } from "@/lib/api/error";
 import { GOOGLE_OAUTH_URL, KAKAO_OAUTH_URL, NAVER_OAUTH_URL } from "@/lib/auth/oauth";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 
 export default function LoginPage() {
   return (
@@ -50,7 +51,8 @@ function LoginForm() {
 
     login({ id: result.data.item.id, role: result.data.item.role });
     setStatus("idle");
-    router.push("/");
+    const next = new URLSearchParams(window.location.search).get("next");
+    router.push(next?.startsWith("/") && !next.startsWith("//") ? next : "/");
   };
 
   return (
@@ -73,14 +75,20 @@ function LoginForm() {
           </Field>
 
           <Field label="비밀번호">
-            <input
-              type="password"
+            <PasswordInput
               required
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
             />
           </Field>
+
+          <Link
+            href="/find-password"
+            className="-mt-2 self-end text-[13px] leading-5 text-mute hover:text-ink hover:underline"
+          >
+            비밀번호를 잊으셨나요?
+          </Link>
 
           <button
             type="submit"

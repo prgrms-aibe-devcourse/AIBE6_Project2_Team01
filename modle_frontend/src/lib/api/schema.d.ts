@@ -56,6 +56,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sendMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/messages/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getConversations"];
+        put?: never;
+        post: operations["createConversation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/jobs": {
         parameters: {
             query?: never;
@@ -140,6 +172,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/signup/additional": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["signupAdditional"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/reissue": {
         parameters: {
             query?: never;
@@ -150,6 +198,54 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["reissue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/reset/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sendPasswordResetCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/reset/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirmPasswordResetCode"];
         delete?: never;
         options?: never;
         head?: never;
@@ -220,6 +316,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/messages/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["markConversationAsRead"];
+        trace?: never;
+    };
     "/api/v1/jobs/{id}": {
         parameters: {
             query?: never;
@@ -234,6 +346,22 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["update"];
+        trace?: never;
+    };
+    "/api/v1/jobs/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateStatus"];
         trace?: never;
     };
     "/api/v1/admin/clients/{userId}/reject": {
@@ -275,7 +403,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 다건 조회 */
+        /** 다건 조회 및 필터링 */
         get: operations["getItems"];
         put?: never;
         post?: never;
@@ -303,6 +431,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/messages/conversations/{conversationId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getConversationMessages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/jobs/templates": {
         parameters: {
             query?: never;
@@ -311,6 +455,38 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getTemplates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/mine/recruiting": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyRecruitingJobPostings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/contracts/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getTemplates_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -349,6 +525,22 @@ export interface paths {
         post?: never;
         /** 삭제 */
         delete: operations["delete_2"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["me"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -396,18 +588,23 @@ export interface components {
             height: number;
             /** Format: int32 */
             weight: number;
-            gender: boolean;
+            /** @enum {string} */
+            sex: "M" | "F";
             /** Format: int32 */
             age: number;
             categories?: string[];
             tags?: string[];
             introduction?: string;
+            region?: string;
             profileImageUrl?: string;
+            /** Format: date */
+            careerStartDate?: string;
+            activeRegions?: string[];
         };
-        RsDataVoid: {
-            resultCode: string;
-            msg: string;
-            data: unknown;
+        ApiResponseVoid: {
+            resultCode?: string;
+            msg?: string;
+            data?: unknown;
         };
         ClientModifyReqBody: {
             companyName: string;
@@ -415,17 +612,77 @@ export interface components {
             /** @enum {string} */
             clientType?: "INDIVIDUAL" | "ORGANIZATION";
             introduction?: string;
+            region?: string;
             profileImageUrl?: string;
+        };
+        ApiResponseListPortfolioDto: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["PortfolioDto"][];
         };
         PortfolioDto: {
             /** Format: int64 */
             id?: number;
             imgUrl?: string;
         };
-        RsDataListPortfolioDto: {
-            resultCode: string;
-            msg: string;
-            data: components["schemas"]["PortfolioDto"][];
+        SendMessageRequest: {
+            /** Format: int64 */
+            conversationId: number;
+            /** Format: int64 */
+            parentMessageId?: number;
+            content: string;
+        };
+        ApiResponseMessageResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["MessageResponse"];
+        };
+        MessageResponse: {
+            /** Format: int64 */
+            id?: number;
+            /** Format: int64 */
+            conversationId?: number;
+            /** Format: int64 */
+            senderId?: number;
+            /** Format: int64 */
+            receiverId?: number;
+            /** Format: int64 */
+            parentMessageId?: number;
+            content?: string;
+            /** @enum {string} */
+            senderType?: "USER" | "SYSTEM";
+            read?: boolean;
+            /** Format: date-time */
+            readAt?: string;
+            /** Format: date-time */
+            createdAt?: string;
+        };
+        CreateConversationRequest: {
+            /** Format: int64 */
+            receiverId: number;
+            /** Format: int64 */
+            postId?: number;
+            /** Format: int64 */
+            applicationId?: number;
+        };
+        ApiResponseMessageConversationResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["MessageConversationResponse"];
+        };
+        MessageConversationResponse: {
+            /** Format: int64 */
+            id?: number;
+            /** Format: int64 */
+            clientId?: number;
+            /** Format: int64 */
+            modelId?: number;
+            /** Format: int64 */
+            postId?: number;
+            /** Format: int64 */
+            applicationId?: number;
+            /** Format: date-time */
+            createdAt?: string;
         };
         JobPostingCreateRequest: {
             title: string;
@@ -511,10 +768,15 @@ export interface components {
             location: string;
             payment: number;
             /** @enum {string} */
-            payType: "CASH" | "SERVICE";
+            payType: "CASH" | "SERVICE" | "FREE";
             usageScope: string;
             memo?: string;
             pdfUrl?: string;
+        };
+        ApiResponseContractResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["ContractResponse"];
         };
         ContractResponse: {
             /** Format: int64 */
@@ -530,7 +792,7 @@ export interface components {
             location?: string;
             payment?: number;
             /** @enum {string} */
-            payType?: "CASH" | "SERVICE";
+            payType?: "CASH" | "SERVICE" | "FREE";
             usageScope?: string;
             memo?: string;
             pdfUrl?: string;
@@ -548,13 +810,9 @@ export interface components {
             /** Format: int32 */
             weight?: number;
             /** Format: int32 */
-            age?: number;
-            gender: boolean;
-        };
-        ApiResponseVoid: {
-            resultCode?: string;
-            msg?: string;
-            data?: unknown;
+            age: number;
+            /** @enum {string} */
+            sex: "M" | "F";
         };
         ClientRegisterRequest: {
             email: string;
@@ -564,6 +822,44 @@ export interface components {
             companyNumber: string;
             /** @enum {string} */
             clientType: "INDIVIDUAL" | "ORGANIZATION";
+        };
+        AdditionalInfoRequest: {
+            /** @enum {string} */
+            role: "MODEL" | "CLIENT" | "ADMIN";
+            region: string;
+            name?: string;
+            /** Format: int32 */
+            height?: number;
+            /** Format: int32 */
+            weight?: number;
+            /** Format: int32 */
+            age?: number;
+            /** @enum {string} */
+            sex?: "M" | "F";
+            companyName?: string;
+            companyNumber?: string;
+            /** @enum {string} */
+            clientType?: "INDIVIDUAL" | "ORGANIZATION";
+        };
+        PasswordResetRequest: {
+            email: string;
+            resetToken: string;
+            newPassword: string;
+        };
+        EmailVerifyRequest: {
+            email: string;
+        };
+        EmailVerifyConfirmRequest: {
+            email: string;
+            code: string;
+        };
+        ApiResponsePasswordResetResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["PasswordResetResponse"];
+        };
+        PasswordResetResponse: {
+            resetToken?: string;
         };
         LoginRequest: {
             email: string;
@@ -585,14 +881,19 @@ export interface components {
             /** Format: date-time */
             modifyDate: string;
             /** @enum {string} */
-            role: "MODEL" | "CLIENT" | "ADMIN";
+            role?: "MODEL" | "CLIENT" | "ADMIN";
+            /** @enum {string} */
+            status?: "INCOMPLETE" | "PENDING" | "ACTIVE" | "SUSPENDED" | "WITHDRAWN" | "REJECTED";
         };
-        EmailVerifyRequest: {
-            email: string;
+        ReadConversationRequest: {
+            /** Format: int64 */
+            conversationId: number;
         };
-        EmailVerifyConfirmRequest: {
-            email: string;
-            code: string;
+        ApiResponseInteger: {
+            resultCode?: string;
+            msg?: string;
+            /** Format: int32 */
+            data?: number;
         };
         JobPostingUpdateRequest: {
             title: string;
@@ -623,12 +924,23 @@ export interface components {
             /** Format: date-time */
             shootDate?: string;
         };
+        JobPostingStatusUpdateRequest: {
+            /** @enum {string} */
+            status: "RECRUITING" | "SHOOTING" | "COMPLETED" | "CANCELLED" | "ON_HOLD" | "CLOSED";
+        };
         RejectRequest: {
             reason: string;
+        };
+        ApiResponseListModelDto: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["ModelDto"][];
         };
         ModelDto: {
             /** Format: int64 */
             id: number;
+            /** Format: int64 */
+            userId: number;
             /** Format: date-time */
             createdDate: string;
             /** Format: date-time */
@@ -638,28 +950,63 @@ export interface components {
             height: number;
             /** Format: int32 */
             weight: number;
-            gender: boolean;
+            /** @enum {string} */
+            sex: "M" | "F";
             /** Format: int32 */
             age: number;
             categories?: string[];
             tags?: string[];
+            region?: string;
             introduction?: string;
             profileImageUrl?: string;
+            /** Format: date */
+            careerStartDate?: string;
+            activeRegions?: string[];
             /** Format: double */
             avgRating: number;
             /** Format: int32 */
             reviewCount: number;
             portfolios?: components["schemas"]["PortfolioDto"][];
         };
-        RsDataListModelDto: {
-            resultCode: string;
-            msg: string;
-            data: components["schemas"]["ModelDto"][];
+        ApiResponseModelDto: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["ModelDto"];
         };
-        RsDataModelDto: {
-            resultCode: string;
-            msg: string;
-            data: components["schemas"]["ModelDto"];
+        ApiResponseMessageInboxResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["MessageInboxResponse"];
+        };
+        MessageConversationSummaryResponse: {
+            /** Format: int64 */
+            id?: number;
+            /** Format: int64 */
+            clientId?: number;
+            /** Format: int64 */
+            modelId?: number;
+            /** Format: int64 */
+            postId?: number;
+            /** Format: int64 */
+            applicationId?: number;
+            participant?: components["schemas"]["MessageParticipantResponse"];
+            latestMessage?: components["schemas"]["MessageResponse"];
+            /** Format: int64 */
+            unreadCount?: number;
+            /** Format: date-time */
+            createdAt?: string;
+        };
+        MessageInboxResponse: {
+            currentUser?: components["schemas"]["MessageParticipantResponse"];
+            conversations?: components["schemas"]["MessageConversationSummaryResponse"][];
+        };
+        MessageParticipantResponse: {
+            /** Format: int64 */
+            id?: number;
+            name?: string;
+            /** @enum {string} */
+            role?: "MODEL" | "CLIENT" | "ADMIN";
+            profileImageUrl?: string;
         };
         Pageable: {
             /** Format: int32 */
@@ -667,6 +1014,17 @@ export interface components {
             /** Format: int32 */
             size?: number;
             sort?: string[];
+        };
+        ApiResponseConversationMessagesResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["ConversationMessagesResponse"];
+        };
+        ConversationMessagesResponse: {
+            content?: components["schemas"]["MessageResponse"][];
+            /** Format: int64 */
+            totalElements?: number;
+            hasNext?: boolean;
         };
         ApiResponsePageJobPostingListResponse: {
             resultCode?: string;
@@ -694,10 +1052,10 @@ export interface components {
             createdDate?: string;
         };
         PageJobPostingListResponse: {
-            /** Format: int64 */
-            totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+            /** Format: int64 */
+            totalElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["JobPostingListResponse"][];
@@ -712,19 +1070,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            paged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
             /** Format: int32 */
-            pageSize?: number;
-            /** Format: int32 */
             pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            paged?: boolean;
             unpaged?: boolean;
         };
         SortObject: {
-            sorted?: boolean;
             empty?: boolean;
+            sorted?: boolean;
             unsorted?: boolean;
         };
         ApiResponseObject: {
@@ -744,6 +1102,27 @@ export interface components {
             title?: string;
             content?: string;
         };
+        ApiResponseListJobPostingListResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["JobPostingListResponse"][];
+        };
+        ApiResponseListContractTemplateResponse: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["ContractTemplateResponse"][];
+        };
+        ContractTemplateResponse: {
+            /** Format: int64 */
+            id?: number;
+            title?: string;
+            content?: string;
+        };
+        ApiResponseListClientDto: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["ClientDto"][];
+        };
         ClientDto: {
             /** Format: int64 */
             id: number;
@@ -753,7 +1132,8 @@ export interface components {
             modifiedDate: string;
             clientType: string;
             companyName: string;
-            componyNumber?: string;
+            companyNumber?: string;
+            region?: string;
             introduction?: string;
             profileImageUrl?: string;
             /** Format: double */
@@ -761,15 +1141,15 @@ export interface components {
             /** Format: int32 */
             reviewCount?: number;
         };
-        RsDataListClientDto: {
-            resultCode: string;
-            msg: string;
-            data: components["schemas"]["ClientDto"][];
+        ApiResponseClientDto: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["ClientDto"];
         };
-        RsDataClientDto: {
-            resultCode: string;
-            msg: string;
-            data: components["schemas"]["ClientDto"];
+        ApiResponseUserDto: {
+            resultCode?: string;
+            msg?: string;
+            data?: components["schemas"]["UserDto"];
         };
         ApiResponseListPendingClientResponse: {
             resultCode?: string;
@@ -812,7 +1192,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataModelDto"];
+                    "*/*": components["schemas"]["ApiResponseModelDto"];
                 };
             };
         };
@@ -836,7 +1216,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataVoid"];
+                    "*/*": components["schemas"]["ApiResponseVoid"];
                 };
             };
         };
@@ -856,7 +1236,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataClientDto"];
+                    "*/*": components["schemas"]["ApiResponseClientDto"];
                 };
             };
         };
@@ -880,7 +1260,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataVoid"];
+                    "*/*": components["schemas"]["ApiResponseVoid"];
                 };
             };
         };
@@ -906,7 +1286,75 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataListPortfolioDto"];
+                    "*/*": components["schemas"]["ApiResponseListPortfolioDto"];
+                };
+            };
+        };
+    };
+    sendMessage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendMessageRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseMessageResponse"];
+                };
+            };
+        };
+    };
+    getConversations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseMessageInboxResponse"];
+                };
+            };
+        };
+    };
+    createConversation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateConversationRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseMessageConversationResponse"];
                 };
             };
         };
@@ -1001,13 +1449,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Created */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ContractResponse"];
+                    "*/*": components["schemas"]["ApiResponseContractResponse"];
                 };
             };
         };
@@ -1060,6 +1508,30 @@ export interface operations {
             };
         };
     };
+    signupAdditional: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdditionalInfoRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
     reissue: {
         parameters: {
             query?: never;
@@ -1076,6 +1548,78 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    resetPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordResetRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    sendPasswordResetCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailVerifyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    confirmPasswordResetCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailVerifyConfirmRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponsePasswordResetResponse"];
                 };
             };
         };
@@ -1172,6 +1716,30 @@ export interface operations {
             };
         };
     };
+    markConversationAsRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReadConversationRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseInteger"];
+                };
+            };
+        };
+    };
     getJobPostingDetail: {
         parameters: {
             query?: never;
@@ -1242,6 +1810,32 @@ export interface operations {
             };
         };
     };
+    updateStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JobPostingStatusUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseJobPostingResponse"];
+                };
+            };
+        };
+    };
     rejectClient: {
         parameters: {
             query?: never;
@@ -1292,7 +1886,15 @@ export interface operations {
     };
     getItems: {
         parameters: {
-            query?: never;
+            query?: {
+                query?: string;
+                gender?: string;
+                categories?: ("HAIR" | "MAKEUP" | "HAND" | "FITTING" | "CLOTHING" | "FOOD" | "PRODUCT" | "ETC")[];
+                regions?: string[];
+                tags?: string[];
+                height?: string;
+                sort?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1305,7 +1907,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataListModelDto"];
+                    "*/*": components["schemas"]["ApiResponseListModelDto"];
                 };
             };
         };
@@ -1327,7 +1929,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataModelDto"];
+                    "*/*": components["schemas"]["ApiResponseModelDto"];
                 };
             };
         };
@@ -1349,7 +1951,31 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataModelDto"];
+                    "*/*": components["schemas"]["ApiResponseModelDto"];
+                };
+            };
+        };
+    };
+    getConversationMessages: {
+        parameters: {
+            query: {
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path: {
+                conversationId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseConversationMessagesResponse"];
                 };
             };
         };
@@ -1376,6 +2002,46 @@ export interface operations {
             };
         };
     };
+    getMyRecruitingJobPostings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListJobPostingListResponse"];
+                };
+            };
+        };
+    };
+    getTemplates_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListContractTemplateResponse"];
+                };
+            };
+        };
+    };
     getItems_1: {
         parameters: {
             query?: never;
@@ -1391,7 +2057,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataListClientDto"];
+                    "*/*": components["schemas"]["ApiResponseListClientDto"];
                 };
             };
         };
@@ -1413,7 +2079,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataClientDto"];
+                    "*/*": components["schemas"]["ApiResponseClientDto"];
                 };
             };
         };
@@ -1435,7 +2101,27 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataClientDto"];
+                    "*/*": components["schemas"]["ApiResponseClientDto"];
+                };
+            };
+        };
+    };
+    me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseUserDto"];
                 };
             };
         };
@@ -1477,7 +2163,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["RsDataVoid"];
+                    "*/*": components["schemas"]["ApiResponseVoid"];
                 };
             };
         };

@@ -97,3 +97,10 @@ gcs:
 app:
   frontend:
     base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
+
+cookie:
+  secure: true
+  domain: localhost
+  same-site: Strict
+gemini:
+  api-key: ${GEMINI_API_KEY}
