@@ -1,7 +1,8 @@
 "use client";
 
+import { CATEGORY_OPTIONS } from "@/lib/constants/category";
 import { REGION_OPTIONS } from "@/lib/constants/region";
-import { FormEvent, ReactNode, useEffect, useState } from "react";
+import { FormEvent, ReactNode, useState } from "react";
 
 export type Category =
   | "HAIR"
@@ -78,18 +79,6 @@ export const defaultFormState: JobPostingFormState = {
   shootDate: "",
 };
 
-const CATEGORY_OPTIONS: { value: Category; label: string }[] = [
-  { value: "HAIR", label: "헤어" },
-  { value: "MAKEUP", label: "메이크업" },
-  { value: "CLOTHING", label: "의류" },
-  { value: "FITTING", label: "피팅" },
-  { value: "HAND", label: "핸드" },
-  { value: "FOOD", label: "음식" },
-  { value: "PRODUCT", label: "제품" },
-  { value: "ETC", label: "기타" },
-];
-
-
 
 type Props = {
   initialValues?: Partial<JobPostingFormState>;
@@ -116,14 +105,11 @@ export function JobPostingForm({
   const [aiError, setAiError] = useState("");
   const [aiGenerated, setAiGenerated] = useState(false);
 
-  useEffect(() => {
-    if (externalCategory) {
-      const timeoutId = window.setTimeout(() => {
-        setForm((cur) => ({ ...cur, category: externalCategory }));
-      }, 0);
-      return () => window.clearTimeout(timeoutId);
-    }
-  }, [externalCategory]);
+  const [prevExternalCategory, setPrevExternalCategory] = useState(externalCategory);
+  if (prevExternalCategory !== externalCategory && externalCategory) {
+    setPrevExternalCategory(externalCategory);
+    setForm((cur) => ({ ...cur, category: externalCategory }));
+  }
 
   const updateField = <K extends keyof JobPostingFormState>(
     key: K,

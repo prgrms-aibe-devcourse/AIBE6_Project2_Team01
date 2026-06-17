@@ -6,6 +6,8 @@ import { ClientProposalButton } from "@/components/message/ClientProposalButton"
 import { ModelCard } from "@/components/model/ModelCard";
 import { API_BASE_URL, authenticatedFetch, client } from "@/lib/api/client";
 import type { Model } from "@/types/model";
+import { STATUS_LABELS, STATUS_COLORS, STATUS_TRANSITIONS } from "@/lib/constants/jobPostingStatus";
+import { checkApplyStatus } from "@/lib/api/application";
 import { addJobBookmark, getJobBookmarks, removeJobBookmark } from "@/lib/api/bookmark";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -112,29 +114,6 @@ function isOtherDetail(d: DetailData): d is OtherDetail {
   return !isClientDetail(d) && !isModelDetail(d);
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  RECRUITING: "모집 중",
-  SHOOTING: "촬영 중",
-  COMPLETED: "완료",
-  CANCELLED: "취소",
-  ON_HOLD: "일시정지",
-  CLOSED: "마감",
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  RECRUITING: "bg-green-100 text-green-700",
-  SHOOTING:   "bg-blue-100 text-blue-700",
-  COMPLETED:  "bg-gray-100 text-gray-600",
-  CANCELLED:  "bg-red-100 text-red-600",
-  ON_HOLD:    "bg-amber-100 text-amber-700",
-  CLOSED:     "bg-slate-200 text-slate-600",
-};
-
-const STATUS_TRANSITIONS: Record<string, string[]> = {
-  RECRUITING: ["SHOOTING", "CANCELLED", "ON_HOLD", "CLOSED"],
-  SHOOTING:   ["COMPLETED", "CANCELLED", "ON_HOLD"],
-  ON_HOLD:    ["RECRUITING", "CANCELLED", "CLOSED"],
-};
 
 export default function JobDetailPage({
   params,
@@ -155,7 +134,7 @@ export default function JobDetailPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [favorited, setFavorited] = useState(false);
-  const [hasApplied, setHasApplied] = useState(false);
+  const [hasApplied, setHasApplied] = useState<boolean | null>(null);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [statusChanging, setStatusChanging] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -273,9 +252,8 @@ export default function JobDetailPage({
   // 지원 여부 동기화
   useEffect(() => {
     if (!user || user.role !== "MODEL") return;
-    authenticatedFetch(`${API_BASE_URL}/api/v1/jobs/${postingId}/apply-status`)
-      .then((res) => res.json())
-      .then((body) => setHasApplied(body?.data === true))
+    checkApplyStatus(postingId)
+      .then(setHasApplied)
       .catch(() => {});
   }, [user, postingId]);
 
@@ -415,20 +393,27 @@ export default function JobDetailPage({
                 >
                   {favorited ? "♥ 저장하기" : "♡ 저장하기"}
                 </button>
-                <button
-                  type="button"
-                  disabled={hasApplied}
-                  onClick={() => {
-                    if (!user) {
-                      requireLogin();
-                      return;
-                    }
-                    router.push(`/application/${postingId}`);
-                  }}
-                  className="h-10 rounded-lg bg-primary px-6 text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {hasApplied ? "지원함" : "지원하기"}
-                </button>
+                <div className="group relative">
+                  <button
+                    type="button"
+                    disabled={hasApplied === true || hasApplied === null}
+                    onClick={() => {
+                      if (!user) {
+                        requireLogin();
+                        return;
+                      }
+                      router.push(`/application/${postingId}`);
+                    }}
+                    className="h-10 rounded-lg bg-primary px-6 text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {hasApplied === true ? "지원함" : "지원하기"}
+                  </button>
+                  {hasApplied === null && (
+                    <div className="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-ink px-2 py-1 text-[12px] text-on-primary group-hover:block">
+                      지원 상태를 확인할 수 없습니다
+                    </div>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={() => setReportOpen(true)}

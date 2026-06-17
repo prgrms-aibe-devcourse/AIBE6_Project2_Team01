@@ -6,9 +6,9 @@ import com.modle.domain.application.dto.response.ContactResponse;
 import com.modle.domain.application.entity.Application;
 import com.modle.domain.application.entity.type.ApplicationStatus;
 import com.modle.domain.application.repository.ApplicationRepository;
-import com.modle.domain.jobposting.dto.response.JobPostingResponse;
+import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
-import com.modle.domain.jobposting.service.JobPostingService;
+import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.user.entity.Model;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.global.exception.CustomException;
@@ -25,16 +25,17 @@ import java.util.List;
 public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
-    private final JobPostingService jobPostingService;
+    private final JobPostingRepository jobPostingRepository;
     private final ModelRepository modelRepository;
 
     // MATCH-001: 모집 중 상태·중복 지원 검증 후 지원을 생성한다 (상태=APPLIED).
     @Transactional
     public ApplicationResponse applyToJob(Long userId, Long jobPostingId, ApplicationCreateRequest request) {
         Long modelId = findModelIdByUserId(userId);
-        JobPostingResponse jobPosting = jobPostingService.getJobPosting(jobPostingId);
+        JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
-        if (jobPosting.status() != JobPostingStatus.RECRUITING) {
+        if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
             throw new CustomException(ErrorCode.APPLICATION_JOB_NOT_RECRUITING);
         }
 
@@ -71,12 +72,9 @@ public class ApplicationService {
                 .findByIdAndModelId(applicationId, modelId)
                 .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
 
-        if (application.getModelId() == null || !application.getModelId().equals(modelId)) {
-            throw new CustomException(ErrorCode.APPLICATION_CANCEL_FORBIDDEN);
-        }
-
-        JobPostingResponse jobPosting = jobPostingService.getJobPosting(application.getJobPostingId());
-        if (jobPosting.status() != JobPostingStatus.RECRUITING) {
+        JobPosting jobPosting = jobPostingRepository.findById(application.getJobPostingId())
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
+        if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
             throw new CustomException(ErrorCode.APPLICATION_CANCEL_NOT_ALLOWED);
         }
 
@@ -90,9 +88,10 @@ public class ApplicationService {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
 
-        JobPostingResponse jobPosting = jobPostingService.getJobPosting(application.getJobPostingId());
+        JobPosting jobPosting = jobPostingRepository.findById(application.getJobPostingId())
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
-        if (!jobPosting.clientId().equals(clientId)) {
+        if (!jobPosting.getClientId().equals(clientId)) {
             throw new CustomException(ErrorCode.APPLICATION_CONTACT_FORBIDDEN);
         }
 
@@ -115,10 +114,11 @@ public class ApplicationService {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
 
-        JobPostingResponse jobPosting = jobPostingService.getJobPosting(application.getJobPostingId());
+        JobPosting jobPosting = jobPostingRepository.findById(application.getJobPostingId())
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
-        boolean isClient = jobPosting.clientId().equals(userId);
         boolean isModel = isApplicationModel(userId, application);
+        boolean isClient = jobPosting.getClientId().equals(userId);
 
         if (!isModel && !isClient) {
             throw new CustomException(ErrorCode.ACCESS_DENIED);

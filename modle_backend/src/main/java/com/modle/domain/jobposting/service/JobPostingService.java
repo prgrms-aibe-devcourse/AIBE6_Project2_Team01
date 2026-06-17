@@ -4,6 +4,7 @@ import com.modle.domain.jobposting.dto.request.JobPostingCreateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingStatusUpdateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
 import com.modle.domain.jobposting.dto.response.JobPostingClientDetailResponse;
+import com.modle.domain.jobposting.dto.response.JobPostingDetailResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingListResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingModelDetailResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingOtherDetailResponse;
@@ -173,7 +174,7 @@ public class JobPostingService {
     }
 
     // JOB-006~008: 뷰어 타입에 따라 다른 공고 상세 정보를 반환한다.
-    public Object getJobPostingDetail(Long jobPostingId, ViewerType viewerType) {
+    public JobPostingDetailResponse getJobPostingDetail(Long jobPostingId, ViewerType viewerType) {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 

@@ -75,7 +75,6 @@ public enum ErrorCode {
     APPLICATION_JOB_NOT_RECRUITING(HttpStatus.BAD_REQUEST, "400-11", "모집 중인 공고에만 지원할 수 있습니다."),
     APPLICATION_ALREADY_EXISTS(HttpStatus.CONFLICT, "409-6", "이미 지원한 공고입니다."),
     APPLICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "404-6", "지원 내역을 찾을 수 없습니다."),
-    APPLICATION_CANCEL_FORBIDDEN(HttpStatus.FORBIDDEN, "403-10", "본인의 지원만 취소할 수 있습니다."),
     APPLICATION_CANCEL_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-13", "지원 완료 상태에서만 취소할 수 있습니다."),
     APPLICATION_CONTACT_FORBIDDEN(HttpStatus.FORBIDDEN, "403-11", "해당 공고의 작성자만 컨택할 수 있습니다."),
     APPLICATION_ALREADY_CONTACTED(HttpStatus.CONFLICT, "409-7", "이미 컨택된 지원입니다."),
