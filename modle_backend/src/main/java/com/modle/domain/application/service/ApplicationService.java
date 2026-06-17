@@ -66,6 +66,11 @@ public class ApplicationService {
             throw new CustomException(ErrorCode.APPLICATION_CANCEL_FORBIDDEN);
         }
 
+        JobPostingResponse jobPosting = jobPostingService.getJobPosting(application.getJobPostingId());
+        if (jobPosting.status() != JobPostingStatus.RECRUITING) {
+            throw new CustomException(ErrorCode.APPLICATION_CANCEL_NOT_ALLOWED);
+        }
+
         application.cancel();
         return ApplicationResponse.from(application);
     }
