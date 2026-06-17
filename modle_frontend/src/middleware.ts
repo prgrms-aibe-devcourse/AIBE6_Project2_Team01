@@ -10,79 +10,35 @@ function isJwtExpired(token: string): boolean {
   }
 }
 
-// cookie 헤더 문자열에서 특정 쿠키 값을 새 값으로 교체하거나 추가
-function updateCookieHeader(cookieHeader: string, name: string, value: string): string {
-  const parts = cookieHeader.split(/;\s*/);
-  const idx = parts.findIndex((p) => p.startsWith(`${name}=`));
-  if (idx >= 0) {
-    parts[idx] = `${name}=${value}`;
-  } else {
-    parts.push(`${name}=${value}`);
-  }
-  return parts.join('; ');
-}
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
-
-export async function middleware(request: NextRequest) {
+// async 없는 순수 리다이렉트만 수행 — 미들웨어에서 직접 reissue를 호출하면
+// 페이지 클라이언트 인터셉터와 동시에 같은 refreshToken을 사용해 TOKEN_STOLEN 충돌이 발생함
+export function middleware(request: NextRequest) {
   const accessToken = request.cookies.get('accessToken')?.value;
   const refreshToken = request.cookies.get('refreshToken')?.value;
 
-  // accessToken이 존재하고 아직 유효하면 통과
+  // accessToken이 존재하고 유효하면 통과
   if (accessToken && !isJwtExpired(accessToken)) {
     return NextResponse.next();
   }
 
-  // refreshToken이 없으면 통과 (비로그인 사용자)
+  // refreshToken이 없으면 통과 (비로그인 사용자는 각 페이지에서 처리)
   if (!refreshToken) {
     return NextResponse.next();
   }
 
-  // 서버사이드에서 reissue 호출 (쿠키 전체 전달)
-  try {
-    const reissueRes = await fetch(`${API_BASE_URL}/api/v1/auth/reissue`, {
-      method: 'POST',
-      headers: {
-        Cookie: request.headers.get('cookie') ?? '',
-      },
-    });
+  // 토큰 갱신 전용 Route Handler로 리다이렉트
+  // — Route Handler가 reissue 완료 후 새 쿠키를 설정한 뒤 원래 페이지로 돌아옴
+  // — 리다이렉트 완료 전까지 클라이언트 JS가 실행되지 않으므로 race condition 없음
+  const refreshUrl = new URL('/api/auth/refresh', request.url);
+  refreshUrl.searchParams.set(
+    'redirect',
+    request.nextUrl.pathname + request.nextUrl.search,
+  );
 
-    if (!reissueRes.ok) {
-      return NextResponse.next();
-    }
-
-    // Set-Cookie 헤더 파싱 (accessToken, refreshToken 두 개)
-    const setCookies = reissueRes.headers.getSetCookie();
-
-    // Server Component가 새 토큰을 볼 수 있도록 요청 쿠키 헤더도 업데이트
-    let updatedCookieHeader = request.headers.get('cookie') ?? '';
-    for (const setCookie of setCookies) {
-      const [nameValue] = setCookie.split(';');
-      const eqIdx = nameValue.indexOf('=');
-      const name = nameValue.slice(0, eqIdx).trim();
-      const value = nameValue.slice(eqIdx + 1).trim();
-      updatedCookieHeader = updateCookieHeader(updatedCookieHeader, name, value);
-    }
-
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set('cookie', updatedCookieHeader);
-
-    const response = NextResponse.next({
-      request: { headers: requestHeaders },
-    });
-
-    // 브라우저에도 새 쿠키 설정
-    for (const setCookie of setCookies) {
-      response.headers.append('set-cookie', setCookie);
-    }
-
-    return response;
-  } catch {
-    return NextResponse.next();
-  }
+  return NextResponse.redirect(refreshUrl);
 }
 
 export const config = {
-  // API 라우트, Next.js 내부 파일, 정적 파일 제외하고 모든 경로에 적용
+  // api, Next.js 내부, 정적 파일 제외 — /api/auth/refresh 자체도 제외되어 무한 루프 방지
   matcher: ['/((?!api|_next/static|_next/image|favicon\\.ico).*)'],
 };
