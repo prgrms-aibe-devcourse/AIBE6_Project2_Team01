@@ -4,10 +4,7 @@ import com.modle.domain.jobposting.dto.request.JobPostingCreateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingStatusUpdateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingTemplateGenerateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
-import com.modle.domain.jobposting.dto.response.JobPostingListResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingTemplateGenerateResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingTemplateResponse;
+import com.modle.domain.jobposting.dto.response.*;
 import com.modle.domain.jobposting.entity.type.ViewerType;
 import com.modle.domain.jobposting.service.JobPostingService;
 import com.modle.domain.jobposting.service.JobPostingTemplateService;
@@ -120,5 +117,17 @@ public class JobPostingController {
             default -> ViewerType.OTHER;
         };
         return ApiResponse.ok("공고 상세 조회 성공", jobPostingService.getJobPostingDetail(id, viewerType));
+    }
+
+    // MATCH-006: 작성한 공고 목록 (의뢰인)
+    @PreAuthorize("hasRole('CLIENT')")
+    @GetMapping("/my")
+    public ApiResponse<List<MyJobPostingResponse>> getMyJobPostings(
+            @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        return ApiResponse.ok(
+                "작성한 공고 목록 조회 성공",
+                jobPostingService.getMyJobPostings(securityUser.getId())
+        );
     }
 }
