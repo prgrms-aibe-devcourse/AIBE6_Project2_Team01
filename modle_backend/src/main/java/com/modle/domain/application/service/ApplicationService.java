@@ -104,10 +104,19 @@ public class ApplicationService {
         return ApplicationResponse.from(application);
     }
 
-    // MATCH-009: 컨택 이력을 조회한다.
-    public List<ContactResponse> getContacts(Long applicationId) {
-        applicationRepository.findById(applicationId)
+    // MATCH-009: 컨택 이력을 조회한다 (공고 작성자 또는 해당 지원의 모델만 접근 가능).
+    public List<ContactResponse> getContacts(Long userId, Long applicationId) {
+        Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
+
+        JobPostingResponse jobPosting = jobPostingService.getJobPosting(application.getJobPostingId());
+
+        boolean isModel = application.getModelId().equals(userId);
+        boolean isClient = jobPosting.clientId().equals(userId);
+
+        if (!isModel && !isClient) {
+            throw new CustomException(ErrorCode.ACCESS_DENIED);
+        }
 
         // TODO(message 도메인 협의 필요): message 도메인 연동 후 실제 이력 반환
         return List.of();

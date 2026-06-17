@@ -59,10 +59,11 @@ public class ApplicationController {
         return ApiResponse.ok("컨택 성공", applicationService.contact(securityUser.getId(), id));
     }
 
-    // MATCH-009: 컨택 이력을 조회한다.
+    // MATCH-009: 컨택 이력을 조회한다 (공고 작성자 또는 해당 지원의 모델만 접근 가능).
     @GetMapping("/applications/{id}/contacts")
     public ApiResponse<List<ContactResponse>> getContacts(
-            @PathVariable Long id) {
-        return ApiResponse.ok("컨택 이력 조회 성공", applicationService.getContacts(id));
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser securityUser) {
+        return ApiResponse.ok("컨택 이력 조회 성공", applicationService.getContacts(securityUser.getId(), id));
     }
 }
