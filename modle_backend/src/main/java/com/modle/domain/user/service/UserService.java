@@ -1,6 +1,7 @@
 package com.modle.domain.user.service;
 
 import com.modle.domain.jobposting.entity.type.Region;
+import com.modle.domain.user.dto.TokenPair;
 import com.modle.domain.user.dto.request.AdditionalInfoRequest;
 import com.modle.domain.user.dto.request.ClientRegisterRequest;
 import com.modle.domain.user.dto.request.ModelRegisterRequest;
@@ -134,8 +135,8 @@ public class UserService {
         return authTokenService.genRefreshToken(user);
     }
 
-    public String reissueAccessToken(String refreshToken) {
-        return authTokenService.reissueAccessToken(refreshToken);
+    public TokenPair reissueTokens(String refreshToken) {
+        return authTokenService.reissueTokens(refreshToken);
     }
 
     public void deleteRefreshToken(String refreshToken) {

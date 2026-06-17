@@ -1,5 +1,6 @@
 package com.modle.domain.user.service;
 
+import com.modle.domain.user.dto.TokenPair;
 import com.modle.domain.user.entity.User;
 import com.modle.domain.user.repository.UserRepository;
 import com.modle.global.auth.JwtTokenProvider;
@@ -16,10 +17,8 @@ import java.util.concurrent.TimeUnit;
 public class AuthTokenService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisTemplate<String, String> redisTemplate;
-    private final UserRepository userRepository;
 
     private static final String REFRESH_PREFIX = "refresh:";
-    private static final String ROLE_PREFIX = "role:";
     private static final long REFRESH_EXPIRE_DAYS = 7;
 
     // Access Token 생성
@@ -31,8 +30,9 @@ public class AuthTokenService {
 
     // Refresh Token 생성 + Redis 저장
     public String genRefreshToken(User user) {
+        String role = user.getRole() != null ? user.getRole().name() : "INCOMPLETE";
         String refreshToken = jwtTokenProvider.createRefreshToken(
-                user.getId(), user.getRole().name()
+                user.getId(), role
         );
         redisTemplate.opsForValue().set(
                 REFRESH_PREFIX + user.getId(),
@@ -43,8 +43,8 @@ public class AuthTokenService {
         return refreshToken;
     }
 
-    // Refresh Token 검증 + 새 Access Token 발급
-    public String reissueAccessToken(String refreshToken) {
+    // Refresh Token 검증 + Token 발급
+    public TokenPair reissueTokens(String refreshToken) {
         // 토큰 유효성 검증
         if (!jwtTokenProvider.isValid(refreshToken)) {
             throw new CustomException(ErrorCode.INVALID_TOKEN);
@@ -55,15 +55,29 @@ public class AuthTokenService {
 
         // Redis에 저장된 토큰과 비교
         String savedToken = redisTemplate.opsForValue().get(key);
-        if (savedToken == null || !savedToken.equals(refreshToken)) {
+        if (savedToken == null) {
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
+        // 불일치 -> 탈취 의심 -> 강제 로그아웃
+        if (!savedToken.equals(refreshToken)) {
+            deleteRefreshToken(userId);
+            throw new CustomException(ErrorCode.TOKEN_STOLEN);
+        }
 
-        // role은 Refresh Token payload에서 꺼냄
+        // 일치 → 기존 Refresh Token 삭제 + 새 토큰 발급 (Rotation)
         String role = jwtTokenProvider.getRole(refreshToken);
+        String newAccessToken = jwtTokenProvider.createAccessToken(userId, role);
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(userId, role);
 
-        // 새 Access Token 발급
-        return jwtTokenProvider.createAccessToken(userId, role);
+        // Redis에 새 Refresh Token 저장
+        redisTemplate.opsForValue().set(
+                key,
+                newRefreshToken,
+                REFRESH_EXPIRE_DAYS,
+                TimeUnit.DAYS
+        );
+
+        return new TokenPair(newAccessToken, newRefreshToken);
     }
 
     // Refresh Token 삭제 (로그아웃)
