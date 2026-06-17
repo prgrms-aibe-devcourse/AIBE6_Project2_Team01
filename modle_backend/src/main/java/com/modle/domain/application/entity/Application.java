@@ -24,14 +24,22 @@ public class Application extends BaseEntity {
     @Column(nullable = false)
     private Long modelId;
 
+    @Column(length = 500)
+    private String coverLetter;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ApplicationStatus status;
 
     @Builder
-    private Application(Long jobPostingId, Long modelId, ApplicationStatus status) {
+    private Application(Long jobPostingId, Long modelId, String coverLetter, ApplicationStatus status) {
         this.jobPostingId = jobPostingId;
         this.modelId = modelId;
+        this.coverLetter = coverLetter;
         this.status = status;
+    }
+
+    public void cancel() {
+        this.status = ApplicationStatus.APPLICATION_CANCELLED;
     }
 }

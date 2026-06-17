@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
+import { client } from "@/lib/api/client";
 import { ReportModal } from "@/components/ui/ReportModal";
 import { ClientProposalButton } from "@/components/message/ClientProposalButton";
 import { ModelCard } from "@/components/model/ModelCard";
@@ -9,7 +10,7 @@ import type { Model } from "@/types/model";
 import { addJobBookmark, getJobBookmarks, removeJobBookmark } from "@/lib/api/bookmark";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { use, useCallback, useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 
 type ClientDetail = {
   id: number;
@@ -155,6 +156,7 @@ export default function JobDetailPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [favorited, setFavorited] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [statusChanging, setStatusChanging] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -266,6 +268,15 @@ export default function JobDetailPage({
       .then((bookmarks) => {
         setFavorited(bookmarks.some((b) => b.jobPostingId === postingId));
       })
+      .catch(() => {});
+  }, [user, postingId]);
+
+  // 지원 여부 동기화
+  useEffect(() => {
+    if (!user || user.role !== "MODEL") return;
+    authenticatedFetch(`${API_BASE_URL}/api/v1/jobs/${postingId}/apply-status`)
+      .then((res) => res.json())
+      .then((body) => setHasApplied(body?.data === true))
       .catch(() => {});
   }, [user, postingId]);
 
@@ -407,16 +418,17 @@ export default function JobDetailPage({
                 </button>
                 <button
                   type="button"
+                  disabled={hasApplied}
                   onClick={() => {
                     if (!user) {
                       requireLogin();
                       return;
                     }
-                    alert("지원 기능은 준비 중입니다.");
+                    router.push(`/application/${postingId}`);
                   }}
-                  className="h-10 rounded-lg bg-primary px-6 text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover"
+                  className="h-10 rounded-lg bg-primary px-6 text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  지원하기
+                  {hasApplied ? "지원함" : "지원하기"}
                 </button>
                 <button
                   type="button"
