@@ -29,6 +29,15 @@ public class ApplicationController {
         return ApiResponse.ok("공고 지원 성공", applicationService.applyToJob(securityUser.getId(), id, request));
     }
 
+    // MATCH-003: 모델이 특정 공고에 이미 지원했는지 확인한다 (MODEL 전용).
+    @PreAuthorize("hasRole('MODEL')")
+    @GetMapping("/jobs/{id}/apply-status")
+    public ApiResponse<Boolean> checkApplyStatus(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser securityUser) {
+        return ApiResponse.ok("지원 여부 조회 성공", applicationService.hasApplied(securityUser.getId(), id));
+    }
+
     // MATCH-002: 모델이 본인의 지원을 취소한다 (MODEL 전용).
     @PreAuthorize("hasRole('MODEL')")
     @PatchMapping("/applications/{id}/cancel")

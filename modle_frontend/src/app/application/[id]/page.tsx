@@ -68,14 +68,10 @@ export default function ApplyPage({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!coverLetter.trim()) {
-      setError("지원 메시지를 입력해주세요.");
-      return;
-    }
     setSubmitting(true);
     setError("");
     try {
-      await applyToJob(jobPostingId, coverLetter);
+      await applyToJob(jobPostingId, coverLetter.trim());
       alert("지원이 완료되었습니다.");
       router.push(`/jobs/${jobPostingId}`);
     } catch (err) {
