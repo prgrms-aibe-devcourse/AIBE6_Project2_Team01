@@ -35,8 +35,10 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HexFormat;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -104,7 +106,7 @@ public class AiRecommendService {
 
     @Transactional
     public void generateSnapshot(Long postId) {
-        JobPosting jobPosting = findJobPosting(postId);
+        JobPosting jobPosting = findJobPostingForUpdate(postId);
         Optional<PostEmbedding> postEmbedding = ensurePostEmbedding(jobPosting);
         List<Model> candidates = findCandidates(jobPosting);
         if (candidates.isEmpty()) {
@@ -125,10 +127,19 @@ public class AiRecommendService {
                 .map(model -> scoreModel(model, embeddingMap.get(model.getId()), postVector, similarityEnabled))
                 .flatMap(Optional::stream)
                 .sorted(recommendationComparator())
+                .collect(Collectors.toMap(
+                        scored -> scored.model().getId(),
+                        Function.identity(),
+                        (first, ignored) -> first,
+                        LinkedHashMap::new
+                ))
+                .values()
+                .stream()
                 .limit(MAX_RECOMMENDATION_COUNT)
                 .toList();
 
         recommendationRepository.deleteByPostId(postId);
+        recommendationRepository.flush();
         List<Recommendation> recommendations = toRecommendations(postId, scoredModels);
         recommendationRepository.saveAll(recommendations);
     }
@@ -233,15 +244,18 @@ public class AiRecommendService {
                 throw new IllegalStateException("Recommended model user is missing. modelId=" + model.getId());
             }
         }
-        return scoredModels.stream()
-                .map(scored -> Recommendation.create(
-                        postId,
-                        scored.model().getId(),
-                        scored.model().getUser().getId(),
-                        scoredModels.indexOf(scored) + 1,
-                        scored.score()
-                ))
-                .toList();
+        List<Recommendation> recommendations = new ArrayList<>();
+        for (int index = 0; index < scoredModels.size(); index++) {
+            ScoredModel scored = scoredModels.get(index);
+            recommendations.add(Recommendation.create(
+                    postId,
+                    scored.model().getId(),
+                    scored.model().getUser().getId(),
+                    index + 1,
+                    scored.score()
+            ));
+        }
+        return recommendations;
     }
 
     private RecommendationListResponse toResponse(
@@ -421,6 +435,11 @@ public class AiRecommendService {
 
     private JobPosting findJobPosting(Long postId) {
         return jobPostingRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
+    }
+
+    private JobPosting findJobPostingForUpdate(Long postId) {
+        return jobPostingRepository.findByIdForUpdate(postId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
     }
 

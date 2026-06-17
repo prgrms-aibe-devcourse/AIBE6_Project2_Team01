@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
@@ -54,7 +55,7 @@ public class InitData {
                         self.work4(); // 테스트 모델프로필
                         self.work5(); // 테스트 클라이언트프로필
                         self.work6(); // 계약서 템플릿
-                        self.work8(); // 추천 테스트용 모델 100개
+                        self.work8(); // 추천 테스트용 모델 500개
                         self.work7(); // 테스트 공고
                 };
         }
@@ -392,13 +393,13 @@ public class InitData {
                 jobPostingRepository.save(job10);
         }
 
-        // 추천 테스트용 모델 100개 생성
+        // 추천 테스트용 모델 500개 생성
         @Transactional
         public void work8() {
                 Category[] categories = Category.values();
                 Region[] regions = Region.values();
 
-                for (int i = 1; i <= 100; i++) {
+                for (int i = 1; i <= 500; i++) {
                         String email = "testmodel%03d@modle.com".formatted(i);
                         if (userRepository.existsByEmail(email)) {
                                 continue;
@@ -413,6 +414,16 @@ public class InitData {
                         LocalDate careerStartDate = i % 5 == 0
                                         ? null
                                         : LocalDate.of(2018 + (i % 7), (i % 12) + 1, 1);
+                        List<String> categoryNames = distinctNames(List.of(
+                                        category.name(),
+                                        categories[i % categories.length].name(),
+                                        i % 3 == 0 ? Category.HAIR.name() : category.name(),
+                                        i % 5 == 0 ? Category.CLOTHING.name() : category.name()));
+                        List<String> activeRegionNames = distinctNames(List.of(
+                                        region.name(),
+                                        regions[i % regions.length].name(),
+                                        i % 3 == 0 ? Region.SEOUL.name() : region.name(),
+                                        i % 5 == 0 ? Region.GYEONGGI.name() : region.name()));
 
                         User user = User.createLocal(
                                         email,
@@ -430,7 +441,7 @@ public class InitData {
                                         weight,
                                         sex,
                                         age,
-                                        List.of(category.name()),
+                                        categoryNames,
                                         List.of(
                                                         "seed",
                                                         "test",
@@ -442,8 +453,18 @@ public class InitData {
                                         region.getDisplayName(),
                                         "",
                                         careerStartDate,
-                                        List.of(region.name()));
+                                        activeRegionNames);
                 }
+        }
+
+        private List<String> distinctNames(List<String> names) {
+                List<String> result = new ArrayList<>();
+                for (String name : names) {
+                        if (!result.contains(name)) {
+                                result.add(name);
+                        }
+                }
+                return result;
         }
 
 }

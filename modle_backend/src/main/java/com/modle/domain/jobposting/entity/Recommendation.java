@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,11 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(
         name = "recommendation",
-        indexes = @Index(name = "idx_recommendation_post", columnList = "post_id")
+        indexes = @Index(name = "idx_recommendation_post", columnList = "post_id"),
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_recommendation_post_model",
+                columnNames = {"post_id", "model_id"}
+        )
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Recommendation extends BaseEntity {
