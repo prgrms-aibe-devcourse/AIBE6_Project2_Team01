@@ -2,6 +2,7 @@ package com.modle.domain.application.controller;
 
 import com.modle.domain.application.dto.request.ApplicationCreateRequest;
 import com.modle.domain.application.dto.response.ApplicationResponse;
+import com.modle.domain.application.dto.response.ContactResponse;
 import com.modle.domain.application.service.ApplicationService;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.response.ApiResponse;
@@ -10,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,5 +48,23 @@ public class ApplicationController {
             @PathVariable Long id,
             @AuthenticationPrincipal SecurityUser securityUser) {
         return ApiResponse.ok("지원 취소 성공", applicationService.cancelApplication(securityUser.getId(), id));
+    }
+
+    // MATCH-008: 의뢰인이 지원자에게 컨택한다 (CLIENT 전용).
+    @PreAuthorize("hasRole('CLIENT')")
+    @PatchMapping("/applications/{id}/contact")
+    public ApiResponse<ApplicationResponse> contact(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser securityUser) {
+        return ApiResponse.ok("컨택 성공", applicationService.contact(securityUser.getId(), id));
+    }
+
+    // MATCH-009: 컨택 이력을 조회한다 (공고 작성자 또는 해당 지원의 모델만 접근 가능).
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/applications/{id}/contacts")
+    public ApiResponse<List<ContactResponse>> getContacts(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser securityUser) {
+        return ApiResponse.ok("컨택 이력 조회 성공", applicationService.getContacts(securityUser.getId(), id));
     }
 }
