@@ -2,6 +2,7 @@ package com.modle.domain.application.service;
 
 import com.modle.domain.application.dto.request.ApplicationCreateRequest;
 import com.modle.domain.application.dto.response.ApplicationResponse;
+import com.modle.domain.application.dto.response.ContactResponse;
 import com.modle.domain.application.entity.Application;
 import com.modle.domain.application.entity.type.ApplicationStatus;
 import com.modle.domain.application.repository.ApplicationRepository;
@@ -15,6 +16,8 @@ import com.modle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -79,6 +82,57 @@ public class ApplicationService {
 
         application.cancel();
         return ApplicationResponse.from(application);
+    }
+
+    // MATCH-008: 의뢰인이 지원자에게 컨택한다 (상태=CONTACTED).
+    @Transactional
+    public ApplicationResponse contact(Long clientId, Long applicationId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
+
+        JobPostingResponse jobPosting = jobPostingService.getJobPosting(application.getJobPostingId());
+
+        if (!jobPosting.clientId().equals(clientId)) {
+            throw new CustomException(ErrorCode.APPLICATION_CONTACT_FORBIDDEN);
+        }
+
+        if (application.getStatus() == ApplicationStatus.CONTACTED) {
+            throw new CustomException(ErrorCode.APPLICATION_ALREADY_CONTACTED);
+        }
+
+        if (application.getStatus() != ApplicationStatus.APPLIED) {
+            throw new CustomException(ErrorCode.APPLICATION_CONTACT_NOT_ALLOWED);
+        }
+
+        application.contact();
+
+        // TODO(message 도메인 협의 필요): 모델에게 컨택 쪽지 발송 연동
+        return ApplicationResponse.from(application);
+    }
+
+    // MATCH-009: 컨택 이력을 조회한다 (공고 작성자 또는 해당 지원의 모델만 접근 가능).
+    public List<ContactResponse> getContacts(Long userId, Long applicationId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
+
+        JobPostingResponse jobPosting = jobPostingService.getJobPosting(application.getJobPostingId());
+
+        boolean isClient = jobPosting.clientId().equals(userId);
+        boolean isModel = isApplicationModel(userId, application);
+
+        if (!isModel && !isClient) {
+            throw new CustomException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // TODO(message 도메인 협의 필요): message 도메인 연동 후 실제 이력 반환
+        return List.of();
+    }
+
+    private boolean isApplicationModel(Long userId, Application application) {
+        return modelRepository.findByUserId(userId)
+                .map(Model::getId)
+                .filter(application.getModelId()::equals)
+                .isPresent();
     }
 
     private Long findModelIdByUserId(Long userId) {
