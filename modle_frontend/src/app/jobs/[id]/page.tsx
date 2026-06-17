@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { client, API_BASE_URL, authenticatedFetch } from "@/lib/api/client";
+import { getApplicants } from "@/lib/api/application";
 import { ReportModal } from "@/components/ui/ReportModal";
 import { addJobBookmark, getJobBookmarks, removeJobBookmark } from "@/lib/api/bookmark";
 import Link from "next/link";
@@ -128,6 +129,7 @@ export default function JobDetailPage({
   const [selectedStatus, setSelectedStatus] = useState("");
   const [statusChanging, setStatusChanging] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [applicantCount, setApplicantCount] = useState<number | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -176,6 +178,15 @@ export default function JobDetailPage({
       .then((body) => setHasApplied(body?.data === true))
       .catch(() => {});
   }, [user, postingId]);
+
+  // 공고 작성자일 때 지원자 수 조회
+  useEffect(() => {
+    if (!detail || !isClientDetail(detail)) return;
+    if (!user || user.id !== detail.clientId) return;
+    getApplicants(postingId)
+      .then((list) => setApplicantCount(list.length))
+      .catch(() => {});
+  }, [detail, user, postingId]);
 
   const handleBookmarkToggle = async () => {
     const was = favorited;
@@ -477,13 +488,22 @@ export default function JobDetailPage({
           </aside>
         </div>
 
-        <div className="pt-4">
+        <div className="pt-4 flex flex-wrap items-center gap-4">
           <Link
             href="/jobs"
             className="text-[14px] text-mute underline-offset-2 hover:underline"
           >
             ← 목록으로
           </Link>
+          {isOwner && (
+            <Link
+              href={`/jobs/${detail.id}/applicants`}
+              className="inline-flex h-10 items-center rounded-lg bg-primary px-5 text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover"
+            >
+              지원자 목록 보기
+              {applicantCount !== null ? ` (${applicantCount}명)` : ''}
+            </Link>
+          )}
         </div>
       </div>
     </main>
