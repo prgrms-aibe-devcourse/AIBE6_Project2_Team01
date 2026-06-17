@@ -307,7 +307,7 @@ export default function JobDetailPage({
                       requireLogin();
                       return;
                     }
-                    alert("지원 기능은 준비 중입니다.");
+                    router.push(`/application/${postingId}`);
                   }}
                   className="h-10 rounded-lg bg-primary px-6 text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover"
                 >
