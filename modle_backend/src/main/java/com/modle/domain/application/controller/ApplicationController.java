@@ -60,6 +60,7 @@ public class ApplicationController {
     }
 
     // MATCH-009: 컨택 이력을 조회한다 (공고 작성자 또는 해당 지원의 모델만 접근 가능).
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/applications/{id}/contacts")
     public ApiResponse<List<ContactResponse>> getContacts(
             @PathVariable Long id,
