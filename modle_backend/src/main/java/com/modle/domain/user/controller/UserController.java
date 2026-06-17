@@ -1,5 +1,6 @@
 package com.modle.domain.user.controller;
 
+import com.modle.domain.user.dto.TokenPair;
 import com.modle.domain.user.dto.UserDto;
 import com.modle.domain.user.dto.request.*;
 import com.modle.domain.user.dto.response.LoginResponse;
@@ -109,10 +110,12 @@ public class UserController {
         if (refreshToken.isBlank()) {
             throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
         }
+        // 토큰 생성
+        TokenPair tokens = userService.reissueTokens(refreshToken);
 
-        // 새 Access Token 발급
-        String newAccessToken = userService.reissueAccessToken(refreshToken);
-        rq.setCookie("accessToken", newAccessToken, 60 * 30);
+        // 쿠키 갱신
+        rq.setCookie("accessToken", tokens.accessToken(), 60 * 30);
+        rq.setCookie("refreshToken", tokens.refreshToken());
 
         return new ApiResponse<>("200-1", "토큰이 재발급되었습니다.");
     }
