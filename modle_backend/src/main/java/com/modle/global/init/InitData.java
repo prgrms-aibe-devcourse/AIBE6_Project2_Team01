@@ -11,6 +11,7 @@ import com.modle.domain.user.entity.Model;
 import com.modle.domain.user.entity.User;
 import com.modle.domain.user.entity.type.ClientType;
 import com.modle.domain.user.entity.type.Role;
+import com.modle.domain.user.entity.type.Sex;
 import com.modle.domain.user.entity.type.UserStatus;
 import com.modle.domain.user.repository.ClientRepository;
 import com.modle.domain.user.repository.ModelRepository;
@@ -25,6 +26,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -52,6 +54,7 @@ public class InitData {
                         self.work4(); // 테스트 모델프로필
                         self.work5(); // 테스트 클라이언트프로필
                         self.work6(); // 계약서 템플릿
+                        self.work8(); // 추천 테스트용 모델 100개
                         self.work7(); // 테스트 공고
                 };
         }
@@ -387,6 +390,60 @@ public class InitData {
                 jobPostingRepository.save(job8);
                 jobPostingRepository.save(job9);
                 jobPostingRepository.save(job10);
+        }
+
+        // 추천 테스트용 모델 100개 생성
+        @Transactional
+        public void work8() {
+                Category[] categories = Category.values();
+                Region[] regions = Region.values();
+
+                for (int i = 1; i <= 100; i++) {
+                        String email = "testmodel%03d@modle.com".formatted(i);
+                        if (userRepository.existsByEmail(email)) {
+                                continue;
+                        }
+
+                        Category category = categories[(i - 1) % categories.length];
+                        Region region = regions[(i - 1) % regions.length];
+                        Sex sex = i % 3 == 0 ? Sex.M : Sex.F;
+                        int age = 19 + (i % 17);
+                        int height = 155 + (i % 36);
+                        int weight = 45 + (i % 36);
+                        LocalDate careerStartDate = i % 5 == 0
+                                        ? null
+                                        : LocalDate.of(2018 + (i % 7), (i % 12) + 1, 1);
+
+                        User user = User.createLocal(
+                                        email,
+                                        passwordEncoder.encode("model1234"),
+                                        region.getDisplayName(),
+                                        Role.MODEL);
+                        userRepository.save(user);
+
+                        String name = "테스트모델%03d".formatted(i);
+                        Model model = modelService.create(user, name, height, weight, sex, age);
+                        modelService.update(
+                                        model,
+                                        name,
+                                        height,
+                                        weight,
+                                        sex,
+                                        age,
+                                        List.of(category.name()),
+                                        List.of(
+                                                        "seed",
+                                                        "test",
+                                                        category.name().toLowerCase(),
+                                                        region.name().toLowerCase()),
+                                        "%s 지역의 %s 카테고리 추천 테스트용 모델입니다.".formatted(
+                                                        region.getDisplayName(),
+                                                        category.name()),
+                                        region.getDisplayName(),
+                                        "",
+                                        careerStartDate,
+                                        List.of(region.name()));
+                }
         }
 
 }
