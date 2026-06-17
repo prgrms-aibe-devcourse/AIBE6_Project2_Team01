@@ -5,6 +5,7 @@ import com.modle.domain.contract.dto.request.ContractPdfCreateRequest;
 import com.modle.domain.contract.dto.response.ContractPdfResponse;
 import com.modle.domain.contract.dto.response.ContractResponse;
 import com.modle.domain.contract.dto.response.ContractTemplateResponse;
+import com.modle.domain.contract.dto.response.ContractViewResponse;
 import com.modle.domain.contract.service.ContractService;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.response.ApiResponse;
@@ -70,6 +71,18 @@ public class ContractController {
         return ApiResponse.ok(
                 "계약서가 모델에게 발송되었습니다.",
                 contractService.notifyContract(securityUser.getId(), id)
+        );
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('MODEL')")
+    public ApiResponse<ContractViewResponse> viewContract(
+            @AuthenticationPrincipal SecurityUser securityUser,
+            @PathVariable Long id
+    ) {
+        return ApiResponse.ok(
+                "계약서 열람 성공",
+                contractService.viewContract(securityUser.getId(), id)
         );
     }
 

@@ -31,4 +31,17 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             @Param("jobPostingId") Long jobPostingId,
             @Param("cancelledStatus") ApplicationStatus cancelledStatus
     );
+
+    // MATCH-004: 특정 공고의 지원자 목록
+    List<Application> findByJobPostingIdAndStatusNotOrderByCreatedDateDesc(
+            Long jobPostingId, ApplicationStatus status);
+
+    // MATCH-005: 모델의 지원 목록
+    List<Application> findByModelIdAndStatusNotOrderByCreatedDateDesc(
+            Long modelId, ApplicationStatus status);
+
+    // MATCH-006: 공고별 지원자 수 집계
+    long countByJobPostingIdAndStatusNot(Long jobPostingId, ApplicationStatus status);
+    long countByJobPostingIdAndStatus(Long jobPostingId, ApplicationStatus status);
+    long countByJobPostingIdAndStatusIn(Long jobPostingId, List<ApplicationStatus> statuses);
 }

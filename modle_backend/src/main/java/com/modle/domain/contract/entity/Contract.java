@@ -119,4 +119,10 @@ public class Contract extends BaseEntity {
         this.status = ContractStatus.NOTIFIED;
         this.notifiedAt = notifiedAt;
     }
+
+    public void markViewedAt(LocalDateTime viewedAt) {
+        if(this.viewedAt == null) {
+            this.viewedAt = viewedAt;
+        }
+    }
 }

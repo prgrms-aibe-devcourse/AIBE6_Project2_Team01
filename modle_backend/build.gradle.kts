@@ -48,7 +48,8 @@ dependencies {
     // OAuth2
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     //pdf생성용 라이브러리
-    implementation("org.apache.pdfbox:pdfbox:3.0.3")
+    implementation("com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10")
+    implementation("com.openhtmltopdf:openhtmltopdf-slf4j:1.0.10")
 }
 
 dependencyManagement {

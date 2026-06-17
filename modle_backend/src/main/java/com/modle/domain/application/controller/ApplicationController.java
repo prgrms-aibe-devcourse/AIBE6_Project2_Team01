@@ -1,8 +1,10 @@
 package com.modle.domain.application.controller;
 
 import com.modle.domain.application.dto.request.ApplicationCreateRequest;
+import com.modle.domain.application.dto.response.ApplicantResponse;
 import com.modle.domain.application.dto.response.ApplicationResponse;
 import com.modle.domain.application.dto.response.ContactResponse;
+import com.modle.domain.application.dto.response.MyApplicationResponse;
 import com.modle.domain.application.service.ApplicationService;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.response.ApiResponse;
@@ -48,6 +50,31 @@ public class ApplicationController {
             @PathVariable Long id,
             @AuthenticationPrincipal SecurityUser securityUser) {
         return ApiResponse.ok("지원 취소 성공", applicationService.cancelApplication(securityUser.getId(), id));
+    }
+
+    // MATCH-004: 특정 공고의 지원자 목록 (의뢰인)
+    @PreAuthorize("hasRole('CLIENT')")
+    @GetMapping("/jobs/{id}/applicants")
+    public ApiResponse<List<ApplicantResponse>> getApplicants(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        return ApiResponse.ok(
+                "지원자 목록 조회 성공",
+                applicationService.getApplicants(securityUser.getId(), id)
+        );
+    }
+
+    // MATCH-005: 내가 지원한 공고 목록 (모델)
+    @PreAuthorize("hasRole('MODEL')")
+    @GetMapping("/applications/my")
+    public ApiResponse<List<MyApplicationResponse>> getMyApplications(
+            @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        return ApiResponse.ok(
+                "지원한 공고 목록 조회 성공",
+                applicationService.getMyApplications(securityUser.getId())
+        );
     }
 
     // MATCH-008: 의뢰인이 지원자에게 컨택한다 (CLIENT 전용).

@@ -46,4 +46,8 @@ public class Application extends BaseEntity {
     public void contact() {
         this.status = ApplicationStatus.CONTACTED;
     }
+
+    public void markContractSent() {
+        this.status = ApplicationStatus.CONTRACT_SENT;
+    }
 }

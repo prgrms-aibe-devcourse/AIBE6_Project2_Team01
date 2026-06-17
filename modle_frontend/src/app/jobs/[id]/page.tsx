@@ -7,7 +7,7 @@ import { ModelCard } from "@/components/model/ModelCard";
 import { API_BASE_URL, authenticatedFetch, client } from "@/lib/api/client";
 import type { Model } from "@/types/model";
 import { STATUS_LABELS, STATUS_COLORS, STATUS_TRANSITIONS } from "@/lib/constants/jobPostingStatus";
-import { checkApplyStatus } from "@/lib/api/application";
+import { checkApplyStatus, getApplicants } from "@/lib/api/application";
 import { addJobBookmark, getJobBookmarks, removeJobBookmark } from "@/lib/api/bookmark";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -114,7 +114,6 @@ function isOtherDetail(d: DetailData): d is OtherDetail {
   return !isClientDetail(d) && !isModelDetail(d);
 }
 
-
 export default function JobDetailPage({
   params,
 }: {
@@ -144,6 +143,7 @@ export default function JobDetailPage({
   const [recommendationError, setRecommendationError] = useState("");
   const [unlockingRecommendations, setUnlockingRecommendations] =
     useState(false);
+  const [applicantCount, setApplicantCount] = useState<number | null>(null);
 
   const isOwner = Boolean(
     detail && isClientDetail(detail) && user?.id === detail.clientId,
@@ -249,13 +249,26 @@ export default function JobDetailPage({
       .catch(() => {});
   }, [user, postingId]);
 
-  // 지원 여부 동기화
+  // 지원 여부 동기화 (비로그인·MODEL 외 역할은 false로 초기화해 버튼 활성화)
   useEffect(() => {
-    if (!user || user.role !== "MODEL") return;
+    if (authLoading) return;
+    if (!user || user.role !== "MODEL") {
+      setHasApplied(false);
+      return;
+    }
     checkApplyStatus(postingId)
       .then(setHasApplied)
+      .catch(() => setHasApplied(false));
+  }, [user, postingId, authLoading]);
+
+  // 공고 작성자일 때 지원자 수 조회
+  useEffect(() => {
+    if (!detail || !isClientDetail(detail)) return;
+    if (!user || user.id !== detail.clientId) return;
+    getApplicants(postingId)
+      .then((list) => setApplicantCount(list.length))
       .catch(() => {});
-  }, [user, postingId]);
+  }, [detail, user, postingId]);
 
   const handleBookmarkToggle = async () => {
     if (!user) {
@@ -300,7 +313,7 @@ export default function JobDetailPage({
     }
     const newStatus = (data?.data as { status: string })?.status;
     if (newStatus) {
-      setDetail((prev) => prev ? { ...prev, status: newStatus } : prev);
+      setDetail((prev) => (prev ? { ...prev, status: newStatus } : prev));
       const transitions = STATUS_TRANSITIONS[newStatus] ?? [];
       setSelectedStatus(transitions[0] ?? "");
     }
@@ -355,7 +368,9 @@ export default function JobDetailPage({
                 <h1 className="text-[28px] font-bold leading-9 text-ink">
                   {detail.title}
                 </h1>
-                <span className={`inline-flex h-7 items-center rounded-full px-3 text-[12px] font-semibold ${STATUS_COLORS[detail.status] ?? "bg-canvas-soft text-body"}`}>
+                <span
+                  className={`inline-flex h-7 items-center rounded-full px-3 text-[12px] font-semibold ${STATUS_COLORS[detail.status] ?? "bg-canvas-soft text-body"}`}
+                >
                   {STATUS_LABELS[detail.status] ?? detail.status}
                 </span>
               </div>
@@ -558,13 +573,22 @@ export default function JobDetailPage({
           />
         ) : null}
 
-        <div className="pt-4">
+        <div className="pt-4 flex flex-wrap items-center gap-4">
           <Link
             href="/jobs"
             className="text-[14px] text-mute underline-offset-2 hover:underline"
           >
             ← 목록으로
           </Link>
+          {isOwner && (
+            <Link
+              href={`/jobs/${detail.id}/applicants`}
+              className="inline-flex h-10 items-center rounded-lg bg-primary px-5 text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover"
+            >
+              지원자 목록 보기
+              {applicantCount !== null ? ` (${applicantCount}명)` : ""}
+            </Link>
+          )}
         </div>
       </div>
     </main>

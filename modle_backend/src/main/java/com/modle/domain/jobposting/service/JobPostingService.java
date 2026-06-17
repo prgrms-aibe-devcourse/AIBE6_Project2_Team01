@@ -1,15 +1,11 @@
 package com.modle.domain.jobposting.service;
 
+import com.modle.domain.application.entity.type.ApplicationStatus;
+import com.modle.domain.application.repository.ApplicationRepository;
 import com.modle.domain.jobposting.dto.request.JobPostingCreateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingStatusUpdateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
-import com.modle.domain.jobposting.dto.response.JobPostingClientDetailResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingDetailResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingListResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingModelDetailResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingOtherDetailResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingTemplateResponse;
+import com.modle.domain.jobposting.dto.response.*;
 import com.modle.domain.jobposting.entity.type.Category;
 import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
@@ -37,6 +33,7 @@ public class JobPostingService {
     private final JobPostingRepository jobPostingRepository;
     private final JobPostingTemplateRepository jobPostingTemplateRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ApplicationRepository applicationRepository;
 
 
     // JOB-001: 카테고리별 공고 템플릿 목록을 반환한다.
@@ -183,5 +180,40 @@ public class JobPostingService {
             case CLIENT -> JobPostingClientDetailResponse.from(jobPosting);
             case OTHER -> JobPostingOtherDetailResponse.from(jobPosting);
         };
+    }
+
+    // MATCH-006: 작성한 공고 목록 (의뢰인)
+    public List<MyJobPostingResponse> getMyJobPostings(Long clientId) {
+        List<JobPosting> jobPostings =
+                jobPostingRepository.findByClientIdOrderByCreatedDateDesc(clientId);
+
+        return jobPostings.stream()
+                .map(jobPosting -> {
+                    long applicantCount = applicationRepository.countByJobPostingIdAndStatusNot(
+                            jobPosting.getId(), ApplicationStatus.APPLICATION_CANCELLED);
+
+                    long contactedCount = applicationRepository.countByJobPostingIdAndStatusIn(
+                            jobPosting.getId(),
+                            List.of(
+                                    ApplicationStatus.CONTACTED,
+                                    ApplicationStatus.CONTRACT_SENT,
+                                    ApplicationStatus.SHOOTING,
+                                    ApplicationStatus.COMPLETED
+                            )
+                    );
+
+                    long completedCount = applicationRepository.countByJobPostingIdAndStatus(
+                            jobPosting.getId(),
+                            ApplicationStatus.COMPLETED
+                    );
+
+                    return MyJobPostingResponse.of(
+                            jobPosting,
+                            applicantCount,
+                            contactedCount,
+                            completedCount
+                    );
+                })
+                .toList();
     }
 }

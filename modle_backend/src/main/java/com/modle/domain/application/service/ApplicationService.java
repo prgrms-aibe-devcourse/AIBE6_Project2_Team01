@@ -1,14 +1,18 @@
 package com.modle.domain.application.service;
 
 import com.modle.domain.application.dto.request.ApplicationCreateRequest;
+import com.modle.domain.application.dto.response.ApplicantResponse;
 import com.modle.domain.application.dto.response.ApplicationResponse;
 import com.modle.domain.application.dto.response.ContactResponse;
+import com.modle.domain.application.dto.response.MyApplicationResponse;
 import com.modle.domain.application.entity.Application;
 import com.modle.domain.application.entity.type.ApplicationStatus;
 import com.modle.domain.application.repository.ApplicationRepository;
+import com.modle.domain.jobposting.dto.response.JobPostingResponse;
 import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
+import com.modle.domain.jobposting.service.JobPostingService;
 import com.modle.domain.user.entity.Model;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.global.exception.CustomException;
@@ -18,6 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,8 +32,20 @@ import java.util.List;
 public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
+    private final JobPostingService jobPostingService;
     private final JobPostingRepository jobPostingRepository;
     private final ModelRepository modelRepository;
+
+    public Application getApplication(Long applicationId) {
+        return applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
+    }
+
+    @Transactional
+    public void markContractSent(Long applicationId) {
+        Application application = getApplication(applicationId);
+        application.markContractSent();
+    }
 
     // MATCH-001: 모집 중 상태·중복 지원 검증 후 지원을 생성한다 (상태=APPLIED).
     @Transactional
@@ -80,6 +99,53 @@ public class ApplicationService {
 
         application.cancel();
         return ApplicationResponse.from(application);
+    }
+
+    // MATCH-004: 특정 공고의 지원자 목록 (의뢰인)
+    public List<ApplicantResponse> getApplicants(Long clientId, Long jobPostingId) {
+        // 공고 작성자 확인
+        JobPostingResponse jobPosting = jobPostingService.getJobPosting(jobPostingId);
+        if (!jobPosting.clientId().equals(clientId)) {
+            throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
+        }
+
+        List<Application> applications =
+                applicationRepository.findByJobPostingIdAndStatusNotOrderByCreatedDateDesc(
+                        jobPostingId, ApplicationStatus.APPLICATION_CANCELLED);
+
+        // 모델 id 목록으로 한 번에 조회
+        List<Long> modelIds = applications.stream()
+                .map(Application::getModelId)
+                .toList();
+
+        Map<Long, Model> modelMap = modelRepository.findAllById(modelIds)
+                .stream()
+                .collect(Collectors.toMap(Model::getId, Function.identity()));
+
+        return applications.stream()
+                .filter(a -> modelMap.containsKey(a.getModelId()))
+                .map(a -> ApplicantResponse.from(a, modelMap.get(a.getModelId())))
+                .toList();
+    }
+
+    // MATCH-005: 내가 지원한 공고 목록 (모델)
+    public List<MyApplicationResponse> getMyApplications(Long modelId) {
+        List<Application> applications =
+                applicationRepository.findByModelIdAndStatusNotOrderByCreatedDateDesc(
+                        modelId, ApplicationStatus.APPLICATION_CANCELLED);
+
+        List<Long> jobPostingIds = applications.stream()
+                .map(Application::getJobPostingId)
+                .toList();
+
+        Map<Long, JobPosting> jobPostingMap = jobPostingRepository.findAllById(jobPostingIds)
+                .stream()
+                .collect(Collectors.toMap(JobPosting::getId, Function.identity()));
+
+        return applications.stream()
+                .filter(a -> jobPostingMap.containsKey(a.getJobPostingId()))
+                .map(a -> MyApplicationResponse.from(a, jobPostingMap.get(a.getJobPostingId())))
+                .toList();
     }
 
     // MATCH-008: 의뢰인이 지원자에게 컨택한다 (상태=CONTACTED).

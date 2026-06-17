@@ -46,6 +46,9 @@ public enum ErrorCode {
     CONTRACT_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "404-5", "계약서 템플릿을 찾을 수 없습니다."),
     CONTRACT_PDF_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "500-2", "계약서 PDF 생성에 실패했습니다."),
     CONTRACT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "403-10", "계약서에 접근할 권한이 없습니다."),
+    CONTRACT_NOT_VIEWABLE(HttpStatus.BAD_REQUEST, "400-13", "열람 가능한 계약서가 아닙니다."),
+    CONTRACT_TEMPLATE_LOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "500-3", "계약서 템플릿 로드에 실패했습니다."),
+    CONTRACT_FORBIDDEN(HttpStatus.FORBIDDEN, "403-11", "계약서에 대한 권한이 없습니다."),
 
     // 공고
     JOB_POSTING_NOT_FOUND(HttpStatus.NOT_FOUND, "404-2", "공고를 찾을 수 없습니다."),
