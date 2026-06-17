@@ -103,7 +103,7 @@ export default function JobDetailPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [favorited, setFavorited] = useState(false);
-  const [hasApplied, setHasApplied] = useState(false);
+  const [hasApplied, setHasApplied] = useState<boolean | null>(null);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [statusChanging, setStatusChanging] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -288,20 +288,27 @@ export default function JobDetailPage({
                 >
                   {favorited ? "♥ 저장하기" : "♡ 저장하기"}
                 </button>
-                <button
-                  type="button"
-                  disabled={hasApplied}
-                  onClick={() => {
-                    if (!user) {
-                      requireLogin();
-                      return;
-                    }
-                    router.push(`/application/${postingId}`);
-                  }}
-                  className="h-10 rounded-lg bg-primary px-6 text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {hasApplied ? "지원함" : "지원하기"}
-                </button>
+                <div className="group relative">
+                  <button
+                    type="button"
+                    disabled={hasApplied === true || hasApplied === null}
+                    onClick={() => {
+                      if (!user) {
+                        requireLogin();
+                        return;
+                      }
+                      router.push(`/application/${postingId}`);
+                    }}
+                    className="h-10 rounded-lg bg-primary px-6 text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {hasApplied === true ? "지원함" : "지원하기"}
+                  </button>
+                  {hasApplied === null && (
+                    <div className="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-ink px-2 py-1 text-[12px] text-on-primary group-hover:block">
+                      지원 상태를 확인할 수 없습니다
+                    </div>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={() => setReportOpen(true)}
