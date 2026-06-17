@@ -94,6 +94,7 @@ export function ClientEditForm({ initialData }: Props) {
         <div className="flex flex-col items-center gap-4">
           <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0 cursor-pointer overflow-hidden group border-2 border-black bg-gray-50">
             {previewUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400">

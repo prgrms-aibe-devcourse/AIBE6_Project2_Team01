@@ -118,7 +118,10 @@ export function JobPostingForm({
 
   useEffect(() => {
     if (externalCategory) {
-      setForm((cur) => ({ ...cur, category: externalCategory }));
+      const timeoutId = window.setTimeout(() => {
+        setForm((cur) => ({ ...cur, category: externalCategory }));
+      }, 0);
+      return () => window.clearTimeout(timeoutId);
     }
   }, [externalCategory]);
 

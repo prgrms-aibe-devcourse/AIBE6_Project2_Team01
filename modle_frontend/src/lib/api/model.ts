@@ -5,7 +5,9 @@ interface ModelApiResponse extends Omit<Partial<Model>, 'rating'> {
   avgRating?: number;
 }
 
-export async function getModels(params: Record<string, any>): Promise<ModelListResponse> {
+type ModelQueryParams = Record<string, string | string[] | undefined>;
+
+export async function getModels(params: ModelQueryParams): Promise<ModelListResponse> {
   const { data, error } = await client.GET('/api/v1/models', {
     params: {
       query: params as never

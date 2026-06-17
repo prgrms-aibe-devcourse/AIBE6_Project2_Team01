@@ -591,6 +591,12 @@ function RecommendationSection({
   onRetry: () => void;
 }) {
   const items = recommendations?.items ?? [];
+  const displayItems = [...items].sort((a, b) => {
+    if (a.locked !== b.locked) {
+      return a.locked ? 1 : -1;
+    }
+    return a.rank - b.rank;
+  });
   const hasLockedItems = items.some((item) => item.locked);
 
   return (
@@ -604,7 +610,7 @@ function RecommendationSection({
             추천 모델
           </h2>
           <p className="mt-2 text-[13px] leading-5 text-mute">
-            공고 조건과 포트폴리오 정보를 기준으로 최대 5명의 모델을 추천합니다.
+            공고 조건과 포트폴리오 정보를 바탕으로 어울리는 모델을 먼저 보여드립니다.
           </p>
         </div>
 
@@ -615,7 +621,7 @@ function RecommendationSection({
             disabled={unlocking}
             className="h-10 rounded-lg bg-ink px-5 text-[13px] font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {unlocking ? "처리 중..." : "결제하기"}
+            {unlocking ? "확인 중..." : "추천 더 보기"}
           </button>
         ) : null}
       </div>
@@ -641,7 +647,7 @@ function RecommendationSection({
         </p>
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {items.map((item) =>
+          {displayItems.map((item) =>
             item.locked ? (
               <LockedRecommendationCard
                 key={`locked-${item.rank}`}
@@ -669,7 +675,7 @@ function VisibleRecommendationCard({ item }: { item: RecommendationCardItem }) {
     <article className="rounded-xl border border-hairline bg-white p-3 shadow-sm">
       <div className="mb-3 flex items-center justify-between gap-2">
         <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary">
-          #{item.rank} 추천
+          추천 후보
         </span>
         {item.alreadyApplied ? (
           <span className="rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700">
@@ -706,18 +712,18 @@ function LockedRecommendationCard({
       <div>
         <div className="flex items-center justify-between">
           <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-mute">
-            #{item.rank} 잠금
+            추가 후보
           </span>
-          <span className="text-[11px] font-semibold text-mute">LOCKED</span>
+          <span className="text-[11px] font-semibold text-mute">더 보기</span>
         </div>
 
         <div className="mt-5 rounded-xl border border-hairline bg-white/70 p-4">
           <div className="mx-auto h-12 w-12 rounded-full bg-slate-200 blur-[1px]" />
           <p className="mt-4 text-center text-[13px] font-semibold text-ink">
-            최적합 모델 정보가 잠겨있습니다.
+            이런 모델은 어떠신가요?
           </p>
           <p className="mt-2 text-center text-[12px] leading-5 text-mute">
-            결제 후 이름, 프로필, 상세 정보를 확인할 수 있습니다.
+            조건에 맞는 다른 후보도 준비되어 있어요. 더 보기 후 상세 프로필을 확인할 수 있습니다.
           </p>
         </div>
 
@@ -744,7 +750,7 @@ function LockedRecommendationCard({
         disabled={unlocking}
         className="mt-5 h-10 rounded-lg bg-ink text-[13px] font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {unlocking ? "처리 중..." : "결제하기"}
+        {unlocking ? "확인 중..." : "후보 더 보기"}
       </button>
     </article>
   );

@@ -11,7 +11,7 @@ interface Props {
   initialPortfolios?: Portfolio[]; // 백엔드에서 받아온 초기 사진들
 }
 
-export function PortfolioGallery({ modelId, initialPortfolios = [] }: Props) {
+export function PortfolioGallery({ initialPortfolios = [] }: Props) {
   // 화면에 보여줄 사진 목록 상태
   const [portfolios, setPortfolios] = useState<Portfolio[]>(initialPortfolios);
   const [isModalOpen, setIsModalOpen] = useState(false);
