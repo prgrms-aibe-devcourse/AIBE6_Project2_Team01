@@ -9,6 +9,7 @@ public record ApplicationResponse(
         Long id,
         Long jobPostingId,
         Long modelId,
+        String coverLetter,
         ApplicationStatus status,
         LocalDateTime createdDate
 ) {
@@ -17,6 +18,7 @@ public record ApplicationResponse(
                 application.getId(),
                 application.getJobPostingId(),
                 application.getModelId(),
+                application.getCoverLetter(),
                 application.getStatus(),
                 application.getCreatedDate()
         );
