@@ -43,7 +43,7 @@ public class AuthTokenService {
         return refreshToken;
     }
 
-    // Refresh Token 검증 + 새 Access Token 발급
+    // Refresh Token 검증 + Token 발급
     public TokenPair reissueTokens(String refreshToken) {
         // 토큰 유효성 검증
         if (!jwtTokenProvider.isValid(refreshToken)) {
