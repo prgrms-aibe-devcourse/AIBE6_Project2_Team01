@@ -1,5 +1,6 @@
 package com.modle.domain.application.controller;
 
+import com.modle.domain.application.dto.request.ApplicationCreateRequest;
 import com.modle.domain.application.dto.response.ApplicationResponse;
 import com.modle.domain.application.service.ApplicationService;
 import com.modle.global.auth.SecurityUser;
@@ -23,7 +24,17 @@ public class ApplicationController {
     @PostMapping("/jobs/{id}/apply")
     public ApiResponse<ApplicationResponse> apply(
             @PathVariable Long id,
+            @RequestBody(required = false) ApplicationCreateRequest request,
             @AuthenticationPrincipal SecurityUser securityUser) {
-        return ApiResponse.ok("공고 지원 성공", applicationService.applyToJob(securityUser.getId(), id));
+        return ApiResponse.ok("공고 지원 성공", applicationService.applyToJob(securityUser.getId(), id, request));
+    }
+
+    // MATCH-002: 모델이 본인의 지원을 취소한다 (MODEL 전용).
+    @PreAuthorize("hasRole('MODEL')")
+    @PatchMapping("/applications/{id}/cancel")
+    public ApiResponse<ApplicationResponse> cancel(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser securityUser) {
+        return ApiResponse.ok("지원 취소 성공", applicationService.cancelApplication(securityUser.getId(), id));
     }
 }
