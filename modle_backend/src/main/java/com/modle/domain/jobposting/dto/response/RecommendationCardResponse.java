@@ -13,7 +13,6 @@ public record RecommendationCardResponse(
         Integer height,
         List<String> categories,
         String region,
-        Double avgRating,
-        boolean alreadyApplied
+        Double avgRating
 ) {
 }

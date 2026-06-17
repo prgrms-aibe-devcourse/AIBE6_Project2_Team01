@@ -56,6 +56,7 @@ public class AiRecommendService {
 
     private static final int MAX_RECOMMENDATION_COUNT = 5;
     private static final String EMBEDDING_MODEL = "text-embedding-3-small";
+    private static final String ALL_APPLIED_REASON = "추천 모델이 이미 모두 지원했어요!";
 
     private final JobPostingRepository jobPostingRepository;
     private final ModelRepository modelRepository;
@@ -289,31 +290,40 @@ public class AiRecommendService {
             List<Recommendation> recommendations,
             boolean unlocked
     ) {
+        // 스냅샷 생성 이후 새로 지원한 모델은 추천에서 제외한다(readOnly 조회 경로 보강).
+        Set<Long> appliedModelIds = findAppliedModelIds(jobPosting.getId());
+        List<Recommendation> activeRecommendations = recommendations.stream()
+                .filter(recommendation -> !appliedModelIds.contains(recommendation.getModelId()))
+                .toList();
         Map<Long, Model> modelMap = modelRepository.findAllById(
-                        recommendations.stream().map(Recommendation::getModelId).toList()
+                        activeRecommendations.stream().map(Recommendation::getModelId).toList()
                 )
                 .stream()
                 .collect(Collectors.toMap(Model::getId, Function.identity()));
-        Set<Integer> publicRanks = publicRanks(recommendations.size());
-        List<RecommendationCardResponse> items = recommendations.stream()
-                .map(recommendation -> toCard(
-                        recommendation,
-                        modelMap.get(recommendation.getModelId()),
-                        unlocked || publicRanks.contains(recommendation.getRank())
-                ))
-                .toList();
-        String reasonCode = items.isEmpty() ? "NO_RESULT" : null;
+        Set<Integer> publicRanks = publicRanks(activeRecommendations.size());
+        List<RecommendationCardResponse> items = new ArrayList<>();
+        for (int index = 0; index < activeRecommendations.size(); index++) {
+            int rank = index + 1;
+            Recommendation recommendation = activeRecommendations.get(index);
+            items.add(toCard(
+                    rank,
+                    modelMap.get(recommendation.getModelId()),
+                    unlocked || publicRanks.contains(rank)
+            ));
+        }
+        // toResponse는 recommendations가 비어있지 않을 때만 호출되므로, 전부 필터되면 추천 모델이 모두 지원한 경우다.
+        String reasonCode = items.isEmpty() ? ALL_APPLIED_REASON : null;
         return new RecommendationListResponse(jobPosting.getId(), unlocked, reasonCode, items);
     }
 
     private RecommendationCardResponse toCard(
-            Recommendation recommendation,
+            int rank,
             Model model,
             boolean visible
     ) {
         if (model == null) {
             return new RecommendationCardResponse(
-                    recommendation.getRank(),
+                    rank,
                     true,
                     null,
                     null,
@@ -323,8 +333,7 @@ public class AiRecommendService {
                     null,
                     List.of(),
                     null,
-                    null,
-                    false
+                    null
             );
         }
 
@@ -339,7 +348,7 @@ public class AiRecommendService {
 
         if (!visible) {
             return new RecommendationCardResponse(
-                    recommendation.getRank(),
+                    rank,
                     true,
                     null,
                     null,
@@ -349,13 +358,12 @@ public class AiRecommendService {
                     null,
                     categories,
                     region,
-                    null,
-                    false
+                    null
             );
         }
 
         return new RecommendationCardResponse(
-                recommendation.getRank(),
+                rank,
                 false,
                 model.getId(),
                 model.getUser().getId(),
@@ -365,8 +373,7 @@ public class AiRecommendService {
                 model.getHeight(),
                 categories,
                 region,
-                model.getAvgRating(),
-                false
+                model.getAvgRating()
         );
     }
 

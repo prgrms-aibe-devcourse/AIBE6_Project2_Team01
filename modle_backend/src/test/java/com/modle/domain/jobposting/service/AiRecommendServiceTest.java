@@ -3,6 +3,8 @@ package com.modle.domain.jobposting.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.modle.domain.application.entity.type.ApplicationStatus;
 import com.modle.domain.application.repository.ApplicationRepository;
+import com.modle.domain.jobposting.dto.response.RecommendationCardResponse;
+import com.modle.domain.jobposting.dto.response.RecommendationListResponse;
 import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.ModelEmbedding;
 import com.modle.domain.jobposting.entity.PostEmbedding;
@@ -134,6 +136,52 @@ class AiRecommendServiceTest {
                 .containsExactly(1L, 2L);
         assertThat(captor.getValue()).extracting(Recommendation::getRank)
                 .containsExactly(1, 2);
+    }
+
+    @Test
+    void getRecommendations_지원자모델을제외하고등수를재부여한다() {
+        JobPosting jobPosting = jobPosting();
+        Model first = model(1L, 101L, "first", 4.5, 3);
+        Model third = model(3L, 103L, "third", 4.0, 1);
+        given(jobPostingRepository.findById(10L)).willReturn(Optional.of(jobPosting));
+        given(recommendationRepository.findByPostIdOrderByRankAsc(10L)).willReturn(List.of(
+                Recommendation.create(10L, 1L, 101L, 1, 0.9),
+                Recommendation.create(10L, 2L, 102L, 2, 0.8),
+                Recommendation.create(10L, 3L, 103L, 3, 0.7)
+        ));
+        given(recommendationUnlockRepository.existsByPostId(10L)).willReturn(true);
+        given(applicationRepository.findActiveAppliedModelIds(10L, ApplicationStatus.APPLICATION_CANCELLED))
+                .willReturn(List.of(2L));
+        given(modelRepository.findAllById(List.of(1L, 3L))).willReturn(List.of(first, third));
+
+        RecommendationListResponse response = aiRecommendService.getRecommendations(10L, 50L);
+
+        assertThat(response.reasonCode()).isNull();
+        assertThat(response.items()).extracting(RecommendationCardResponse::rank)
+                .containsExactly(1, 2);
+        assertThat(response.items()).extracting(RecommendationCardResponse::modelId)
+                .containsExactly(1L, 3L);
+        assertThat(response.items()).extracting(RecommendationCardResponse::locked)
+                .containsExactly(false, false);
+    }
+
+    @Test
+    void getRecommendations_추천모델이모두지원하면안내문구를반환한다() {
+        JobPosting jobPosting = jobPosting();
+        given(jobPostingRepository.findById(10L)).willReturn(Optional.of(jobPosting));
+        given(recommendationRepository.findByPostIdOrderByRankAsc(10L)).willReturn(List.of(
+                Recommendation.create(10L, 1L, 101L, 1, 0.9),
+                Recommendation.create(10L, 2L, 102L, 2, 0.8)
+        ));
+        given(recommendationUnlockRepository.existsByPostId(10L)).willReturn(false);
+        given(applicationRepository.findActiveAppliedModelIds(10L, ApplicationStatus.APPLICATION_CANCELLED))
+                .willReturn(List.of(1L, 2L));
+        given(modelRepository.findAllById(List.of())).willReturn(List.of());
+
+        RecommendationListResponse response = aiRecommendService.getRecommendations(10L, 50L);
+
+        assertThat(response.items()).isEmpty();
+        assertThat(response.reasonCode()).isEqualTo("추천 모델이 이미 모두 지원했어요!");
     }
 
     private JobPosting jobPosting() {
