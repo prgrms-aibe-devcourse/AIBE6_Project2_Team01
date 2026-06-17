@@ -13,15 +13,22 @@ import com.modle.domain.contract.pdf.ContractPdfGenerator;
 import com.modle.domain.contract.repository.ContractRepository;
 import com.modle.domain.contract.repository.ContractTemplateRepository;
 import com.modle.domain.contract.template.ContractTemplateRenderer;
+import com.modle.domain.message.entity.MessageConversation;
+import com.modle.domain.message.service.MessageService;
+import com.modle.domain.user.entity.User;
+import com.modle.domain.user.service.UserService;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
 import com.modle.global.gcs.GcsService;
+import com.modle.infra.mail.MailService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,6 +43,13 @@ public class ContractService {
     private final GcsService gcsService;
     private final ContractPdfGenerator contractPdfGenerator;
     private final ContractTemplateRenderer contractTemplateRenderer;
+
+    private final MessageService messageService;
+    private final UserService userService;
+    private final MailService mailService;
+
+    @Value("${app.frontend-base-url:http://localhost:3000}")
+    private String frontendBaseUrl;
 
     // TODO: Application 도메인 연동 후
     // applicationId 존재 검증 및 현재 로그인한 CLIENT의 공고인지 소유권 검증 추가
@@ -82,11 +96,61 @@ public class ContractService {
         return handleTemplateContract(contract);
     }
 
+    @Transactional
+    public ContractResponse notifyContract(Long clientUserId, Long contractId) {
+        Contract contract = contractRepository.findById(contractId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CONTRACT_NOT_FOUND));
+
+        validateDraftStatus(contract);
+        validatePdfReady(contract);
+
+        MessageConversation conversation = messageService.findConversationByApplicationId(contract.getApplicationId());
+        validateContractClient(clientUserId, conversation);
+
+        User model = userService.findById(conversation.getModelId());
+        String contractLink = createContractLink(contract.getId());
+
+        mailService.sendContractNotificationEmail(model.getEmail(), contractLink);
+        messageService.sendSystemMessage(
+                conversation.getId(),
+                clientUserId,
+                null,
+                createContractNotificationMessage(contractLink)
+        );
+
+        contract.notifyModel(LocalDateTime.now());
+
+        return ContractResponse.from(contract);
+    }
+
+    private void validateContractClient(Long clientUserId, MessageConversation conversation) {
+        if(!conversation.getClientId().equals(clientUserId)) {
+            throw new CustomException(ErrorCode.CONTRACT_ACCESS_DENIED);
+        }
+    }
+
+    private String createContractLink(Long contractId) {
+        return frontendBaseUrl + "/contracts/" + contractId;
+    }
+
+    private String createContractNotificationMessage(String contractLink) {
+        return """
+                계약서가 도착했습니다. 아래 링크에서 확인해 주세요.
+                %s
+                """.formatted(contractLink);
+    }
+
+
     private void validateDraftStatus(Contract contract) {
         if (contract.getStatus() != ContractStatus.DRAFT) {
             throw new CustomException(ErrorCode.INVALID_CONTRACT_STATUS);
         }
 
+    }
+    private void validatePdfReady(Contract contract) {
+        if(contract.getPdfUrl() == null || contract.getPdfUrl().isBlank()) {
+            throw new CustomException(ErrorCode.CONTRACT_PDF_REQUIRED);
+        }
     }
 
     private void validateDuplicateContract(Long applicationId) {

@@ -52,12 +52,24 @@ public class ContractController {
     @PostMapping("/pdf")
     @PreAuthorize("hasRole('CLIENT')")
     public ApiResponse<ContractPdfResponse> createContractPdf(
-             @AuthenticationPrincipal SecurityUser securityUser,
-             @Valid @RequestBody ContractPdfCreateRequest request
-    ){
+            @AuthenticationPrincipal SecurityUser securityUser,
+            @Valid @RequestBody ContractPdfCreateRequest request
+    ) {
         return ApiResponse.ok(
                 "계약서 PDF 생성 성공",
                 contractService.generatePdf(securityUser.getId(), request)
+        );
+    }
+
+    @PostMapping("/{id}/notify")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ApiResponse<ContractResponse> notifyContract(
+            @AuthenticationPrincipal SecurityUser securityUser,
+            @PathVariable Long id
+    ) {
+        return ApiResponse.ok(
+                "계약서가 모델에게 발송되었습니다.",
+                contractService.notifyContract(securityUser.getId(), id)
         );
     }
 

@@ -114,4 +114,9 @@ public class Contract extends BaseEntity {
     public void updatePdfUrl(String pdfUrl) {
         this.pdfUrl = pdfUrl;
     }
+
+    public void notifyModel(LocalDateTime notifiedAt) {
+        this.status = ContractStatus.NOTIFIED;
+        this.notifiedAt = notifiedAt;
+    }
 }

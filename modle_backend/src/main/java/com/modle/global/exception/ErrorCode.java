@@ -16,6 +16,7 @@ public enum ErrorCode {
     USER_SUSPENDED(HttpStatus.FORBIDDEN, "403-1", "정지된 계정입니다."),
     USER_WITHDRAWN(HttpStatus.FORBIDDEN, "403-2", "탈퇴한 계정입니다."),
     USER_REJECTED(HttpStatus.FORBIDDEN, "403-3", "가입이 반려된 계정입니다."),
+    CONTRACT_PDF_REQUIRED(HttpStatus.BAD_REQUEST, "400-12", "PDF 생성이 완료된 계약서만 발송할 수 있습니다."),
 
     // 이메일 인증
     EMAIL_CODE_NOT_FOUND(HttpStatus.BAD_REQUEST, "400-1", "인증 코드가 만료되었거나 존재하지 않습니다."),
@@ -43,6 +44,7 @@ public enum ErrorCode {
     CONTRACT_NOT_FOUND(HttpStatus.NOT_FOUND, "404-4", "계약서를 찾을 수 없습니다."),
     CONTRACT_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "404-5", "계약서 템플릿을 찾을 수 없습니다."),
     CONTRACT_PDF_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "500-2", "계약서 PDF 생성에 실패했습니다."),
+    CONTRACT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "403-10", "계약서에 접근할 권한이 없습니다."),
 
     // 공고
     JOB_POSTING_NOT_FOUND(HttpStatus.NOT_FOUND, "404-2", "공고를 찾을 수 없습니다."),
