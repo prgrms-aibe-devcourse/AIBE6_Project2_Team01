@@ -1,9 +1,10 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { client, API_BASE_URL, authenticatedFetch } from "@/lib/api/client";
+import { client } from "@/lib/api/client";
 import { STATUS_LABELS, STATUS_COLORS, STATUS_TRANSITIONS } from "@/lib/constants/jobPostingStatus";
 import { ReportModal } from "@/components/ui/ReportModal";
+import { checkApplyStatus } from "@/lib/api/application";
 import { addJobBookmark, getJobBookmarks, removeJobBookmark } from "@/lib/api/bookmark";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -149,9 +150,8 @@ export default function JobDetailPage({
   // 지원 여부 동기화
   useEffect(() => {
     if (!user || user.role !== "MODEL") return;
-    authenticatedFetch(`${API_BASE_URL}/api/v1/jobs/${postingId}/apply-status`)
-      .then((res) => res.json())
-      .then((body) => setHasApplied(body?.data === true))
+    checkApplyStatus(postingId)
+      .then(setHasApplied)
       .catch(() => {});
   }, [user, postingId]);
 
