@@ -32,7 +32,7 @@ public record JobPostingModelDetailResponse(
         LocalDateTime createdDate,
         // TODO(즐겨찾기): 즐겨찾기 단위 구현 후 실제 값으로 교체
         boolean favorited
-) {
+) implements JobPostingDetailResponse {
     public static JobPostingModelDetailResponse from(JobPosting jobPosting) {
         return new JobPostingModelDetailResponse(
                 jobPosting.getId(),

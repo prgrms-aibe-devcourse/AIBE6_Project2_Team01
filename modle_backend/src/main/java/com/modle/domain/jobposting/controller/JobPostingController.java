@@ -4,6 +4,7 @@ import com.modle.domain.jobposting.dto.request.JobPostingCreateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingStatusUpdateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingTemplateGenerateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
+import com.modle.domain.jobposting.dto.response.JobPostingDetailResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingListResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingTemplateGenerateResponse;
@@ -111,7 +112,7 @@ public class JobPostingController {
 
     // JOB-006~008: 역할에 따라 공고 상세 반환 (MODEL → 모델 뷰, CLIENT → 클라이언트 뷰, 그 외 → OTHER 뷰).
     @GetMapping("/{id}")
-    public ApiResponse<Object> getJobPostingDetail(
+    public ApiResponse<JobPostingDetailResponse> getJobPostingDetail(
             @PathVariable Long id,
             @AuthenticationPrincipal SecurityUser securityUser) {
         ViewerType viewerType = securityUser == null ? ViewerType.OTHER : switch (securityUser.getRole()) {
