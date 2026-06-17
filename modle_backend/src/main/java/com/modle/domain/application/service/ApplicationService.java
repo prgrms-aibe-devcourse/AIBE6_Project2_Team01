@@ -65,10 +65,6 @@ public class ApplicationService {
                 .findByIdAndModelId(applicationId, modelId)
                 .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
 
-        if (application.getModelId() == null || !application.getModelId().equals(modelId)) {
-            throw new CustomException(ErrorCode.APPLICATION_CANCEL_FORBIDDEN);
-        }
-
         JobPostingResponse jobPosting = jobPostingService.getJobPosting(application.getJobPostingId());
         if (jobPosting.status() != JobPostingStatus.RECRUITING) {
             throw new CustomException(ErrorCode.APPLICATION_CANCEL_NOT_ALLOWED);
