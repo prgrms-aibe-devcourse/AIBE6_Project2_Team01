@@ -189,6 +189,11 @@ public class MessageService {
         return unreadMessages.size();
     }
 
+    public MessageConversation findConversationByApplicationId(Long applicationId) {
+        return conversationRepository.findByApplicationId(applicationId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MESSAGE_CONVERSATION_NOT_FOUND));
+    }
+
     private MessageConversation findConversation(Long conversationId) {
         return conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MESSAGE_CONVERSATION_NOT_FOUND));

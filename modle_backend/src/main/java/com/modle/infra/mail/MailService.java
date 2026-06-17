@@ -87,4 +87,18 @@ public class MailService {
             """.formatted(reason);
         send(to, subject, text);
     }
+
+    public void sendContractNotificationEmail(String to, String contractLink) {
+        String subject = "[모들] 새로운 확인 요청";
+        String text =  """
+            안녕하세요, 모들입니다.
+
+            계약서가 도착했습니다.
+            아래 링크에서 계약 내용을 확인해 주세요.
+
+            %s
+            """.formatted(contractLink);
+
+        send(to, subject, text);
+    }
 }

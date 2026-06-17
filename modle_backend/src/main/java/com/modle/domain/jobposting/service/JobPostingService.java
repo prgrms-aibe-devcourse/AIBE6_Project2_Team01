@@ -163,6 +163,15 @@ public class JobPostingService {
                 .toList();
     }
 
+    /**
+     * 지원(application) 도메인 등 타 도메인에서 공고 모집 상태·작성자를 확인할 때 사용하는 공개 조회 메서드.
+     */
+    public JobPostingResponse getJobPosting(Long jobPostingId) {
+        JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
+        return JobPostingResponse.from(jobPosting);
+    }
+
     // JOB-006~008: 뷰어 타입에 따라 다른 공고 상세 정보를 반환한다.
     public Object getJobPostingDetail(Long jobPostingId, ViewerType viewerType) {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
