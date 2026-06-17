@@ -3,6 +3,8 @@ package com.modle.domain.jobposting.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.modle.domain.application.entity.type.ApplicationStatus;
+import com.modle.domain.application.repository.ApplicationRepository;
 import com.modle.domain.jobposting.dto.response.RecommendationCardResponse;
 import com.modle.domain.jobposting.dto.response.RecommendationListResponse;
 import com.modle.domain.jobposting.entity.JobPosting;
@@ -37,6 +39,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,6 +63,7 @@ public class AiRecommendService {
     private final PostEmbeddingRepository postEmbeddingRepository;
     private final RecommendationRepository recommendationRepository;
     private final RecommendationUnlockRepository recommendationUnlockRepository;
+    private final ApplicationRepository applicationRepository;
     private final EmbeddingClient embeddingClient;
     private final ObjectMapper objectMapper;
 
@@ -108,7 +112,10 @@ public class AiRecommendService {
     public void generateSnapshot(Long postId) {
         JobPosting jobPosting = findJobPostingForUpdate(postId);
         Optional<PostEmbedding> postEmbedding = ensurePostEmbedding(jobPosting);
-        List<Model> candidates = findCandidates(jobPosting);
+        Set<Long> appliedModelIds = findAppliedModelIds(postId);
+        List<Model> candidates = findCandidates(jobPosting).stream()
+                .filter(model -> !appliedModelIds.contains(model.getId()))
+                .toList();
         if (candidates.isEmpty()) {
             recommendationRepository.deleteByPostId(postId);
             return;
@@ -158,7 +165,8 @@ public class AiRecommendService {
     @Transactional
     public RecommendationListResponse getOrCreateRecommendations(Long postId, Long clientId) {
         validatePostOwner(postId, clientId);
-        if (recommendationRepository.findByPostIdOrderByRankAsc(postId).isEmpty()) {
+        List<Recommendation> recommendations = recommendationRepository.findByPostIdOrderByRankAsc(postId);
+        if (recommendations.isEmpty() || containsAppliedModel(postId, recommendations)) {
             generateSnapshot(postId);
         }
         return getRecommendations(postId, clientId);
@@ -173,7 +181,8 @@ public class AiRecommendService {
         if (!recommendationUnlockRepository.existsByPostId(postId)) {
             recommendationUnlockRepository.save(RecommendationUnlock.create(postId, clientId));
         }
-        if (recommendationRepository.findByPostIdOrderByRankAsc(postId).isEmpty()) {
+        List<Recommendation> recommendations = recommendationRepository.findByPostIdOrderByRankAsc(postId);
+        if (recommendations.isEmpty() || containsAppliedModel(postId, recommendations)) {
             generateSnapshot(postId);
         }
         return getRecommendations(postId, clientId);
@@ -214,6 +223,23 @@ public class AiRecommendService {
                 jobPosting.getRegion().name(),
                 jobPosting.getCategory().name()
         );
+    }
+
+    private Set<Long> findAppliedModelIds(Long postId) {
+        return new HashSet<>(applicationRepository.findActiveAppliedModelIds(
+                postId,
+                ApplicationStatus.APPLICATION_CANCELLED
+        ));
+    }
+
+    private boolean containsAppliedModel(Long postId, List<Recommendation> recommendations) {
+        Set<Long> appliedModelIds = findAppliedModelIds(postId);
+        if (appliedModelIds.isEmpty()) {
+            return false;
+        }
+        return recommendations.stream()
+                .map(Recommendation::getModelId)
+                .anyMatch(appliedModelIds::contains);
     }
 
     private Optional<PostEmbedding> ensurePostEmbedding(JobPosting jobPosting) {

@@ -1,14 +1,16 @@
 package com.modle.domain.jobposting.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.modle.domain.jobposting.entity.Category;
+import com.modle.domain.application.entity.type.ApplicationStatus;
+import com.modle.domain.application.repository.ApplicationRepository;
 import com.modle.domain.jobposting.entity.JobPosting;
-import com.modle.domain.jobposting.entity.JobPostingStatus;
 import com.modle.domain.jobposting.entity.ModelEmbedding;
 import com.modle.domain.jobposting.entity.PostEmbedding;
 import com.modle.domain.jobposting.entity.Recommendation;
-import com.modle.domain.jobposting.entity.Region;
-import com.modle.domain.jobposting.entity.RequiredSex;
+import com.modle.domain.jobposting.entity.type.Category;
+import com.modle.domain.jobposting.entity.type.JobPostingStatus;
+import com.modle.domain.jobposting.entity.type.Region;
+import com.modle.domain.jobposting.entity.type.RequiredSex;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.jobposting.repository.ModelEmbeddingRepository;
 import com.modle.domain.jobposting.repository.PostEmbeddingRepository;
@@ -65,6 +67,9 @@ class AiRecommendServiceTest {
     private RecommendationUnlockRepository recommendationUnlockRepository;
 
     @Mock
+    private ApplicationRepository applicationRepository;
+
+    @Mock
     private EmbeddingClient embeddingClient;
 
     private AiRecommendService aiRecommendService;
@@ -78,6 +83,7 @@ class AiRecommendServiceTest {
                 postEmbeddingRepository,
                 recommendationRepository,
                 recommendationUnlockRepository,
+                applicationRepository,
                 embeddingClient,
                 new ObjectMapper()
         );
@@ -88,7 +94,9 @@ class AiRecommendServiceTest {
         JobPosting jobPosting = jobPosting();
         Model first = model(1L, 101L, "first", 4.5, 3);
         Model second = model(2L, 102L, "second", 5.0, 10);
-        given(jobPostingRepository.findById(10L)).willReturn(Optional.of(jobPosting));
+        given(jobPostingRepository.findByIdForUpdate(10L)).willReturn(Optional.of(jobPosting));
+        given(applicationRepository.findActiveAppliedModelIds(10L, ApplicationStatus.APPLICATION_CANCELLED))
+                .willReturn(List.of());
         given(postEmbeddingRepository.findByPostId(10L))
                 .willReturn(Optional.of(PostEmbedding.create(
                         10L,

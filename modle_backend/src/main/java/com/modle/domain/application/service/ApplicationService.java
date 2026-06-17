@@ -8,6 +8,8 @@ import com.modle.domain.application.repository.ApplicationRepository;
 import com.modle.domain.jobposting.dto.response.JobPostingResponse;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
 import com.modle.domain.jobposting.service.JobPostingService;
+import com.modle.domain.user.entity.Model;
+import com.modle.domain.user.repository.ModelRepository;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +23,12 @@ public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
     private final JobPostingService jobPostingService;
+    private final ModelRepository modelRepository;
 
     // MATCH-001: 모집 중 상태·중복 지원 검증 후 지원을 생성한다 (상태=APPLIED).
     @Transactional
-    public ApplicationResponse applyToJob(Long modelId, Long jobPostingId, ApplicationCreateRequest request) {
+    public ApplicationResponse applyToJob(Long userId, Long jobPostingId, ApplicationCreateRequest request) {
+        Long modelId = findModelIdByUserId(userId);
         JobPostingResponse jobPosting = jobPostingService.getJobPosting(jobPostingId);
 
         if (jobPosting.status() != JobPostingStatus.RECRUITING) {
@@ -50,14 +54,16 @@ public class ApplicationService {
     }
 
     // MATCH-003: 모델이 특정 공고에 이미 지원했는지 확인한다.
-    public boolean hasApplied(Long modelId, Long jobPostingId) {
+    public boolean hasApplied(Long userId, Long jobPostingId) {
+        Long modelId = findModelIdByUserId(userId);
         return applicationRepository.existsByJobPostingIdAndModelIdAndStatusNot(
                 jobPostingId, modelId, ApplicationStatus.APPLICATION_CANCELLED);
     }
 
     // MATCH-002: 모델이 본인의 지원을 취소한다 (상태=APPLICATION_CANCELLED).
     @Transactional
-    public ApplicationResponse cancelApplication(Long modelId, Long applicationId) {
+    public ApplicationResponse cancelApplication(Long userId, Long applicationId) {
+        Long modelId = findModelIdByUserId(userId);
         Application application = applicationRepository
                 .findByIdAndModelId(applicationId, modelId)
                 .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
@@ -73,5 +79,11 @@ public class ApplicationService {
 
         application.cancel();
         return ApplicationResponse.from(application);
+    }
+
+    private Long findModelIdByUserId(Long userId) {
+        return modelRepository.findByUserId(userId)
+                .map(Model::getId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 }

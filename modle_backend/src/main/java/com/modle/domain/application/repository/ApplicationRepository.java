@@ -3,7 +3,10 @@ package com.modle.domain.application.repository;
 import com.modle.domain.application.entity.Application;
 import com.modle.domain.application.entity.type.ApplicationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
@@ -17,4 +20,15 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     // MATCH-002: 취소 시 본인 지원 여부 확인
     Optional<Application> findByIdAndModelId(Long id, Long modelId);
+
+    @Query("""
+            SELECT DISTINCT a.modelId
+            FROM Application a
+            WHERE a.jobPostingId = :jobPostingId
+              AND a.status <> :cancelledStatus
+            """)
+    List<Long> findActiveAppliedModelIds(
+            @Param("jobPostingId") Long jobPostingId,
+            @Param("cancelledStatus") ApplicationStatus cancelledStatus
+    );
 }
