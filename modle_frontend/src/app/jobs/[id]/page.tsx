@@ -2,7 +2,7 @@
 
 import { ReportModal } from "@/components/ui/ReportModal";
 import { useAuth } from "@/hooks/useAuth";
-import { checkApplyStatus } from "@/lib/api/application";
+import { checkApplyStatus, getApplicants } from "@/lib/api/application";
 import {
   addJobBookmark,
   getJobBookmarks,
@@ -155,13 +155,17 @@ export default function JobDetailPage({
       .catch(() => {});
   }, [user, postingId]);
 
-  // 지원 여부 동기화
+  // 지원 여부 동기화 (비로그인·MODEL 외 역할은 false로 초기화해 버튼 활성화)
   useEffect(() => {
-    if (!user || user.role !== "MODEL") return;
+    if (authLoading) return;
+    if (!user || user.role !== "MODEL") {
+      setHasApplied(false);
+      return;
+    }
     checkApplyStatus(postingId)
       .then(setHasApplied)
-      .catch(() => {});
-  }, [user, postingId]);
+      .catch(() => setHasApplied(false));
+  }, [user, postingId, authLoading]);
 
   // 공고 작성자일 때 지원자 수 조회
   useEffect(() => {
