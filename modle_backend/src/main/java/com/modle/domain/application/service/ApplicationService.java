@@ -36,6 +36,17 @@ public class ApplicationService {
     private final ModelRepository modelRepository;
     private final JobPostingRepository jobPostingRepository;
 
+    public Application getApplication(Long applicationId) {
+        return applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
+    }
+
+    @Transactional
+    public void markContractSent(Long applicationId) {
+        Application application = getApplication(applicationId);
+        application.markContractSent();
+    }
+
     // MATCH-001: 모집 중 상태·중복 지원 검증 후 지원을 생성한다 (상태=APPLIED).
     @Transactional
     public ApplicationResponse applyToJob(Long modelId, Long jobPostingId, ApplicationCreateRequest request) {

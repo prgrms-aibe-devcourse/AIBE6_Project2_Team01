@@ -1,16 +1,13 @@
 package com.modle.domain.message.service;
 
+import com.modle.domain.application.entity.Application;
+import com.modle.domain.application.service.ApplicationService;
 import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.message.dto.request.CreateConversationRequest;
 import com.modle.domain.message.dto.request.SendMessageRequest;
-import com.modle.domain.message.dto.response.MessageConversationResponse;
-import com.modle.domain.message.dto.response.MessageConversationSummaryResponse;
-import com.modle.domain.message.dto.response.MessageInboxResponse;
-import com.modle.domain.message.dto.response.ConversationMessagesResponse;
-import com.modle.domain.message.dto.response.MessageParticipantResponse;
-import com.modle.domain.message.dto.response.MessageResponse;
+import com.modle.domain.message.dto.response.*;
 import com.modle.domain.message.entity.Message;
 import com.modle.domain.message.entity.MessageConversation;
 import com.modle.domain.message.entity.SenderType;
@@ -43,6 +40,7 @@ public class MessageService {
     private final MessageConversationRepository conversationRepository;
     private final UserService userService;
     private final JobPostingRepository jobPostingRepository;
+    private final ApplicationService applicationService;
 
     @Transactional
     public MessageConversationResponse createConversation(
@@ -58,12 +56,39 @@ public class MessageService {
         if (creatorId.equals(request.receiverId())) {
             throw new CustomException(ErrorCode.MESSAGE_SELF_SEND_NOT_ALLOWED);
         }
+
+        // 대화방 생성 정책
+        // 1) 일반 쪽지 시작(applicationId == null)
+        //    - clientId + modelId + postId 기준 기존 대화방 재사용
+        //    - 공고 상태는 RECRUITING 이어야 함
+        // 2) 계약 발송 쪽지(applicationId != null)
+        //    - applicationId 기준 기존 대화방 우선 조회
+        //    - 있으면 해당 대화방 재사용
+        //    - 없으면 새 대화방 생성
+        //    - 계약 발송 시점에는 공고 상태가 RECRUITING 이 아닐 수 있으므로
+        //      공고 소유권만 검증하고 상태 검증은 하지 않음
         // 동일 모델·동일 공고 조합이면 기존 대화방을 재사용해 중복 생성을 막는다.
-        MessageConversation existingConversation = findDuplicateConversation(creatorId, request);
-        if (existingConversation != null) {
-            return MessageConversationResponse.from(existingConversation);
+        if (request.applicationId() != null) {
+            Application application = applicationService.getApplication(request.applicationId());
+            validateContractConversationApplication(application, request);
+
+            MessageConversation existingConversation = conversationRepository
+                    .findByApplicationId(request.applicationId())
+                    .orElse(null);
+
+            if (existingConversation != null) {
+                return MessageConversationResponse.from(existingConversation);
+            }
+
+            validateContractConversationPost(creatorId, request.postId());
+        } else {
+            MessageConversation existingConversation = findDuplicateConversation(creatorId, request);
+            if (existingConversation != null) {
+                return MessageConversationResponse.from(existingConversation);
+            }
+
+            validatePost(creatorId, request.postId());
         }
-        validatePost(creatorId, request.postId());
 
         MessageConversation conversation = MessageConversation.builder()
                 .clientId(creatorId)
@@ -230,6 +255,32 @@ public class MessageService {
         if (!posting.getClientId().equals(clientId)
                 || posting.getStatus() != JobPostingStatus.RECRUITING) {
             throw new CustomException(ErrorCode.MESSAGE_POST_NOT_AVAILABLE);
+        }
+    }
+
+    private void validateContractConversationPost(Long clientId, Long postId) {
+        if (postId == null) {
+            throw new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND);
+        }
+
+        JobPosting posting = jobPostingRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
+
+        if (!posting.getClientId().equals(clientId)) {
+            throw new CustomException(ErrorCode.MESSAGE_POST_NOT_AVAILABLE);
+        }
+    }
+
+    private void validateContractConversationApplication(
+            Application application,
+            CreateConversationRequest request
+    ) {
+        if (request.postId() == null || !application.getJobPostingId().equals(request.postId())) {
+            throw new CustomException(ErrorCode.MESSAGE_POST_NOT_AVAILABLE);
+        }
+
+        if (!application.getModelId().equals(request.receiverId())) {
+            throw new CustomException(ErrorCode.MESSAGE_CONVERSATION_CREATE_FORBIDDEN);
         }
     }
 }
