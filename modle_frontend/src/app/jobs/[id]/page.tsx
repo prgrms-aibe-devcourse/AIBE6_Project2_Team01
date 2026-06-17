@@ -592,9 +592,13 @@ function RecommendationSection({
 }) {
   const items = recommendations?.items ?? [];
   const displayItems = [...items].sort((a, b) => {
-    if (a.locked !== b.locked) {
-      return a.locked ? 1 : -1;
+    const aWasInitiallyVisible = isInitiallyVisibleRank(items.length, a.rank);
+    const bWasInitiallyVisible = isInitiallyVisibleRank(items.length, b.rank);
+
+    if (aWasInitiallyVisible !== bWasInitiallyVisible) {
+      return aWasInitiallyVisible ? -1 : 1;
     }
+
     return a.rank - b.rank;
   });
   const hasLockedItems = items.some((item) => item.locked);
@@ -672,21 +676,23 @@ function VisibleRecommendationCard({ item }: { item: RecommendationCardItem }) {
   const model = toModel(item);
 
   return (
-    <article className="rounded-xl border border-hairline bg-white p-3 shadow-sm">
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary">
-          추천 후보
-        </span>
-        {item.alreadyApplied ? (
-          <span className="rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700">
-            이미 지원함
+    <article className="flex h-full flex-col rounded-xl border border-hairline bg-white p-3 shadow-sm">
+      <div className="flex flex-1 flex-col">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary">
+            추천 후보
           </span>
-        ) : null}
-      </div>
+          {item.alreadyApplied ? (
+            <span className="rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700">
+              이미 지원함
+            </span>
+          ) : null}
+        </div>
 
-      <Link href={`/models/${model.id}`}>
-        <ModelCard model={model} showFavoriteButton={false} />
-      </Link>
+        <Link href={`/models/${model.id}`} className="block flex-1">
+          <ModelCard model={model} showFavoriteButton={false} />
+        </Link>
+      </div>
 
       {item.userId ? (
         <ClientProposalButton
@@ -708,8 +714,8 @@ function LockedRecommendationCard({
   onUnlock: () => void;
 }) {
   return (
-    <article className="flex min-h-[260px] flex-col justify-between rounded-xl border border-dashed border-hairline-strong bg-canvas-soft p-4">
-      <div>
+    <article className="flex h-full min-h-[260px] flex-col rounded-xl border border-dashed border-hairline-strong bg-canvas-soft p-4">
+      <div className="flex flex-1 flex-col">
         <div className="flex items-center justify-between">
           <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-mute">
             추가 후보
@@ -754,6 +760,14 @@ function LockedRecommendationCard({
       </button>
     </article>
   );
+}
+
+function isInitiallyVisibleRank(totalCount: number, rank: number) {
+  if (totalCount <= 2) {
+    return true;
+  }
+
+  return rank === 2 || rank === 3;
 }
 
 function toModel(item: RecommendationCardItem): Model {
