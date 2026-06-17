@@ -23,7 +23,7 @@ public record JobPostingOtherDetailResponse(
         PayType payType,
         LocalDateTime shootDate,
         LocalDateTime createdDate
-) {
+) implements JobPostingDetailResponse {
     public static JobPostingOtherDetailResponse from(JobPosting jobPosting) {
         return new JobPostingOtherDetailResponse(
                 jobPosting.getId(),

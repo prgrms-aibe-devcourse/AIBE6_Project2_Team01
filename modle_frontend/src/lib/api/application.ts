@@ -31,6 +31,16 @@ export async function applyToJob(
   return body.data as ApplicationResponse;
 }
 
+export async function checkApplyStatus(jobPostingId: number): Promise<boolean> {
+  const res = await authenticatedFetch(
+    `${API_BASE_URL}/api/v1/jobs/${jobPostingId}/apply-status`,
+    { credentials: "include" }
+  );
+  if (!res.ok) return false;
+  const body = await res.json();
+  return body?.data === true;
+}
+
 export async function cancelApplication(
   applicationId: number
 ): Promise<ApplicationResponse> {

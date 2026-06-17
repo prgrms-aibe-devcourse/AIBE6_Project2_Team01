@@ -34,7 +34,7 @@ public record JobPostingClientDetailResponse(
         LocalDateTime createdDate,
         // TODO(AI추천): AI 추천 단위 구현 후 실제 추천 모델 목록으로 교체
         List<Long> recommendedModelIds
-) {
+) implements JobPostingDetailResponse {
     public static JobPostingClientDetailResponse from(JobPosting jobPosting) {
         return new JobPostingClientDetailResponse(
                 jobPosting.getId(),

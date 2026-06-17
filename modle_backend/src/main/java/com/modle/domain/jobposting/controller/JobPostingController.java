@@ -108,7 +108,7 @@ public class JobPostingController {
 
     // JOB-006~008: 역할에 따라 공고 상세 반환 (MODEL → 모델 뷰, CLIENT → 클라이언트 뷰, 그 외 → OTHER 뷰).
     @GetMapping("/{id}")
-    public ApiResponse<Object> getJobPostingDetail(
+    public ApiResponse<JobPostingDetailResponse> getJobPostingDetail(
             @PathVariable Long id,
             @AuthenticationPrincipal SecurityUser securityUser) {
         ViewerType viewerType = securityUser == null ? ViewerType.OTHER : switch (securityUser.getRole()) {

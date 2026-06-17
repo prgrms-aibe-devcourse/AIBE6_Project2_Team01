@@ -39,9 +39,10 @@ public class ApplicationService {
     // MATCH-001: 모집 중 상태·중복 지원 검증 후 지원을 생성한다 (상태=APPLIED).
     @Transactional
     public ApplicationResponse applyToJob(Long modelId, Long jobPostingId, ApplicationCreateRequest request) {
-        JobPostingResponse jobPosting = jobPostingService.getJobPosting(jobPostingId);
+        JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
-        if (jobPosting.status() != JobPostingStatus.RECRUITING) {
+        if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
             throw new CustomException(ErrorCode.APPLICATION_JOB_NOT_RECRUITING);
         }
 
@@ -76,12 +77,9 @@ public class ApplicationService {
                 .findByIdAndModelId(applicationId, modelId)
                 .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
 
-        if (application.getModelId() == null || !application.getModelId().equals(modelId)) {
-            throw new CustomException(ErrorCode.APPLICATION_CANCEL_FORBIDDEN);
-        }
-
-        JobPostingResponse jobPosting = jobPostingService.getJobPosting(application.getJobPostingId());
-        if (jobPosting.status() != JobPostingStatus.RECRUITING) {
+        JobPosting jobPosting = jobPostingRepository.findById(application.getJobPostingId())
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
+        if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
             throw new CustomException(ErrorCode.APPLICATION_CANCEL_NOT_ALLOWED);
         }
 
@@ -142,9 +140,10 @@ public class ApplicationService {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
 
-        JobPostingResponse jobPosting = jobPostingService.getJobPosting(application.getJobPostingId());
+        JobPosting jobPosting = jobPostingRepository.findById(application.getJobPostingId())
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
-        if (!jobPosting.clientId().equals(clientId)) {
+        if (!jobPosting.getClientId().equals(clientId)) {
             throw new CustomException(ErrorCode.APPLICATION_CONTACT_FORBIDDEN);
         }
 
@@ -167,10 +166,11 @@ public class ApplicationService {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
 
-        JobPostingResponse jobPosting = jobPostingService.getJobPosting(application.getJobPostingId());
+        JobPosting jobPosting = jobPostingRepository.findById(application.getJobPostingId())
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
         boolean isModel = application.getModelId().equals(userId);
-        boolean isClient = jobPosting.clientId().equals(userId);
+        boolean isClient = jobPosting.getClientId().equals(userId);
 
         if (!isModel && !isClient) {
             throw new CustomException(ErrorCode.ACCESS_DENIED);

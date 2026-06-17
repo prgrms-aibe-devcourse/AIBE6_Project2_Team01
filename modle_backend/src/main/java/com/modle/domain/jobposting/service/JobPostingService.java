@@ -171,7 +171,7 @@ public class JobPostingService {
     }
 
     // JOB-006~008: 뷰어 타입에 따라 다른 공고 상세 정보를 반환한다.
-    public Object getJobPostingDetail(Long jobPostingId, ViewerType viewerType) {
+    public JobPostingDetailResponse getJobPostingDetail(Long jobPostingId, ViewerType viewerType) {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
