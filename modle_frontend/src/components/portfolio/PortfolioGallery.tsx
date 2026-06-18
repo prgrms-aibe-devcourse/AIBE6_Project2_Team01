@@ -2,18 +2,19 @@
 
 import { deletePortfolioImage, reorderPortfolioImages } from '@/lib/api/portfolio';
 import { Portfolio } from '@/types/model';
+import { closestCenter, DndContext, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import { useState } from 'react';
 import { PortfolioUploadModal } from './PortfolioUploadModal';
 import { SortablePortfolioItem } from './SortablePortfolioItem';
-import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
-import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 
 interface Props {
   modelId: number;
   initialPortfolios?: Portfolio[]; // 백엔드에서 받아온 초기 사진들
 }
 
-export function PortfolioGallery({ modelId, initialPortfolios = [] }: Props) {
+export function PortfolioGallery({ initialPortfolios = [] }: Props) {
+  // 화면에 보여줄 사진 목록 상태
   const [portfolios, setPortfolios] = useState<Portfolio[]>(initialPortfolios);
   const [isModalOpen, setIsModalOpen] = useState(false);
   

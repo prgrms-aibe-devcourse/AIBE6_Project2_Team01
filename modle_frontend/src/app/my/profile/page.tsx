@@ -10,22 +10,37 @@ export const metadata = {
   title: '내 프로필 | 모들',
 };
 
-export default async function MyProfilePage() {
-  try {
-    const cookieStore = await cookies();
-    const cookieString = cookieStore.toString();
-    const user = await getMe({ Cookie: cookieString });
+async function getProfilePageData() {
+  const cookieStore = await cookies();
+  const cookieString = cookieStore.toString();
+  const user = await getMe({ Cookie: cookieString });
 
-    if (user.role === 'CLIENT') {
-      const clientData = await getMyClient({ Cookie: cookieString });
-      return <MyClientProfileContainer initialData={clientData} />;
-    } else {
-      // Default to MODEL
-      const modelData = await getMyModel({ Cookie: cookieString });
-      return <MyProfileContainer initialData={modelData} />;
-    }
+  if (user.role === 'CLIENT') {
+    return {
+      role: 'CLIENT' as const,
+      data: await getMyClient({ Cookie: cookieString }),
+    };
+  }
+
+  return {
+    role: 'MODEL' as const,
+    data: await getMyModel({ Cookie: cookieString }),
+  };
+}
+
+export default async function MyProfilePage() {
+  let pageData: Awaited<ReturnType<typeof getProfilePageData>>;
+
+  try {
+    pageData = await getProfilePageData();
   } catch(error) {
     console.error("내 프로필 로딩 실패:", error);
     notFound();
   }
+
+  if (pageData.role === 'CLIENT') {
+    return <MyClientProfileContainer initialData={pageData.data} />;
+  }
+
+  return <MyProfileContainer initialData={pageData.data} />;
 }

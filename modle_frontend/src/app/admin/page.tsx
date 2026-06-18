@@ -257,7 +257,6 @@ function ReportsTab({ setToast }: { setToast: (t: ToastState) => void }) {
 
   useEffect(() => {
     let active = true;
-    setIsLoading(true);
     getAdminReports(filterTargetType || undefined, filterStatus || undefined, page)
       .then((result) => {
         if (!active) return;

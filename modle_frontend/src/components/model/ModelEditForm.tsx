@@ -11,16 +11,25 @@ interface Props {
   initialData: Model;
 }
 
+const normalizeRegion = (region?: string) => {
+  if (!region) {
+    return '';
+  }
+  return REGION_OPTIONS.find((option) => option.value === region || option.label === region)?.value || region;
+};
+
 export function ModelEditForm({ initialData }: Props) {
   const router = useRouter();
+  const initialRegion = normalizeRegion(initialData.activeRegions?.[0] || initialData.region);
   const [formData, setFormData] = useState<Partial<Model>>({
     name: initialData.name,
     age: initialData.age,
     height: initialData.height,
     weight: initialData.weight,
     sex: initialData.sex,
-    region: initialData.region || '',
-    field: initialData.field || '',
+    region: initialRegion,
+    activeRegions: initialRegion ? [initialRegion] : [],
+    field: initialData.categories?.join(',') || initialData.field || '',
     tags: initialData.tags || [],
     introduction: initialData.introduction || '',
     profileImageUrl: initialData.profileImageUrl || ''
@@ -56,6 +65,11 @@ export function ModelEditForm({ initialData }: Props) {
       parsedValue = value ? Number(value) : undefined;
     }
 
+    if (name === 'region') {
+      setFormData(prev => ({ ...prev, region: value, activeRegions: value ? [value] : [] }));
+      return;
+    }
+
     setFormData(prev => ({ ...prev, [name]: parsedValue }));
   };
 
@@ -89,6 +103,8 @@ export function ModelEditForm({ initialData }: Props) {
     { label: '손/부분', value: 'HAND' },
     { label: '피팅', value: 'FITTING' },
     { label: '의류', value: 'CLOTHING' },
+    { label: '푸드', value: 'FOOD' },
+    { label: '제품', value: 'PRODUCT' },
     { label: '기타', value: 'ETC' },
   ];
 
@@ -106,9 +122,15 @@ export function ModelEditForm({ initialData }: Props) {
         // 2. 성공하면 백엔드에서 받아온 구글 스토리지 URL로 교체
         finalImageUrl = uploadedUrl; 
       }
+      const selectedRegions = formData.activeRegions?.length
+        ? formData.activeRegions
+        : formData.region
+          ? [formData.region]
+          : [];
       const finalFormData = { // gcs img url을 포함한 데이터 완성
         ...formData,
         profileImageUrl: finalImageUrl,
+        activeRegions: selectedRegions,
         categories: formData.field ? formData.field.split(',').filter(Boolean) : [], // 콤마 문자열을 배열로 변환하여 전송
       };
       await updateMyModel(finalFormData);

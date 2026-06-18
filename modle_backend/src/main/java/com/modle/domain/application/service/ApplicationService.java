@@ -38,8 +38,8 @@ public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
     private final JobPostingService jobPostingService;
-    private final ModelRepository modelRepository;
     private final JobPostingRepository jobPostingRepository;
+    private final ModelRepository modelRepository;
     private final MessageService messageService;
     private final MessageRepository messageRepository;
 
@@ -56,7 +56,8 @@ public class ApplicationService {
 
     // MATCH-001: 모집 중 상태·중복 지원 검증 후 지원을 생성한다 (상태=APPLIED).
     @Transactional
-    public ApplicationResponse applyToJob(Long modelId, Long jobPostingId, ApplicationCreateRequest request) {
+    public ApplicationResponse applyToJob(Long userId, Long jobPostingId, ApplicationCreateRequest request) {
+        Long modelId = findModelIdByUserId(userId);
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
@@ -83,14 +84,16 @@ public class ApplicationService {
     }
 
     // MATCH-003: 모델이 특정 공고에 이미 지원했는지 확인한다.
-    public boolean hasApplied(Long modelId, Long jobPostingId) {
+    public boolean hasApplied(Long userId, Long jobPostingId) {
+        Long modelId = findModelIdByUserId(userId);
         return applicationRepository.existsByJobPostingIdAndModelIdAndStatusNot(
                 jobPostingId, modelId, ApplicationStatus.APPLICATION_CANCELLED);
     }
 
     // MATCH-002: 모델이 본인의 지원을 취소한다 (상태=APPLICATION_CANCELLED).
     @Transactional
-    public ApplicationResponse cancelApplication(Long modelId, Long applicationId) {
+    public ApplicationResponse cancelApplication(Long userId, Long applicationId) {
+        Long modelId = findModelIdByUserId(userId);
         Application application = applicationRepository
                 .findByIdAndModelId(applicationId, modelId)
                 .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
@@ -206,10 +209,7 @@ public class ApplicationService {
         JobPosting jobPosting = jobPostingRepository.findById(application.getJobPostingId())
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
-        Model model = modelRepository.findById(application.getModelId())
-                .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
-
-        boolean isModel = model.getUser().getId().equals(userId);
+        boolean isModel = isApplicationModel(userId, application);
         boolean isClient = jobPosting.getClientId().equals(userId);
 
         if (!isModel && !isClient) {
@@ -238,5 +238,18 @@ public class ApplicationService {
                 공고명: %s
                 쪽지함에서 상세 내용을 확인해 주세요.
                 """.formatted(jobPostingTitle);
+    }
+
+    private boolean isApplicationModel(Long userId, Application application) {
+        return modelRepository.findByUserId(userId)
+                .map(Model::getId)
+                .filter(application.getModelId()::equals)
+                .isPresent();
+    }
+
+    private Long findModelIdByUserId(Long userId) {
+        return modelRepository.findByUserId(userId)
+                .map(Model::getId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 }

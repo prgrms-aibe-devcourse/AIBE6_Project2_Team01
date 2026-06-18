@@ -15,8 +15,8 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-@Slf4j
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
     // 커스텀 예외 처리
     @ExceptionHandler(CustomException.class)
@@ -71,6 +71,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handle(Exception e) {
         log.error("Unhandled exception", e);
+        log.error("Unhandled exception occurred.", e);
         return new ResponseEntity<>(
                 ApiResponse.fail("500-1", "서버 오류가 발생했습니다."),
                 org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR

@@ -13,6 +13,7 @@ import com.modle.domain.user.entity.type.UserStatus;
 import com.modle.domain.user.repository.ClientRepository;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.UserRepository;
+import com.modle.domain.jobposting.service.AiRecommendService;
 import com.modle.global.auth.JwtTokenProvider;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
@@ -34,6 +35,7 @@ public class UserService {
     private final AuthTokenService authTokenService;
     private final EmailVerifyService emailVerifyService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AiRecommendService aiRecommendService;
 
     @Transactional
     public User registerModel(ModelRegisterRequest request) {
@@ -186,6 +188,7 @@ public class UserService {
                 } catch (IllegalArgumentException e) {
                 }
             }
+            aiRecommendService.upsertModelEmbedding(model.getId());
         } else if (request.role() == Role.CLIENT) {
             if (request.companyName() == null || request.companyNumber() == null
                     || request.clientType() == null) {
