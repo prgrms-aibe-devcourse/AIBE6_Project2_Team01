@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -32,14 +33,16 @@ public class ModelController {
         @Transactional(readOnly = true)
         @GetMapping
         @Operation(summary = "다건 조회 및 필터링")
-        public ApiResponse<List<ModelDto>> getItems(
+        public ApiResponse<Page<ModelDto>> getItems(
                 @RequestParam(required = false) String query,
                 @RequestParam(required = false) String gender,
                 @RequestParam(required = false) List<Category> categories,
-                @RequestParam(required = false) List<String> regions, // 지역 파라미터 추가
+                @RequestParam(required = false) List<String> regions,
                 @RequestParam(required = false) List<String> tags,
-                @RequestParam(required = false) String height, // 키 필터링 파라미터 추가
-                @RequestParam(required = false) String sort // 정렬 파라미터 추가
+                @RequestParam(required = false) String height,
+                @RequestParam(required = false) String sort,
+                @RequestParam(defaultValue = "0") int page, // 추가 (첫 페이지는 0)
+                @RequestParam(defaultValue = "12") int size // 추가 (한 번에 12개씩)
         ) {
                 // 성별 파라미터 처리
                 Sex sexParam = null;
@@ -48,11 +51,12 @@ public class ModelController {
                 } else if ("F".equalsIgnoreCase(gender) || "FEMALE".equalsIgnoreCase(gender)) {
                         sexParam = Sex.F;
                 }
-                // Service 호출
-                List<Model> items = modelService.getList(query, sexParam, categories, regions, tags, height, sort);
-                // DTO 변환
-                List<ModelDto> dtoList = items.stream().map(ModelDto::new).toList();
+                Page<Model> items = modelService.getList(query, sexParam, categories, regions, tags, height, sort, page, size);
+
+                // Page 객체에 내장된 map을 사용해 Entity -> Dto로 자동 변환
+                Page<ModelDto> dtoList = items.map(ModelDto::new);
                 return new ApiResponse<>("200-1", "조회 성공", dtoList);
+
         }
 
         @Transactional(readOnly = true)

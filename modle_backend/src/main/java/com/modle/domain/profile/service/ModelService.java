@@ -1,12 +1,5 @@
 package com.modle.domain.profile.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-
 import com.modle.domain.jobposting.entity.type.Region;
 import com.modle.domain.profile.entity.ModelCategory;
 import com.modle.domain.profile.entity.ModelRegion;
@@ -19,8 +12,16 @@ import com.modle.domain.user.entity.User;
 import com.modle.domain.user.entity.type.Sex;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.ModelSpecification;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -32,8 +33,8 @@ public class ModelService {
         return modelRepository.count();
     }
 
-    public List<Model> getList(String query, Sex sex, List<Category> categories, List<String> regions,
-            List<String> tags, String height, String sortType) {
+    public Page<Model> getList(String query, Sex sex, List<Category> categories, List<String> regions,
+                               List<String> tags, String height, String sortType, int page, int size) {
         List<Specification<Model>> specs = new ArrayList<>();
         // 1. 이름 검색 (query)
         if (query != null && !query.trim().isEmpty()) {
@@ -91,8 +92,10 @@ public class ModelService {
         } else {
             sortObj = Sort.by(Sort.Direction.DESC, "createdDate");
         }
-
-        return modelRepository.findAll(finalSpec, sortObj);
+        // 추가: 페이지 번호, 사이즈, 정렬 기준을 담은 Pageable 객체 생성
+        Pageable pageable = PageRequest.of(page, size, sortObj);
+        // 변경: findAll 호출 시 Pageable 객체를 넘겨줌
+        return modelRepository.findAll(finalSpec, pageable);
     }
 
     public Model findById(Long id) {

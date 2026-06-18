@@ -16,7 +16,7 @@ export function ModelCard({
   showBookmark = false,
 }: Props) {
   const latestPortfolioImage =
-    (model.portfolios && model.portfolios.length > 0 && model.portfolios[model.portfolios.length - 1].imgUrl)
+    (model.portfolios && model.portfolios.length > 0 && model.portfolios[0].imgUrl)
       || model.profileImageUrl
       || '/placeholder.png';
 

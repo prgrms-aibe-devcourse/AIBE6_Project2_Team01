@@ -23,10 +23,9 @@ export function DetailLookbook({ portfolios }: DetailLookbookProps) {
     );
   }
 
-  // 최신순(id 역순) 정렬
-  const sortedPortfolios = [...portfolios].sort((a, b) => b.id - a.id);
-  const displayedPortfolios = sortedPortfolios.slice(0, visibleCount);
-  const hasMore = visibleCount < sortedPortfolios.length;
+  // 프론트엔드 강제 정렬 제거: 백엔드에서 내려주는 displayOrder 기준 배열 순서를 그대로 따름
+  const displayedPortfolios = portfolios.slice(0, visibleCount);
+  const hasMore = visibleCount < portfolios.length;
 
   return (
     <div className="w-full">
