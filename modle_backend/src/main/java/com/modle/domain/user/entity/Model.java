@@ -2,6 +2,7 @@ package com.modle.domain.user.entity;
 
 import com.modle.domain.profile.entity.ModelCategory;
 import com.modle.domain.profile.entity.ModelTag;
+import com.modle.domain.user.entity.type.Sex;
 import com.modle.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -30,7 +31,7 @@ public class Model extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private com.modle.domain.user.entity.type.Sex sex;
+    private Sex sex;
 
     @Column(nullable = false)
     private int age;
@@ -68,7 +69,7 @@ public class Model extends BaseEntity {
     private List<com.modle.domain.profile.entity.Portfolio> portfolios = new ArrayList<>();
 
     public static Model create(User user, String name, int height,
-                               int weight, com.modle.domain.user.entity.type.Sex sex, int age) {
+                               int weight, Sex sex, int age) {
         Model model = new Model();
         model.user = user;
         model.name = name;
@@ -79,7 +80,7 @@ public class Model extends BaseEntity {
         return model;
     }
 
-    public void update(String name, int height, int weight, com.modle.domain.user.entity.type.Sex sex,
+    public void update(String name, int height, int weight, Sex sex,
                        int age, String introduction, String profileImageUrl,
                        java.time.LocalDate careerStartDate) {
         this.name = name;

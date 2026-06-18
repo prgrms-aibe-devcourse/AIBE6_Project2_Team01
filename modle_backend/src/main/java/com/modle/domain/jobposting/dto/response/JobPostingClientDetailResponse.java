@@ -1,11 +1,11 @@
 package com.modle.domain.jobposting.dto.response;
 
-import com.modle.domain.jobposting.entity.Category;
+import com.modle.domain.jobposting.entity.type.Category;
 import com.modle.domain.jobposting.entity.JobPosting;
-import com.modle.domain.jobposting.entity.JobPostingStatus;
-import com.modle.domain.jobposting.entity.PayType;
-import com.modle.domain.jobposting.entity.Region;
-import com.modle.domain.jobposting.entity.RequiredSex;
+import com.modle.domain.jobposting.entity.type.JobPostingStatus;
+import com.modle.domain.jobposting.entity.type.PayType;
+import com.modle.domain.jobposting.entity.type.Region;
+import com.modle.domain.jobposting.entity.type.RequiredSex;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -34,7 +34,7 @@ public record JobPostingClientDetailResponse(
         LocalDateTime createdDate,
         // TODO(AI추천): AI 추천 단위 구현 후 실제 추천 모델 목록으로 교체
         List<Long> recommendedModelIds
-) {
+) implements JobPostingDetailResponse {
     public static JobPostingClientDetailResponse from(JobPosting jobPosting) {
         return new JobPostingClientDetailResponse(
                 jobPosting.getId(),

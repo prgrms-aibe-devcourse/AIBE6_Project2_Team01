@@ -12,10 +12,13 @@ public enum ErrorCode {
     OAUTH_EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "409-4", "이미 다른 방식으로 가입된 이메일입니다. 기존 로그인 방식을 이용해주세요."),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "401-1", "비밀번호가 일치하지 않습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "404-1", "존재하지 않는 계정입니다."),
+    MODEL_NOT_FOUND(HttpStatus.NOT_FOUND, "404-7", "존재하지 않는 모델입니다."),
     USER_PENDING(HttpStatus.FORBIDDEN, "403-0", "가입 승인 대기 중인 계정입니다."),
     USER_SUSPENDED(HttpStatus.FORBIDDEN, "403-1", "정지된 계정입니다."),
     USER_WITHDRAWN(HttpStatus.FORBIDDEN, "403-2", "탈퇴한 계정입니다."),
     USER_REJECTED(HttpStatus.FORBIDDEN, "403-3", "가입이 반려된 계정입니다."),
+    CONTRACT_PDF_REQUIRED(HttpStatus.BAD_REQUEST, "400-12", "PDF 생성이 완료된 계약서만 발송할 수 있습니다."),
+    TOKEN_STOLEN(HttpStatus.UNAUTHORIZED, "401-5", "보안 위협이 감지되었습니다. 다시 로그인해주세요."),
 
     // 이메일 인증
     EMAIL_CODE_NOT_FOUND(HttpStatus.BAD_REQUEST, "400-1", "인증 코드가 만료되었거나 존재하지 않습니다."),
@@ -43,6 +46,10 @@ public enum ErrorCode {
     CONTRACT_NOT_FOUND(HttpStatus.NOT_FOUND, "404-4", "계약서를 찾을 수 없습니다."),
     CONTRACT_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "404-5", "계약서 템플릿을 찾을 수 없습니다."),
     CONTRACT_PDF_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "500-2", "계약서 PDF 생성에 실패했습니다."),
+    CONTRACT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "403-10", "계약서에 접근할 권한이 없습니다."),
+    CONTRACT_NOT_VIEWABLE(HttpStatus.BAD_REQUEST, "400-13", "열람 가능한 계약서가 아닙니다."),
+    CONTRACT_TEMPLATE_LOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "500-3", "계약서 템플릿 로드에 실패했습니다."),
+    CONTRACT_FORBIDDEN(HttpStatus.FORBIDDEN, "403-11", "계약서에 대한 권한이 없습니다."),
 
     // 공고
     JOB_POSTING_NOT_FOUND(HttpStatus.NOT_FOUND, "404-2", "공고를 찾을 수 없습니다."),
@@ -60,6 +67,22 @@ public enum ErrorCode {
     MESSAGE_SELF_SEND_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "MSG-006", "자기 자신과 대화방을 만들 수 없습니다."),
     MESSAGE_INVALID_PARENT(HttpStatus.BAD_REQUEST, "MSG-007", "답신 대상 쪽지가 현재 대화방에 속하지 않습니다."),
     MESSAGE_POST_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "MSG-008", "선택한 공고를 대화에 연결할 수 없습니다."),
+
+    // 신고
+    REPORT_TARGET_NOT_FOUND(HttpStatus.NOT_FOUND, "404-4", "신고 대상이 존재하지 않습니다."),
+    REPORT_ALREADY_EXISTS(HttpStatus.CONFLICT, "409-5", "이미 신고한 대상입니다."),
+    REPORT_SELF_NOT_ALLOWED(HttpStatus.FORBIDDEN, "403-8", "자신을 신고할 수 없습니다."),
+    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "404-5", "신고 내역을 찾을 수 없습니다."),
+    REPORT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "403-9", "해당 콘텐츠에 대한 신고 권한이 없습니다."),
+
+    // 지원
+    APPLICATION_JOB_NOT_RECRUITING(HttpStatus.BAD_REQUEST, "400-11", "모집 중인 공고에만 지원할 수 있습니다."),
+    APPLICATION_ALREADY_EXISTS(HttpStatus.CONFLICT, "409-6", "이미 지원한 공고입니다."),
+    APPLICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "404-6", "지원 내역을 찾을 수 없습니다."),
+    APPLICATION_CANCEL_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-13", "지원 완료 상태에서만 취소할 수 있습니다."),
+    APPLICATION_CONTACT_FORBIDDEN(HttpStatus.FORBIDDEN, "403-11", "해당 공고의 작성자만 컨택할 수 있습니다."),
+    APPLICATION_ALREADY_CONTACTED(HttpStatus.CONFLICT, "409-7", "이미 컨택된 지원입니다."),
+    APPLICATION_CONTACT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-14", "지원 완료(APPLIED) 상태에서만 컨택할 수 있습니다."),
 
     // 잘못된 접근
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "403-6", "권한이 없습니다."),

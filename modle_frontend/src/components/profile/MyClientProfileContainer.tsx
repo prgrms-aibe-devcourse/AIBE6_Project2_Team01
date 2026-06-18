@@ -2,6 +2,8 @@
 
 import { ClientProfileInfo } from '@/components/profile/ClientProfileInfo';
 import { ClientProfileHeader } from '@/components/profile/ClientProfileHeader';
+import { BookmarkedModels } from '@/components/profile/BookmarkedModels';
+import { MyJobPostings } from '@/components/profile/MyJobPostings';
 import { ProfileTabs } from '@/components/profile/ProfileTabs';
 import { Client } from '@/types/client';
 import { useState } from 'react';
@@ -39,9 +41,12 @@ export function MyClientProfileContainer({ initialData }: Props) {
       {/* 3. 메인 컨텐츠 영역 */}
       <div className="max-w-[1200px] mx-auto px-6 py-10">
         {activeTab === 'profile' && <ClientProfileInfo data={initialData} />}
-        
+        {activeTab === 'favorites' && <BookmarkedModels />}
+
+        {activeTab === 'jobs' && <MyJobPostings />}
+
         {/* 임시 처리 (나머지 탭) */}
-        {activeTab !== 'profile' && (
+        {['contracts'].includes(activeTab) && (
           <div className="py-20 text-center text-sm text-gray-500">
             아직 준비 중인 탭입니다.
           </div>

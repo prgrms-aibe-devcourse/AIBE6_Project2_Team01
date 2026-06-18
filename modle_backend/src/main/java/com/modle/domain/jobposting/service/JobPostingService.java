@@ -1,19 +1,16 @@
 package com.modle.domain.jobposting.service;
 
+import com.modle.domain.application.entity.type.ApplicationStatus;
+import com.modle.domain.application.repository.ApplicationRepository;
 import com.modle.domain.jobposting.dto.request.JobPostingCreateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingStatusUpdateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
-import com.modle.domain.jobposting.dto.response.JobPostingClientDetailResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingListResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingModelDetailResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingOtherDetailResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingTemplateResponse;
-import com.modle.domain.jobposting.entity.Category;
+import com.modle.domain.jobposting.dto.response.*;
+import com.modle.domain.jobposting.entity.type.Category;
 import com.modle.domain.jobposting.entity.JobPosting;
-import com.modle.domain.jobposting.entity.JobPostingStatus;
-import com.modle.domain.jobposting.entity.Region;
-import com.modle.domain.jobposting.entity.ViewerType;
+import com.modle.domain.jobposting.entity.type.JobPostingStatus;
+import com.modle.domain.jobposting.entity.type.Region;
+import com.modle.domain.jobposting.entity.type.ViewerType;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
 import com.modle.domain.jobposting.event.JobPostingCreatedEvent;
@@ -36,6 +33,7 @@ public class JobPostingService {
     private final JobPostingRepository jobPostingRepository;
     private final JobPostingTemplateRepository jobPostingTemplateRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ApplicationRepository applicationRepository;
 
 
     // JOB-001: 카테고리별 공고 템플릿 목록을 반환한다.
@@ -163,8 +161,17 @@ public class JobPostingService {
                 .toList();
     }
 
+    /**
+     * 지원(application) 도메인 등 타 도메인에서 공고 모집 상태·작성자를 확인할 때 사용하는 공개 조회 메서드.
+     */
+    public JobPostingResponse getJobPosting(Long jobPostingId) {
+        JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
+        return JobPostingResponse.from(jobPosting);
+    }
+
     // JOB-006~008: 뷰어 타입에 따라 다른 공고 상세 정보를 반환한다.
-    public Object getJobPostingDetail(Long jobPostingId, ViewerType viewerType) {
+    public JobPostingDetailResponse getJobPostingDetail(Long jobPostingId, ViewerType viewerType) {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
@@ -173,5 +180,40 @@ public class JobPostingService {
             case CLIENT -> JobPostingClientDetailResponse.from(jobPosting);
             case OTHER -> JobPostingOtherDetailResponse.from(jobPosting);
         };
+    }
+
+    // MATCH-006: 작성한 공고 목록 (의뢰인)
+    public List<MyJobPostingResponse> getMyJobPostings(Long clientId) {
+        List<JobPosting> jobPostings =
+                jobPostingRepository.findByClientIdOrderByCreatedDateDesc(clientId);
+
+        return jobPostings.stream()
+                .map(jobPosting -> {
+                    long applicantCount = applicationRepository.countByJobPostingIdAndStatusNot(
+                            jobPosting.getId(), ApplicationStatus.APPLICATION_CANCELLED);
+
+                    long contactedCount = applicationRepository.countByJobPostingIdAndStatusIn(
+                            jobPosting.getId(),
+                            List.of(
+                                    ApplicationStatus.CONTACTED,
+                                    ApplicationStatus.CONTRACT_SENT,
+                                    ApplicationStatus.SHOOTING,
+                                    ApplicationStatus.COMPLETED
+                            )
+                    );
+
+                    long completedCount = applicationRepository.countByJobPostingIdAndStatus(
+                            jobPosting.getId(),
+                            ApplicationStatus.COMPLETED
+                    );
+
+                    return MyJobPostingResponse.of(
+                            jobPosting,
+                            applicantCount,
+                            contactedCount,
+                            completedCount
+                    );
+                })
+                .toList();
     }
 }

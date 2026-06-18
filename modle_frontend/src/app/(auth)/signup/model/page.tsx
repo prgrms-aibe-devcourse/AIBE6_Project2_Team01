@@ -6,10 +6,10 @@ import { useState } from "react";
 
 import Link from "next/link";
 
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { client } from "@/lib/api/client";
 import { getErrorMessage } from "@/lib/api/error";
 import { REGION_OPTIONS } from "@/lib/constants/region";
-import { PasswordInput } from "@/components/ui/PasswordInput";
 
 type FormState = {
   email: string;
@@ -199,7 +199,9 @@ export default function ModelSignupPage() {
               onChange={(event) => updateField("region", event.target.value)}
               className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
             >
-              <option value="" disabled>지역을 선택하세요</option>
+              <option value="" disabled>
+                지역을 선택하세요
+              </option>
               {REGION_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}

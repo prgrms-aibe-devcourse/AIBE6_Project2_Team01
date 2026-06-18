@@ -1,7 +1,26 @@
 package com.modle.global.init;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.modle.domain.contract.entity.ContractTemplate;
 import com.modle.domain.contract.repository.ContractTemplateRepository;
+import com.modle.domain.jobposting.entity.JobPosting;
+import com.modle.domain.jobposting.entity.type.Category;
+import com.modle.domain.jobposting.entity.type.JobPostingStatus;
+import com.modle.domain.jobposting.entity.type.PayType;
+import com.modle.domain.jobposting.entity.type.Region;
+import com.modle.domain.jobposting.entity.type.RequiredSex;
+import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.profile.service.ModelService;
 import com.modle.domain.user.entity.Client;
 import com.modle.domain.user.entity.Model;
@@ -12,16 +31,8 @@ import com.modle.domain.user.entity.type.UserStatus;
 import com.modle.domain.user.repository.ClientRepository;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
@@ -36,6 +47,7 @@ public class InitData {
         private final BCryptPasswordEncoder passwordEncoder;
         private final ModelService modelService;
         private final ContractTemplateRepository contractTemplateRepository;
+        private final JobPostingRepository jobPostingRepository;
 
         @Bean
         public ApplicationRunner initDataApplicationRunner() {
@@ -46,6 +58,7 @@ public class InitData {
                         self.work4(); // 테스트 모델프로필
                         self.work5(); // 테스트 클라이언트프로필
                         self.work6(); // 계약서 템플릿
+                        self.work7(); // 테스트 공고
                 };
         }
 
@@ -118,7 +131,8 @@ public class InitData {
                                 Role.MODEL);
                 userRepository.save(user1);
                 Model model1 = modelService.create(user1, "홍길동", 180, 75, com.modle.domain.user.entity.type.Sex.M, 25);
-                modelService.update(model1, "홍길동", 180, 75, com.modle.domain.user.entity.type.Sex.M, 25, List.of("FITTING"), List.of("tag1"),
+                modelService.update(model1, "홍길동", 180, 75, com.modle.domain.user.entity.type.Sex.M, 25,
+                                List.of("FITTING"), List.of("tag1"),
                                 "안녕하세요, 홍길동입니다.",
                                 "SEOUL", "", null, List.of("SEOUL"));
 
@@ -129,7 +143,8 @@ public class InitData {
                                 Role.MODEL);
                 userRepository.save(user2);
                 Model model2 = modelService.create(user2, "김철수", 175, 68, com.modle.domain.user.entity.type.Sex.M, 30);
-                modelService.update(model2, "김철수", 175, 68, com.modle.domain.user.entity.type.Sex.M, 30, List.of("HAIR"), List.of("tag2"),
+                modelService.update(model2, "김철수", 175, 68, com.modle.domain.user.entity.type.Sex.M, 30,
+                                List.of("HAIR"), List.of("tag2"),
                                 "안녕하세요, 김철수입니다.",
                                 "BUSAN", "", java.time.LocalDate.of(2020, 1, 1), List.of("BUSAN"));
 
@@ -140,7 +155,8 @@ public class InitData {
                                 Role.MODEL);
                 userRepository.save(user3);
                 Model model3 = modelService.create(user3, "이영희", 165, 55, com.modle.domain.user.entity.type.Sex.F, 28);
-                modelService.update(model3, "이영희", 165, 55, com.modle.domain.user.entity.type.Sex.F, 28, List.of("MAKEUP"), List.of("tag3"),
+                modelService.update(model3, "이영희", 165, 55, com.modle.domain.user.entity.type.Sex.F, 28,
+                                List.of("MAKEUP"), List.of("tag3"),
                                 "안녕하세요, 이영희입니다.",
                                 "DAEJEON", "", null, List.of("DAEJEON"));
         }
@@ -206,6 +222,180 @@ public class InitData {
                                                 """);
 
                 contractTemplateRepository.save(template);
+        }
+
+        // 테스트 공고 데이터 생성
+        @Transactional
+        public void work7() {
+                if (jobPostingRepository.count() > 0)
+                        return;
+
+                Long client1Id = userRepository.findByEmail("client1@modle.com").map(User::getId).orElse(null);
+                Long client2Id = userRepository.findByEmail("client2@modle.com").map(User::getId).orElse(null);
+                Long client3Id = userRepository.findByEmail("client3@modle.com").map(User::getId).orElse(null);
+
+                if (client1Id == null || client2Id == null || client3Id == null)
+                        return;
+
+                JobPosting job1 = JobPosting.builder()
+                                .clientId(client1Id)
+                                .title("2025 여름 헤어 화보 모델 모집")
+                                .content("무신사 여름 화보 촬영을 위한 헤어 모델을 모집합니다.")
+                                .category(Category.HAIR)
+                                .region(Region.SEOUL)
+                                .status(JobPostingStatus.RECRUITING)
+                                .requiredSex(RequiredSex.ANY)
+                                .ageMin(20)
+                                .ageMax(30)
+                                .payment(new BigDecimal("500000"))
+                                .payType(PayType.CASH)
+                                .shootDate(LocalDateTime.of(2025, 8, 10, 10, 0))
+                                .build();
+
+                JobPosting job2 = JobPosting.builder()
+                                .clientId(client2Id)
+                                .title("가을 신상 의류 피팅 모델 모집")
+                                .content("지그재그 가을 신상 의류 피팅 촬영 모델을 모집합니다.")
+                                .category(Category.FITTING)
+                                .region(Region.BUSAN)
+                                .status(JobPostingStatus.RECRUITING)
+                                .requiredSex(RequiredSex.F)
+                                .ageMin(20)
+                                .ageMax(28)
+                                .heightMin(160)
+                                .heightMax(170)
+                                .payment(new BigDecimal("300000"))
+                                .payType(PayType.CASH)
+                                .shootDate(LocalDateTime.of(2025, 9, 5, 13, 0))
+                                .build();
+
+                JobPosting job3 = JobPosting.builder()
+                                .clientId(client3Id)
+                                .title("뷰티 메이크업 화보 모델 모집")
+                                .content("에이블리 메이크업 신제품 화보 촬영 모델을 모집합니다.")
+                                .category(Category.MAKEUP)
+                                .region(Region.GYEONGGI)
+                                .status(JobPostingStatus.RECRUITING)
+                                .requiredSex(RequiredSex.ANY)
+                                .ageMin(22)
+                                .payType(PayType.SERVICE)
+                                .shootDate(LocalDateTime.of(2025, 10, 1, 11, 0))
+                                .build();
+
+                JobPosting job4 = JobPosting.builder()
+                                .clientId(client1Id)
+                                .title("가을 신상 의류 룩북 모델 모집")
+                                .content("무신사 가을 신상 의류 룩북 촬영을 위한 모델을 모집합니다.")
+                                .category(Category.CLOTHING)
+                                .region(Region.DAEGU)
+                                .status(JobPostingStatus.RECRUITING)
+                                .requiredSex(RequiredSex.F)
+                                .ageMin(18)
+                                .ageMax(25)
+                                .heightMin(165)
+                                .payment(new BigDecimal("400000"))
+                                .payType(PayType.CASH)
+                                .shootDate(LocalDateTime.of(2025, 7, 20, 14, 0))
+                                .build();
+
+                JobPosting job5 = JobPosting.builder()
+                                .clientId(client2Id)
+                                .title("핸드크림 신제품 핸드 모델 모집")
+                                .content("지그재그 핸드크림 신제품 촬영을 위한 핸드 모델을 모집합니다.")
+                                .category(Category.HAND)
+                                .region(Region.INCHEON)
+                                .status(JobPostingStatus.RECRUITING)
+                                .requiredSex(RequiredSex.ANY)
+                                .payType(PayType.FREE)
+                                .shootDate(LocalDateTime.of(2025, 11, 3, 10, 0))
+                                .build();
+
+                JobPosting job6 = JobPosting.builder()
+                                .clientId(client3Id)
+                                .title("신메뉴 음식 화보 모델 모집")
+                                .content("에이블리 신메뉴 음식 화보 촬영을 위한 모델을 모집합니다.")
+                                .category(Category.FOOD)
+                                .region(Region.GWANGJU)
+                                .status(JobPostingStatus.RECRUITING)
+                                .requiredSex(RequiredSex.M)
+                                .ageMin(25)
+                                .ageMax(35)
+                                .payment(new BigDecimal("200000"))
+                                .payType(PayType.CASH)
+                                .shootDate(LocalDateTime.of(2025, 6, 15, 9, 0))
+                                .build();
+
+                JobPosting job7 = JobPosting.builder()
+                                .clientId(client1Id)
+                                .title("가전제품 광고 모델 모집")
+                                .content("무신사 가전제품 광고 촬영을 위한 제품 모델을 모집합니다.")
+                                .category(Category.PRODUCT)
+                                .region(Region.DAEJEON)
+                                .status(JobPostingStatus.RECRUITING)
+                                .requiredSex(RequiredSex.ANY)
+                                .heightMin(170)
+                                .heightMax(185)
+                                .weightMin(60)
+                                .weightMax(75)
+                                .payment(new BigDecimal("600000"))
+                                .payType(PayType.CASH)
+                                .shootDate(LocalDateTime.of(2025, 9, 25, 15, 0))
+                                .build();
+
+                JobPosting job8 = JobPosting.builder()
+                                .clientId(client2Id)
+                                .title("브랜드 홍보 영상 출연 모델 모집")
+                                .content("지그재그 브랜드 홍보 영상 출연을 위한 모델을 모집합니다.")
+                                .category(Category.ETC)
+                                .region(Region.ULSAN)
+                                .status(JobPostingStatus.RECRUITING)
+                                .requiredSex(RequiredSex.F)
+                                .minCareerMonths(6)
+                                .payType(PayType.SERVICE)
+                                .shootDate(LocalDateTime.of(2025, 12, 1, 13, 0))
+                                .build();
+
+                JobPosting job9 = JobPosting.builder()
+                                .clientId(client3Id)
+                                .title("제주 화보 헤어 모델 모집")
+                                .content("에이블리 제주 로케이션 화보 촬영을 위한 헤어 모델을 모집합니다.")
+                                .category(Category.HAIR)
+                                .region(Region.JEJU)
+                                .status(JobPostingStatus.RECRUITING)
+                                .requiredSex(RequiredSex.M)
+                                .ageMin(23)
+                                .ageMax(29)
+                                .payment(new BigDecimal("450000"))
+                                .payType(PayType.CASH)
+                                .shootDate(LocalDateTime.of(2025, 8, 30, 10, 0))
+                                .build();
+
+                JobPosting job10 = JobPosting.builder()
+                                .clientId(client1Id)
+                                .title("강원 워크웨어 룩북 모델 모집")
+                                .content("무신사 워크웨어 룩북 촬영을 위한 모델을 모집합니다.")
+                                .category(Category.CLOTHING)
+                                .region(Region.GANGWON)
+                                .status(JobPostingStatus.RECRUITING)
+                                .requiredSex(RequiredSex.ANY)
+                                .ageMin(19)
+                                .ageMax(26)
+                                .heightMin(158)
+                                .heightMax(168)
+                                .payType(PayType.FREE)
+                                .shootDate(LocalDateTime.of(2025, 10, 15, 11, 0))
+                                .build();
+
+                jobPostingRepository.save(job1);
+                jobPostingRepository.save(job2);
+                jobPostingRepository.save(job3);
+                jobPostingRepository.save(job4);
+                jobPostingRepository.save(job5);
+                jobPostingRepository.save(job6);
+                jobPostingRepository.save(job7);
+                jobPostingRepository.save(job8);
+                jobPostingRepository.save(job9);
+                jobPostingRepository.save(job10);
         }
 
 }

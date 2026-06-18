@@ -1,11 +1,23 @@
 "use client";
 
+import { ReportModal } from "@/components/ui/ReportModal";
 import { useAuth } from "@/hooks/useAuth";
+import { checkApplyStatus, getApplicants } from "@/lib/api/application";
+import {
+  addJobBookmark,
+  getJobBookmarks,
+  removeJobBookmark,
+} from "@/lib/api/bookmark";
 import { client } from "@/lib/api/client";
+import {
+  STATUS_COLORS,
+  STATUS_LABELS,
+  STATUS_TRANSITIONS,
+} from "@/lib/constants/jobPostingStatus";
 import { getRegionLabel } from "@/lib/constants/region";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { use, useEffect, useRef, useState } from "react";
+import { use, useEffect, useState } from "react";
 
 type ClientDetail = {
   id: number;
@@ -80,30 +92,6 @@ function isOtherDetail(d: DetailData): d is OtherDetail {
   return !isClientDetail(d) && !isModelDetail(d);
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  RECRUITING: "모집 중",
-  SHOOTING: "촬영 중",
-  COMPLETED: "완료",
-  CANCELLED: "취소",
-  ON_HOLD: "일시정지",
-  CLOSED: "마감",
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  RECRUITING: "bg-green-100 text-green-700",
-  SHOOTING:   "bg-blue-100 text-blue-700",
-  COMPLETED:  "bg-gray-100 text-gray-600",
-  CANCELLED:  "bg-red-100 text-red-600",
-  ON_HOLD:    "bg-amber-100 text-amber-700",
-  CLOSED:     "bg-slate-200 text-slate-600",
-};
-
-const STATUS_TRANSITIONS: Record<string, string[]> = {
-  RECRUITING: ["SHOOTING", "CANCELLED", "ON_HOLD", "CLOSED"],
-  SHOOTING:   ["COMPLETED", "CANCELLED", "ON_HOLD"],
-  ON_HOLD:    ["RECRUITING", "CANCELLED", "CLOSED"],
-};
-
 export default function JobDetailPage({
   params,
 }: {
@@ -113,25 +101,24 @@ export default function JobDetailPage({
   const postingId = Number(id);
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
-  const alertedRef = useRef(false);
 
-  useEffect(() => {
-    if (!authLoading && !user && !alertedRef.current) {
-      alertedRef.current = true;
-      alert("로그인이 필요한 서비스입니다.");
-      router.replace("/login");
-    }
-  }, [user, authLoading, router]);
+  const requireLogin = () => {
+    alert("로그인이 필요한 서비스입니다.");
+    router.push("/login");
+  };
 
   const [detail, setDetail] = useState<DetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [favorited, setFavorited] = useState(false);
+  const [hasApplied, setHasApplied] = useState<boolean | null>(null);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [statusChanging, setStatusChanging] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [applicantCount, setApplicantCount] = useState<number | null>(null);
 
   useEffect(() => {
-    if (authLoading || !user) return;
+    if (authLoading) return;
     client
       .GET("/api/v1/jobs/{id}", {
         params: { path: { id: postingId } },
@@ -145,7 +132,7 @@ export default function JobDetailPage({
         const loaded = (data?.data as DetailData) ?? null;
         setDetail(loaded);
         if (loaded && isModelDetail(loaded)) {
-          setFavorited(loaded.favorited);
+          setFavorited(loaded.favorited); // 빠른 초기값 (API 재확인 전 표시용)
         }
         if (loaded && isClientDetail(loaded)) {
           const transitions = STATUS_TRANSITIONS[loaded.status] ?? [];
@@ -158,6 +145,48 @@ export default function JobDetailPage({
         setLoading(false);
       });
   }, [postingId, authLoading, user]);
+
+  // 북마크 실제 상태를 API로 동기화 (목록과 상세 간 불일치 방지)
+  useEffect(() => {
+    if (!user || user.role !== "MODEL") return;
+    getJobBookmarks()
+      .then((bookmarks) => {
+        setFavorited(bookmarks.some((b) => b.jobPostingId === postingId));
+      })
+      .catch(() => {});
+  }, [user, postingId]);
+
+  // 지원 여부 동기화 (비로그인·MODEL 외 역할은 false로 초기화해 버튼 활성화)
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user || user.role !== "MODEL") {
+      setHasApplied(false);
+      return;
+    }
+    checkApplyStatus(postingId)
+      .then(setHasApplied)
+      .catch(() => setHasApplied(false));
+  }, [user, postingId, authLoading]);
+
+  // 공고 작성자일 때 지원자 수 조회
+  useEffect(() => {
+    if (!detail || !isClientDetail(detail)) return;
+    if (!user || user.id !== detail.clientId) return;
+    getApplicants(postingId)
+      .then((list) => setApplicantCount(list.length))
+      .catch(() => {});
+  }, [detail, user, postingId]);
+
+  const handleBookmarkToggle = async () => {
+    const was = favorited;
+    setFavorited(!was);
+    try {
+      if (was) await removeJobBookmark(postingId);
+      else await addJobBookmark(postingId);
+    } catch {
+      setFavorited(was);
+    }
+  };
 
   const handleStatusChange = async () => {
     if (!selectedStatus) return;
@@ -187,7 +216,7 @@ export default function JobDetailPage({
     }
     const newStatus = (data?.data as { status: string })?.status;
     if (newStatus) {
-      setDetail((prev) => prev ? { ...prev, status: newStatus } : prev);
+      setDetail((prev) => (prev ? { ...prev, status: newStatus } : prev));
       const transitions = STATUS_TRANSITIONS[newStatus] ?? [];
       setSelectedStatus(transitions[0] ?? "");
     }
@@ -205,7 +234,7 @@ export default function JobDetailPage({
     router.push("/jobs");
   };
 
-  if (authLoading || !user) {
+  if (authLoading) {
     return <main className="min-h-screen bg-canvas" />;
   }
 
@@ -243,7 +272,9 @@ export default function JobDetailPage({
                 <h1 className="text-[28px] font-bold leading-9 text-ink">
                   {detail.title}
                 </h1>
-                <span className={`inline-flex h-7 items-center rounded-full px-3 text-[12px] font-semibold ${STATUS_COLORS[detail.status] ?? "bg-canvas-soft text-body"}`}>
+                <span
+                  className={`inline-flex h-7 items-center rounded-full px-3 text-[12px] font-semibold ${STATUS_COLORS[detail.status] ?? "bg-canvas-soft text-body"}`}
+                >
                   {STATUS_LABELS[detail.status] ?? detail.status}
                 </span>
               </div>
@@ -268,11 +299,11 @@ export default function JobDetailPage({
                   삭제
                 </button>
               </div>
-            ) : isModelDetail(detail) ? (
+            ) : !user || isModelDetail(detail) ? (
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => setFavorited((f) => !f)}
+                  onClick={handleBookmarkToggle}
                   className={`h-10 rounded-lg border px-5 text-[14px] font-semibold transition ${
                     favorited
                       ? "border-red-400 bg-red-50 text-red-500"
@@ -281,16 +312,44 @@ export default function JobDetailPage({
                 >
                   {favorited ? "♥ 저장하기" : "♡ 저장하기"}
                 </button>
+                <div className="group relative">
+                  <button
+                    type="button"
+                    disabled={hasApplied === true || hasApplied === null}
+                    onClick={() => {
+                      if (!user) {
+                        requireLogin();
+                        return;
+                      }
+                      router.push(`/application/${postingId}`);
+                    }}
+                    className="h-10 rounded-lg bg-primary px-6 text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {hasApplied === true ? "지원함" : "지원하기"}
+                  </button>
+                  {hasApplied === null && (
+                    <div className="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-ink px-2 py-1 text-[12px] text-on-primary group-hover:block">
+                      지원 상태를 확인할 수 없습니다
+                    </div>
+                  )}
+                </div>
                 <button
                   type="button"
-                  onClick={() => alert("지원 기능은 준비 중입니다.")}
-                  className="h-10 rounded-lg bg-primary px-6 text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover"
+                  onClick={() => setReportOpen(true)}
+                  className="h-10 rounded-lg border border-hairline bg-surface px-4 text-[14px] font-semibold text-mute transition hover:border-red-300 hover:text-red-500"
                 >
-                  지원하기
+                  신고
                 </button>
               </div>
             ) : null}
           </div>
+          {reportOpen && (
+            <ReportModal
+              targetType="JOB_POSTING"
+              targetId={postingId}
+              onClose={() => setReportOpen(false)}
+            />
+          )}
         </header>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
@@ -427,13 +486,22 @@ export default function JobDetailPage({
           </aside>
         </div>
 
-        <div className="pt-4">
+        <div className="pt-4 flex flex-wrap items-center gap-4">
           <Link
             href="/jobs"
             className="text-[14px] text-mute underline-offset-2 hover:underline"
           >
             ← 목록으로
           </Link>
+          {isOwner && (
+            <Link
+              href={`/jobs/${detail.id}/applicants`}
+              className="inline-flex h-10 items-center rounded-lg bg-primary px-5 text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover"
+            >
+              지원자 목록 보기
+              {applicantCount !== null ? ` (${applicantCount}명)` : ""}
+            </Link>
+          )}
         </div>
       </div>
     </main>

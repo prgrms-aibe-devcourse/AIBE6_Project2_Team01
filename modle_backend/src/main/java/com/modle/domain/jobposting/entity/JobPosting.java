@@ -1,5 +1,6 @@
 package com.modle.domain.jobposting.entity;
 
+import com.modle.domain.jobposting.entity.type.*;
 import com.modle.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,7 +14,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity

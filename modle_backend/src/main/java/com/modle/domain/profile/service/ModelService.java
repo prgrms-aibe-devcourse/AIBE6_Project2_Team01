@@ -1,22 +1,26 @@
 package com.modle.domain.profile.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
+import com.modle.domain.jobposting.entity.type.Region;
 import com.modle.domain.profile.entity.ModelCategory;
+import com.modle.domain.profile.entity.ModelRegion;
 import com.modle.domain.profile.entity.ModelTag;
 import com.modle.domain.profile.entity.Tag;
 import com.modle.domain.profile.entity.type.Category;
 import com.modle.domain.profile.repository.TagRepository;
 import com.modle.domain.user.entity.Model;
 import com.modle.domain.user.entity.User;
-import com.modle.domain.profile.entity.ModelRegion;
-import com.modle.domain.jobposting.entity.Region;
+import com.modle.domain.user.entity.type.Sex;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.ModelSpecification;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import org.springframework.data.domain.Sort;
-import java.util.ArrayList;
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -24,11 +28,12 @@ public class ModelService {
     private final ModelRepository modelRepository;
     private final TagRepository tagRepository;
 
-    public long count(){
+    public long count() {
         return modelRepository.count();
     }
 
-    public List<Model> getList(String query, com.modle.domain.user.entity.type.Sex sex, List<Category> categories, List<String> regions, List<String> tags, String height, String sortType) {
+    public List<Model> getList(String query, Sex sex, List<Category> categories, List<String> regions,
+            List<String> tags, String height, String sortType) {
         List<Specification<Model>> specs = new ArrayList<>();
         // 1. 이름 검색 (query)
         if (query != null && !query.trim().isEmpty()) {
@@ -48,7 +53,7 @@ public class ModelService {
             for (String r : regions) {
                 mappedRegions.add(r); // Add English value (e.g. SEOUL)
                 try {
-                    mappedRegions.add(com.modle.domain.jobposting.entity.Region.valueOf(r).getDisplayName()); // Add Korean value (e.g. 서울)
+                    mappedRegions.add(Region.valueOf(r).getDisplayName()); // Add Korean value (e.g. 서울)
                 } catch (IllegalArgumentException e) {
                     // Ignore
                 }
@@ -77,7 +82,7 @@ public class ModelService {
             }
         }
         Specification<Model> finalSpec = Specification.allOf(specs);
-        
+
         Sort sortObj;
         if ("RATING".equalsIgnoreCase(sortType)) {
             sortObj = Sort.by(Sort.Direction.DESC, "avgRating");
@@ -86,7 +91,7 @@ public class ModelService {
         } else {
             sortObj = Sort.by(Sort.Direction.DESC, "createdDate");
         }
-        
+
         return modelRepository.findAll(finalSpec, sortObj);
     }
 
@@ -101,11 +106,10 @@ public class ModelService {
 
     public Model create(
             User user, String name, int height,
-            int weight, com.modle.domain.user.entity.type.Sex sex, int age
-    ){
+            int weight, Sex sex, int age) {
         Model model = Model.create(user, name, height, weight, sex, age);
         Model savedModel = modelRepository.save(model);
-        
+
         // MVP: User.region을 초기 model_region으로 1개 복사
         if (user.getRegion() != null && !user.getRegion().isBlank()) {
             try {
@@ -115,11 +119,13 @@ public class ModelService {
                 modelRegion.setRegion(regionEnum);
                 savedModel.getModelRegions().add(modelRegion);
             } catch (IllegalArgumentException e) {
-                // Ignore if User.region is not a valid Region enum (like just "서울" instead of "SEOUL")
-                // Wait, User.region usually holds display names or keys? Let's assume it's valid enum names.
+                // Ignore if User.region is not a valid Region enum (like just "서울" instead of
+                // "SEOUL")
+                // Wait, User.region usually holds display names or keys? Let's assume it's
+                // valid enum names.
             }
         }
-        
+
         return savedModel;
     }
 
@@ -128,7 +134,7 @@ public class ModelService {
             String name,
             int height,
             int weight,
-            com.modle.domain.user.entity.type.Sex sex,
+            Sex sex,
             int age,
             List<String> categories,
             List<String> tags,
@@ -136,11 +142,10 @@ public class ModelService {
             String region,
             String profileImageUrl,
             java.time.LocalDate careerStartDate,
-            List<String> activeRegions
-        ) {
+            List<String> activeRegions) {
         model.update(name, height, weight, sex, age, introduction, profileImageUrl, careerStartDate);
         model.getUser().updateRegion(region);
-        
+
         // 2. 활동 지역(ModelRegion) 업데이트
         model.getModelRegions().clear();
         if (activeRegions != null) {
@@ -161,13 +166,13 @@ public class ModelService {
         if (tags != null) {
             for (String tagName : tags) {
 
-                //태그 없으면 새로 생성
+                // 태그 없으면 새로 생성
                 Tag tag = tagRepository.findByName(tagName).orElseGet(() -> {
                     Tag newTag = new Tag();
                     newTag.setName(tagName);
                     return tagRepository.save(newTag);
                 });
-                //모델 테그 맵핑
+                // 모델 테그 맵핑
                 ModelTag modelTag = new ModelTag();
                 modelTag.setModel(model);
                 modelTag.setTag(tag);
@@ -197,4 +202,3 @@ public class ModelService {
         modelRepository.delete(model);
     }
 }
-

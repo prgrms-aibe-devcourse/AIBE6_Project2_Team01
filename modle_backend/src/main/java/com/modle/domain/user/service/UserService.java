@@ -1,5 +1,7 @@
 package com.modle.domain.user.service;
 
+import com.modle.domain.jobposting.entity.type.Region;
+import com.modle.domain.user.dto.TokenPair;
 import com.modle.domain.user.dto.request.AdditionalInfoRequest;
 import com.modle.domain.user.dto.request.ClientRegisterRequest;
 import com.modle.domain.user.dto.request.ModelRegisterRequest;
@@ -56,7 +58,7 @@ public class UserService {
         // MVP: User.region을 초기 model_region으로 1개 복사
         if (user.getRegion() != null && !user.getRegion().isBlank()) {
             try {
-                com.modle.domain.jobposting.entity.Region regionEnum = com.modle.domain.jobposting.entity.Region.valueOf(user.getRegion());
+                Region regionEnum = Region.valueOf(user.getRegion());
                 com.modle.domain.profile.entity.ModelRegion modelRegion = new com.modle.domain.profile.entity.ModelRegion();
                 modelRegion.setModel(model);
                 modelRegion.setRegion(regionEnum);
@@ -131,8 +133,8 @@ public class UserService {
         return authTokenService.genRefreshToken(user);
     }
 
-    public String reissueAccessToken(String refreshToken) {
-        return authTokenService.reissueAccessToken(refreshToken);
+    public TokenPair reissueTokens(String refreshToken) {
+        return authTokenService.reissueTokens(refreshToken);
     }
 
     public void deleteRefreshToken(String refreshToken) {
@@ -175,7 +177,7 @@ public class UserService {
             
             if (user.getRegion() != null && !user.getRegion().isBlank()) {
                 try {
-                    com.modle.domain.jobposting.entity.Region regionEnum = com.modle.domain.jobposting.entity.Region.valueOf(user.getRegion());
+                    Region regionEnum = Region.valueOf(user.getRegion());
                     com.modle.domain.profile.entity.ModelRegion modelRegion = new com.modle.domain.profile.entity.ModelRegion();
                     modelRegion.setModel(model);
                     modelRegion.setRegion(regionEnum);

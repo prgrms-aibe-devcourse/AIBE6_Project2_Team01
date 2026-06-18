@@ -1,5 +1,8 @@
 import Link from "next/link";
 
+import { ContractNotifyButton } from "@/components/contract/ContractNotifyButton";
+import type { ContractStatus } from "@/lib/api/contract";
+
 type ContractDetailPageProps = {
   params: Promise<{
     id: string;
@@ -17,6 +20,7 @@ type ContractDetailPageProps = {
     usageScope?: string;
     memo?: string;
     pdfUrl?: string;
+    status?: string;
   }>;
 };
 
@@ -27,7 +31,7 @@ const CONTRACT_TYPE_LABEL: Record<string, string> = {
 
 const PAY_TYPE_LABEL: Record<string, string> = {
   CASH: "현금",
-  SERVICE: "서비스",
+  SERVICE: "서비스 제공",
   FREE: "재능기부",
 };
 
@@ -37,6 +41,9 @@ export default async function ContractDetailPage({
 }: ContractDetailPageProps) {
   const { id } = await params;
   const query = await searchParams;
+  const contractId = Number(id);
+  const contractStatus = resolveContractStatus(query.status);
+  const pdfUrl = query.pdfUrl?.trim() ?? "";
 
   const isCreatedFromDraft = query.source === "draft-created";
   const paymentValue = Number(query.payment ?? "");
@@ -64,18 +71,18 @@ export default async function ContractDetailPage({
                 계약서 초안 상세
               </h1>
               <p className="text-[15px] leading-6 text-body">
-                계약서 ID #{id}가 DRAFT 상태로 저장되었습니다.
+                계약서 ID #{id}가 {contractStatus} 상태로 저장되었습니다.
               </p>
             </div>
             <span className="inline-flex h-8 w-fit items-center gap-2 rounded-full bg-canvas-soft px-3 text-[13px] font-semibold leading-5 text-body">
               <span className="h-1.5 w-1.5 rounded-full bg-warning" />
-              DRAFT
+              {contractStatus}
             </span>
           </div>
           {isCreatedFromDraft ? (
             <div className="mt-4 rounded-xl bg-success-soft px-4 py-3 text-[14px] leading-6 text-success">
               계약 작성 화면에서 입력한 정보를 기준으로 초안이 생성되었습니다.
-              PDF 생성 API가 연결되면 이 화면에서 다음 단계로 바로 이동할 수 있습니다.
+              PDF를 생성하고 내용을 확인한 뒤 모델에게 발송할 수 있습니다.
             </div>
           ) : (
             <div className="mt-4 rounded-xl bg-canvas-soft px-4 py-3 text-[14px] leading-6 text-body">
@@ -120,7 +127,7 @@ export default async function ContractDetailPage({
               />
               <DetailRow
                 label="PDF URL"
-                value={query.pdfUrl?.trim() || "아직 생성되지 않았습니다."}
+                value={pdfUrl || "아직 생성되지 않았습니다."}
                 fullWidth
               />
             </div>
@@ -132,9 +139,9 @@ export default async function ContractDetailPage({
                 다음 단계
               </h2>
               <ul className="mt-4 space-y-3 text-[14px] leading-6 text-body">
-                <li>1. 계약서 PDF 생성 API를 연결해 초안 문서를 만듭니다.</li>
-                <li>2. 생성된 PDF를 검토한 뒤 모델에게 발송합니다.</li>
-                <li>3. 발송 이후 열람, 동의, 확정 플로우로 이어집니다.</li>
+                <li>1. 계약서 PDF를 생성합니다.</li>
+                <li>2. 생성된 PDF를 미리보기로 검토합니다.</li>
+                <li>3. 문제가 없으면 모델에게 계약서를 발송합니다.</li>
               </ul>
             </section>
 
@@ -143,6 +150,13 @@ export default async function ContractDetailPage({
                 빠른 이동
               </h2>
               <div className="mt-4 flex flex-col gap-3">
+                {Number.isFinite(contractId) ? (
+                  <ContractNotifyButton
+                    contractId={contractId}
+                    initialStatus={contractStatus}
+                    initialPdfUrl={pdfUrl}
+                  />
+                ) : null}
                 <ActionLink href="/contracts/new" label="새 계약서 다시 작성" />
                 <ActionLink href={`/contracts/${id}`} label="현재 상세 주소 유지" />
               </div>
@@ -168,20 +182,30 @@ function DetailRow({
       <p className="text-[12px] font-semibold uppercase tracking-[0.3px] text-mute">
         {label}
       </p>
-      <p className="rounded-xl bg-canvas-soft px-4 py-3 text-[15px] leading-6 text-ink">
+      <p className="break-words rounded-xl bg-canvas-soft px-4 py-3 text-[15px] leading-6 text-ink">
         {value}
       </p>
     </div>
   );
 }
 
-function ActionLink({
-  href,
-  label,
-}: {
-  href: string;
-  label: string;
-}) {
+function resolveContractStatus(status?: string): ContractStatus {
+  const statuses: ContractStatus[] = [
+    "DRAFT",
+    "NOTIFIED",
+    "VIEWED",
+    "AGREED",
+    "REJECTED",
+    "CONFIRMED",
+    "CANCELLED",
+  ];
+
+  return statuses.includes(status as ContractStatus)
+    ? (status as ContractStatus)
+    : "DRAFT";
+}
+
+function ActionLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}

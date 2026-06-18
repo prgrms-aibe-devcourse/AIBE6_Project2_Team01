@@ -2,6 +2,7 @@
 
 import { client } from "@/lib/api/client";
 import { getErrorMessage } from "@/lib/api/error";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   FormEvent,
   ReactNode,
@@ -10,7 +11,6 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 
 type ContractType = "TEMPLATE" | "FILE";
 type PayType = "CASH" | "SERVICE" | "FREE";
@@ -348,7 +348,8 @@ function NewContractPageContent() {
         throw new Error(getErrorMessage(error, "계약서 저장에 실패했습니다."));
       }
 
-      const savedContract = (data as { data?: { id?: number } } | undefined)?.data;
+      const savedContract = (data as { data?: { id?: number } } | undefined)
+        ?.data;
 
       if (!savedContract?.id) {
         throw new Error("계약서 저장은 성공했지만 계약 ID를 받지 못했습니다.");

@@ -57,4 +57,48 @@ public class MailService {
                 """.formatted(reason);
         send(to, subject, text);
     }
+
+    // 신고 수락 안내 — 피신고자에게
+    public void sendReportActionedEmail(String to) {
+        String subject = "[모들] 신고 처리 결과 안내";
+        String text = """
+            안녕하세요. 모들입니다.
+            
+            회원님의 활동에 대한 신고가 접수되어 검토한 결과,
+            서비스 이용 정책 위반으로 확인되었습니다.
+            
+            경고 횟수가 누적될 경우 서비스 이용이 제한될 수 있습니다.
+            앞으로 건전한 서비스 이용을 부탁드립니다.
+            """;
+        send(to, subject, text);
+    }
+
+    // 신고 거절 안내 — 신고자에게
+    public void sendReportDismissedEmail(String to, String reason) {
+        String subject = "[모들] 신고 처리 결과 안내";
+        String text = """
+            안녕하세요. 모들입니다.
+            
+            접수하신 신고를 검토한 결과, 아래 사유로 처리되지 않았습니다.
+            
+            사유: %s
+            
+            추가 문의사항이 있으시면 고객센터로 연락해주세요.
+            """.formatted(reason);
+        send(to, subject, text);
+    }
+
+    public void sendContractNotificationEmail(String to, String contractLink) {
+        String subject = "[모들] 새로운 확인 요청";
+        String text =  """
+            안녕하세요, 모들입니다.
+
+            계약서가 도착했습니다.
+            아래 링크에서 계약 내용을 확인해 주세요.
+
+            %s
+            """.formatted(contractLink);
+
+        send(to, subject, text);
+    }
 }
