@@ -110,14 +110,18 @@ public class UserController {
         if (refreshToken.isBlank()) {
             throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
         }
-        // 토큰 생성
-        TokenPair tokens = userService.reissueTokens(refreshToken);
-
-        // 쿠키 갱신
-        rq.setCookie("accessToken", tokens.accessToken(), 60 * 30);
-        rq.setCookie("refreshToken", tokens.refreshToken());
-
-        return new ApiResponse<>("200-1", "토큰이 재발급되었습니다.");
+        try {
+            // 토큰 생성
+            TokenPair tokens = userService.reissueTokens(refreshToken);
+            // 쿠키 갱신
+            rq.setCookie("accessToken", tokens.accessToken(), 60 * 30);
+            rq.setCookie("refreshToken", tokens.refreshToken());
+            return new ApiResponse<>("200-1", "토큰이 재발급되었습니다.");
+        } catch (CustomException e) {
+            rq.deleteCookie("accessToken");
+            rq.deleteCookie("refreshToken");
+            throw e;
+        }
     }
 
     @PostMapping("/signup/additional")
