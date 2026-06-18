@@ -44,13 +44,15 @@ public class ModelService {
         }
         // 4. 지역 (regions) - User 엔티티 기반
         if (regions != null && !regions.isEmpty()) {
-            List<String> mappedRegions = regions.stream().map(r -> {
+            List<String> mappedRegions = new java.util.ArrayList<>();
+            for (String r : regions) {
+                mappedRegions.add(r); // Add English value (e.g. SEOUL)
                 try {
-                    return com.modle.domain.jobposting.entity.Region.valueOf(r).getDisplayName();
+                    mappedRegions.add(com.modle.domain.jobposting.entity.Region.valueOf(r).getDisplayName()); // Add Korean value (e.g. 서울)
                 } catch (IllegalArgumentException e) {
-                    return r;
+                    // Ignore
                 }
-            }).toList();
+            }
             specs.add(ModelSpecification.hasRegions(mappedRegions));
         }
         // 5. 일반 태그 (tags) - ModelTag 엔티티 기반

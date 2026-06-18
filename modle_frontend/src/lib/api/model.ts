@@ -6,10 +6,18 @@ interface ModelApiResponse extends Omit<Partial<Model>, 'rating'> {
 }
 
 export async function getModels(params: Record<string, any>): Promise<ModelListResponse> {
+  const safeQuery: Record<string, any> = { ...params };
+  for (const key in safeQuery) {
+    if (Array.isArray(safeQuery[key])) {
+      safeQuery[key] = safeQuery[key].join(',');
+    }
+  }
+
   const { data, error } = await client.GET('/api/v1/models', {
     params: {
-      query: params as never
-    }
+      query: safeQuery as never
+    },
+    cache: 'no-store'
   });
   
   if (error) {

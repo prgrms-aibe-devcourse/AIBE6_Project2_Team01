@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { client } from "@/lib/api/client";
-import { REGION_OPTIONS } from "@/lib/constants/region";
+import { REGION_OPTIONS, getRegionLabel } from "@/lib/constants/region";
 import type { components } from "@/lib/api/schema";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -192,8 +192,8 @@ export default function JobsPage() {
                       <dd className="text-ink">{job.category}</dd>
                     </div>
                     <div className="flex gap-2">
-                      <dt className="text-mute">지역</dt>
-                      <dd className="text-ink">{job.region}</dd>
+                      <dt className="text-mute mr-1">지역</dt>
+                      <dd className="text-ink">{getRegionLabel(job.region)}</dd>
                     </div>
                     <div className="flex gap-2">
                       <dt className="text-mute">보수</dt>

@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { client } from "@/lib/api/client";
+import { getRegionLabel } from "@/lib/constants/region";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useRef, useState } from "react";
@@ -311,7 +312,7 @@ export default function JobDetailPage({
               </h2>
               <dl className="mt-4 space-y-3 text-[13px] leading-5">
                 <InfoRow label="카테고리" value={detail.category} />
-                <InfoRow label="지역" value={detail.region} />
+                <InfoRow label="지역" value={getRegionLabel(detail.region)} />
                 <InfoRow
                   label="성별 조건"
                   value={

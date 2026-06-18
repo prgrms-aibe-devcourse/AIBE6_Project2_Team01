@@ -157,7 +157,8 @@ export function ModelEditForm({ initialData }: Props) {
                 }}
               />
             ) : (
-              <span className="text-gray-400 text-sm">이미지 없음</span>
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src="/placeholder.png" alt="기본 프로필" className="w-full h-full object-cover opacity-50" />
             )}
             
             {/* 호버 시 나타나는 오버레이 */}

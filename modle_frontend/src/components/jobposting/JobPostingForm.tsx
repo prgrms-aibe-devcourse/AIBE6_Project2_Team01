@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, ReactNode, useState } from "react";
-import { REGION_OPTIONS } from "@/lib/constants/region";
+import { REGION_OPTIONS, getRegionLabel } from "@/lib/constants/region";
 
 export type Category =
   | "HAIR"
@@ -329,7 +329,7 @@ export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) 
         <dl className="mt-5 space-y-4 text-[13px] leading-5">
           <PreviewRow label="제목" value={form.title} />
           <PreviewRow label="카테고리" value={form.category} />
-          <PreviewRow label="지역" value={form.region} />
+          <PreviewRow label="지역" value={getRegionLabel(form.region)} />
           <PreviewRow label="성별" value={form.requiredSex} />
           <PreviewRow
             label="보수"

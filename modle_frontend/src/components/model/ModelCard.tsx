@@ -1,5 +1,6 @@
 import { Model } from '@/types/model';
 import Image from 'next/image';
+import { getRegionLabel } from '@/lib/constants/region';
 
 export function ModelCard({ model }: { model: Model }) {
   // 포트폴리오 배열이 있다면 가장 마지막(최근) 사진을 메인으로 사용, 없으면 프로필 이미지, 그것도 없으면 기본 이미지
@@ -37,7 +38,7 @@ export function ModelCard({ model }: { model: Model }) {
         </div>
         
         <p className="text-[12px] text-gray-500 font-medium mt-1">
-          {model.region} 
+          {getRegionLabel(model.region)} 
           {(model.height || model.weight) ? ' | ' : ''}
           {model.height ? `${model.height}cm ` : ''}
           {model.weight ? `${model.weight}kg` : ''}

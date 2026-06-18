@@ -2,6 +2,7 @@ import { DetailLookbook } from '@/components/model/detail/DetailLookbook';
 import { ProfileGallery } from '@/components/model/detail/ProfileGallery';
 import { ClientProposalButton } from '@/components/message/ClientProposalButton';
 import { getModel } from '@/lib/api/model';
+import { getRegionLabel } from '@/lib/constants/region';
 import { notFound } from 'next/navigation';
 
 export const metadata = {
@@ -58,14 +59,13 @@ export default async function ModelDetailPage({ params }: PageProps) {
                  <span className="text-blue-600 underline cursor-pointer hover:text-blue-800">
                    후기 {modelData.reviewCount || 0}개
                  </span>
-                 <div className="w-px h-3 bg-gray-300"></div>
-                 <span className="text-gray-400">모델 번호: {modelData.id}</span>
+
                </div>
 
                <div className="flex flex-col gap-3 text-sm tracking-wide">
                   <div className="flex">
                      <span className="w-24 text-gray-500">활동 지역</span>
-                     <span className="text-black font-semibold">{modelData.region || '미상'}</span>
+                     <span className="text-black font-semibold">{getRegionLabel(modelData.region)}</span>
                   </div>
                   <div className="flex">
                      <span className="w-24 text-gray-500">나이</span>

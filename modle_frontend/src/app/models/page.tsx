@@ -2,6 +2,8 @@ import { ModelFilterBar } from '@/components/model/ModelFilterBar';
 import { ModelGrid } from '@/components/model/ModelGrid';
 import { getModels } from '@/lib/api/model';
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
