@@ -35,6 +35,8 @@ public class ModelService {
 
     public Page<Model> getList(String query, Sex sex, List<Category> categories, List<String> regions,
                                List<String> tags, String height, String sortType, int page, int size) {
+
+
         List<Specification<Model>> specs = new ArrayList<>();
         // 1. 이름 검색 (query)
         if (query != null && !query.trim().isEmpty()) {
@@ -82,8 +84,9 @@ public class ModelService {
                     break;
             }
         }
-        Specification<Model> finalSpec = Specification.allOf(specs);
 
+
+        Specification<Model> finalSpec = Specification.allOf(specs);
         Sort sortObj;
         if ("RATING".equalsIgnoreCase(sortType)) {
             sortObj = Sort.by(Sort.Direction.DESC, "avgRating");
@@ -92,10 +95,11 @@ public class ModelService {
         } else {
             sortObj = Sort.by(Sort.Direction.DESC, "createdDate");
         }
-        // 추가: 페이지 번호, 사이즈, 정렬 기준을 담은 Pageable 객체 생성
+
         Pageable pageable = PageRequest.of(page, size, sortObj);
-        // 변경: findAll 호출 시 Pageable 객체를 넘겨줌
+
         return modelRepository.findAll(finalSpec, pageable);
+
     }
 
     public Model findById(Long id) {

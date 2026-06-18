@@ -41,22 +41,23 @@ public class ModelController {
                 @RequestParam(required = false) List<String> tags,
                 @RequestParam(required = false) String height,
                 @RequestParam(required = false) String sort,
-                @RequestParam(defaultValue = "0") int page, // 추가 (첫 페이지는 0)
-                @RequestParam(defaultValue = "12") int size // 추가 (한 번에 12개씩)
+                @RequestParam(defaultValue = "0") int page,
+                @RequestParam(defaultValue = "12") int size
         ) {
-                // 성별 파라미터 처리
                 Sex sexParam = null;
                 if ("M".equalsIgnoreCase(gender) || "MALE".equalsIgnoreCase(gender)) {
                         sexParam = Sex.M;
                 } else if ("F".equalsIgnoreCase(gender) || "FEMALE".equalsIgnoreCase(gender)) {
                         sexParam = Sex.F;
                 }
+
+                // Service 호출 시 page, size 파라미터 추가
                 Page<Model> items = modelService.getList(query, sexParam, categories, regions, tags, height, sort, page, size);
 
-                // Page 객체에 내장된 map을 사용해 Entity -> Dto로 자동 변환
+                // DTO 변환 (리스트의 stream().map() 대신 Page의 내장 map() 사용)
                 Page<ModelDto> dtoList = items.map(ModelDto::new);
-                return new ApiResponse<>("200-1", "조회 성공", dtoList);
 
+                return new ApiResponse<>("200-1", "조회 성공", dtoList);
         }
 
         @Transactional(readOnly = true)
@@ -145,4 +146,5 @@ public class ModelController {
                                 "%d번 모델 프로필이 삭제되었습니다.".formatted(id),
                                 new ModelDto(model));
         }
+
 }
