@@ -91,13 +91,6 @@ public class ApplicationService {
         return ApplicationResponse.from(saved);
     }
 
-    // MATCH-003: 모델이 특정 공고에 이미 지원했는지 확인한다.
-    public boolean hasApplied(Long userId, Long jobPostingId) {
-        Long modelId = findModelIdByUserId(userId);
-        return applicationRepository.existsByJobPostingIdAndModelIdAndStatusNot(
-                jobPostingId, modelId, ApplicationStatus.APPLICATION_CANCELLED);
-    }
-
     // MATCH-002: 모델이 본인의 지원을 취소한다 (상태=APPLICATION_CANCELLED).
     @Transactional
     public ApplicationResponse cancelApplication(Long userId, Long applicationId) {
@@ -114,6 +107,13 @@ public class ApplicationService {
 
         application.cancel();
         return ApplicationResponse.from(application);
+    }
+
+    // MATCH-003: 모델이 특정 공고에 이미 지원했는지 확인한다.
+    public boolean hasApplied(Long userId, Long jobPostingId) {
+        Long modelId = findModelIdByUserId(userId);
+        return applicationRepository.existsByJobPostingIdAndModelIdAndStatusNot(
+                jobPostingId, modelId, ApplicationStatus.APPLICATION_CANCELLED);
     }
 
     // MATCH-004: 특정 공고의 지원자 목록 (의뢰인)
