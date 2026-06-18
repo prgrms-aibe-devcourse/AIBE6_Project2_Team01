@@ -41,6 +41,7 @@ export type AiGenerateParams = {
   payType: string;
   ageMin?: number;
   ageMax?: number;
+  requiredSex?: string;
 };
 
 export type JobPostingFormState = {
@@ -138,6 +139,7 @@ export function JobPostingForm({
         payType: form.payType,
         ageMin: form.ageMin ? Number(form.ageMin) : undefined,
         ageMax: form.ageMax ? Number(form.ageMax) : undefined,
+        requiredSex: form.requiredSex,
       });
       updateField("content", content);
       setAiGenerated(true);
