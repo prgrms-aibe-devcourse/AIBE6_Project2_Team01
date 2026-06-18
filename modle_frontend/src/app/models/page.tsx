@@ -22,7 +22,12 @@ export default async function ModelsPage({ searchParams }: PageProps) {
       <ModelFilterBar />
       
       <div className="mt-8">
-        <ModelGrid models={data.models} />
+        <ModelGrid 
+          models={data.models} 
+          totalPages={data.totalPages} 
+          currentPage={Number(params.page) || 0}
+          searchParams={params}
+        />
         {data.models.length === 0 && (
           <div className="py-20 text-center border border-gray-200 bg-gray-50 mt-8">
             <p className="text-sm font-bold text-gray-400 tracking-wider">조건에 맞는 모델이 없습니다.</p>
