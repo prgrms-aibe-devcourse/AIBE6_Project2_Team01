@@ -86,7 +86,6 @@ type RecommendationCardItem = {
   categories: string[];
   region: string | null;
   avgRating: number | null;
-  alreadyApplied: boolean;
 };
 
 type RecommendationList = {
@@ -622,6 +621,10 @@ function RecommendationSection({
     return a.rank - b.rank;
   });
   const hasLockedItems = items.some((item) => item.locked);
+  const emptyMessage =
+    recommendations?.reasonCode && recommendations.reasonCode !== "NO_RESULT"
+      ? recommendations.reasonCode
+      : "추천 가능한 모델이 아직 없습니다.";
 
   return (
     <section className="rounded-2xl border border-hairline bg-surface p-5 shadow-sm sm:p-6">
@@ -667,7 +670,7 @@ function RecommendationSection({
         </div>
       ) : items.length === 0 ? (
         <p className="mt-6 rounded-xl bg-canvas-soft px-4 py-6 text-center text-[13px] text-mute">
-          추천 가능한 모델이 아직 없습니다.
+          {emptyMessage}
         </p>
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -698,15 +701,10 @@ function VisibleRecommendationCard({ item }: { item: RecommendationCardItem }) {
   return (
     <article className="flex h-full flex-col rounded-xl border border-hairline bg-white p-3 shadow-sm">
       <div className="flex flex-1 flex-col">
-        <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="mb-3 flex items-center gap-2">
           <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary">
             추천 후보
           </span>
-          {item.alreadyApplied ? (
-            <span className="rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700">
-              이미 지원함
-            </span>
-          ) : null}
         </div>
 
         <Link href={`/models/${model.id}`} className="block flex-1">
