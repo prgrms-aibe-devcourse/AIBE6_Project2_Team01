@@ -3,7 +3,6 @@ package com.modle.domain.jobposting.entity;
 import com.modle.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -27,7 +26,6 @@ public class ModelEmbedding extends BaseEntity {
     @Column(name = "model_id", nullable = false)
     private Long modelId;
 
-    @Lob
     @Column(nullable = false, columnDefinition = "JSON")
     private String embedding;
 
