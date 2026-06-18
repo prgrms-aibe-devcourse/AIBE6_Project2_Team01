@@ -12,6 +12,7 @@ public enum ErrorCode {
     OAUTH_EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "409-4", "이미 다른 방식으로 가입된 이메일입니다. 기존 로그인 방식을 이용해주세요."),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "401-1", "비밀번호가 일치하지 않습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "404-1", "존재하지 않는 계정입니다."),
+    MODEL_NOT_FOUND(HttpStatus.NOT_FOUND, "404-7", "존재하지 않는 모델입니다."),
     USER_PENDING(HttpStatus.FORBIDDEN, "403-0", "가입 승인 대기 중인 계정입니다."),
     USER_SUSPENDED(HttpStatus.FORBIDDEN, "403-1", "정지된 계정입니다."),
     USER_WITHDRAWN(HttpStatus.FORBIDDEN, "403-2", "탈퇴한 계정입니다."),

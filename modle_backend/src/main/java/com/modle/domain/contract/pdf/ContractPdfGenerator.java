@@ -7,6 +7,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 
 @Component
 public class ContractPdfGenerator {
@@ -14,11 +16,18 @@ public class ContractPdfGenerator {
     public byte[] generate(String html) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             PdfRendererBuilder builder = new PdfRendererBuilder();
+            ClassPathResource fontResource = new ClassPathResource("fonts/Pretendard-Regular.ttf");
             builder.useFastMode();
             builder.withHtmlContent(html, null);
             builder.toStream(outputStream);
             builder.useFont(
-                    new ClassPathResource("fonts/Pretendard-Regular.ttf").getFile(),
+                    () -> {
+                        try {
+                            return fontResource.getInputStream();
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    },
                     "Pretendard"
             );
             builder.run();

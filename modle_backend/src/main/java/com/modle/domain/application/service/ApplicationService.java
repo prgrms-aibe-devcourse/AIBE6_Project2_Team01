@@ -13,6 +13,11 @@ import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.jobposting.service.JobPostingService;
+import com.modle.domain.message.dto.response.MessageConversationResponse;
+import com.modle.domain.message.entity.Message;
+import com.modle.domain.message.entity.MessageConversation;
+import com.modle.domain.message.repository.MessageRepository;
+import com.modle.domain.message.service.MessageService;
 import com.modle.domain.user.entity.Model;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.global.exception.CustomException;
@@ -35,6 +40,8 @@ public class ApplicationService {
     private final JobPostingService jobPostingService;
     private final JobPostingRepository jobPostingRepository;
     private final ModelRepository modelRepository;
+    private final MessageService messageService;
+    private final MessageRepository messageRepository;
 
     public Application getApplication(Long applicationId) {
         return applicationRepository.findById(applicationId)
@@ -169,6 +176,25 @@ public class ApplicationService {
             throw new CustomException(ErrorCode.APPLICATION_CONTACT_NOT_ALLOWED);
         }
 
+        Model model = modelRepository.findById(application.getModelId())
+                .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
+
+        Long modelUserId = model.getUser().getId();
+
+        MessageConversationResponse conversation = messageService.createApplicationConversation(
+                clientId,
+                modelUserId,
+                application.getJobPostingId(),
+                application.getId()
+        );
+
+        messageService.sendSystemMessage(
+                conversation.id(),
+                clientId,
+                null,
+                createContactMessage(jobPosting.getTitle())
+        );
+
         application.contact();
 
         // TODO(message 도메인 협의 필요): 모델에게 컨택 쪽지 발송 연동
@@ -190,8 +216,28 @@ public class ApplicationService {
             throw new CustomException(ErrorCode.ACCESS_DENIED);
         }
 
-        // TODO(message 도메인 협의 필요): message 도메인 연동 후 실제 이력 반환
-        return List.of();
+        MessageConversation conversation = messageService.findConversationByApplicationId(applicationId);
+
+        List<Message> messages = messageRepository.findByConversationIdOrderByCreatedAtAsc(conversation.getId());
+
+        return messages.stream()
+                .map(message -> new ContactResponse(
+                        message.getId(),
+                        message.getSenderId(),
+                        message.getReceiverId(),
+                        message.getContent(),
+                        conversation.getPostId(),
+                        message.getCreatedAt().toLocalDateTime()
+                ))
+                .toList();
+    }
+
+    private String createContactMessage(String jobPostingTitle) {
+        return """
+                지원하신 공고에 컨택이 도착했습니다.
+                공고명: %s
+                쪽지함에서 상세 내용을 확인해 주세요.
+                """.formatted(jobPostingTitle);
     }
 
     private boolean isApplicationModel(Long userId, Application application) {

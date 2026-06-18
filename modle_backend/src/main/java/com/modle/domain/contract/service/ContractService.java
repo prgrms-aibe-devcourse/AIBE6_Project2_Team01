@@ -18,10 +18,11 @@ import com.modle.domain.contract.repository.ContractTemplateRepository;
 import com.modle.domain.contract.template.ContractTemplateRenderer;
 import com.modle.domain.jobposting.dto.response.JobPostingResponse;
 import com.modle.domain.jobposting.service.JobPostingService;
-import com.modle.domain.message.dto.request.CreateConversationRequest;
 import com.modle.domain.message.dto.response.MessageConversationResponse;
 import com.modle.domain.message.service.MessageService;
+import com.modle.domain.user.entity.Model;
 import com.modle.domain.user.entity.User;
+import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.service.UserService;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
@@ -57,6 +58,7 @@ public class ContractService {
     private final JobPostingService jobPostingService;
     private final MessageService messageService;
     private final UserService userService;
+    private final ModelRepository modelRepository;
     private final MailService mailService;
 
     @Value("${app.frontend.base-url:http://localhost:3000}")
@@ -127,15 +129,16 @@ public class ContractService {
         validateContractOwner(clientUserId, jobPosting.clientId());
         validateContractApplicableStatus(application);
 
-        User model = userService.findById(application.getModelId());
+        Model model = modelRepository.findById(application.getModelId())
+                .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
 
-        MessageConversationResponse conversation = messageService.createConversation(
+        User modelUser = userService.findById(model.getUser().getId());
+
+        MessageConversationResponse conversation = messageService.createApplicationConversation(
                 clientUserId,
-                new CreateConversationRequest(
-                        model.getId(),
-                        application.getJobPostingId(),
-                        application.getId()
-                )
+                modelUser.getId(),
+                application.getJobPostingId(),
+                application.getId()
         );
 
         String contractLink = createContractLink(contract.getId());
@@ -148,7 +151,7 @@ public class ContractService {
         );
 
         mailService.sendContractNotificationEmail(
-                model.getEmail(),
+                modelUser.getEmail(),
                 contractLink
         );
 
@@ -166,7 +169,11 @@ public class ContractService {
         validateViewable(contract);
 
         Application application = applicationService.getApplication(contract.getApplicationId());
-        validateContractTargetModel(modelUserId, application.getModelId());
+
+        Model model = modelRepository.findById(application.getModelId())
+                .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
+
+        validateContractTargetModel(modelUserId, model.getUser().getId());
 
         contract.markViewedAt(LocalDateTime.now());
 

@@ -1,7 +1,5 @@
 package com.modle.domain.message.service;
 
-import com.modle.domain.application.entity.Application;
-import com.modle.domain.application.service.ApplicationService;
 import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
@@ -40,7 +38,6 @@ public class MessageService {
     private final MessageConversationRepository conversationRepository;
     private final UserService userService;
     private final JobPostingRepository jobPostingRepository;
-    private final ApplicationService applicationService;
 
     @Transactional
     public MessageConversationResponse createConversation(
@@ -68,34 +65,21 @@ public class MessageService {
         //    - 계약 발송 시점에는 공고 상태가 RECRUITING 이 아닐 수 있으므로
         //      공고 소유권만 검증하고 상태 검증은 하지 않음
         // 동일 모델·동일 공고 조합이면 기존 대화방을 재사용해 중복 생성을 막는다.
-        if (request.applicationId() != null) {
-            Application application = applicationService.getApplication(request.applicationId());
-            validateContractConversationApplication(application, request);
 
-            MessageConversation existingConversation = conversationRepository
-                    .findByApplicationId(request.applicationId())
-                    .orElse(null);
-
-            if (existingConversation != null) {
-                return MessageConversationResponse.from(existingConversation);
-            }
-
-            validateContractConversationPost(creatorId, request.postId());
-        } else {
-            MessageConversation existingConversation = findDuplicateConversation(creatorId, request);
-            if (existingConversation != null) {
-                return MessageConversationResponse.from(existingConversation);
-            }
-
-            validatePost(creatorId, request.postId());
+        MessageConversation existingConversation = findDuplicateConversation(creatorId, request);
+        if (existingConversation != null) {
+            return MessageConversationResponse.from(existingConversation);
         }
+
+        validatePost(creatorId, request.postId());
 
         MessageConversation conversation = MessageConversation.builder()
                 .clientId(creatorId)
                 .modelId(request.receiverId())
                 .postId(request.postId())
-                .applicationId(request.applicationId())
+                .applicationId(null)
                 .build();
+
         // 위 조회로 일반적인 중복은 막지만, 동시 요청 경합은 DB unique 제약
         // (uk_conversation_client_model_post)이 최종적으로 중복 저장을 차단한다.
         return MessageConversationResponse.from(conversationRepository.save(conversation));
@@ -271,16 +255,30 @@ public class MessageService {
         }
     }
 
-    private void validateContractConversationApplication(
-            Application application,
-            CreateConversationRequest request
+    @Transactional
+    public MessageConversationResponse createApplicationConversation(
+            Long clientUserId,
+            Long modelUserId,
+            Long jobPostingId,
+            Long applicationId
     ) {
-        if (request.postId() == null || !application.getJobPostingId().equals(request.postId())) {
-            throw new CustomException(ErrorCode.MESSAGE_POST_NOT_AVAILABLE);
+        MessageConversation existingConversation = conversationRepository
+                .findByApplicationId(applicationId)
+                .orElse(null);
+
+        if (existingConversation != null) {
+            return MessageConversationResponse.from(existingConversation);
         }
 
-        if (!application.getModelId().equals(request.receiverId())) {
-            throw new CustomException(ErrorCode.MESSAGE_CONVERSATION_CREATE_FORBIDDEN);
-        }
+        validateContractConversationPost(clientUserId, jobPostingId);
+
+        MessageConversation conversation = MessageConversation.builder()
+                .clientId(clientUserId)
+                .modelId(modelUserId)
+                .postId(jobPostingId)
+                .applicationId(applicationId)
+                .build();
+
+        return MessageConversationResponse.from(conversationRepository.save(conversation));
     }
 }

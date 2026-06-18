@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { use, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useAuth } from '@/hooks/useAuth';
-import { getApplicants, type ApplicantInfo } from '@/lib/api/application';
-import { ApplicantList } from '@/components/application/ApplicantList';
+import { ApplicantList } from "@/components/application/ApplicantList";
+import { useAuth } from "@/hooks/useAuth";
+import { getApplicants, type ApplicantInfo } from "@/lib/api/application";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
 
 export default function ApplicantsPage({
   params,
@@ -19,14 +19,14 @@ export default function ApplicantsPage({
 
   const [applicants, setApplicants] = useState<ApplicantInfo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (authLoading) return;
 
     // 비로그인 또는 CLIENT 아님 → 홈으로
-    if (!user || user.role !== 'CLIENT') {
-      router.replace('/');
+    if (!user || user.role !== "CLIENT") {
+      router.replace("/");
       return;
     }
 
@@ -35,10 +35,14 @@ export default function ApplicantsPage({
       .catch((e: unknown) => {
         const status = (e as { status?: number }).status;
         if (status === 403) {
-          setError('접근 권한이 없습니다.');
-          setTimeout(() => router.replace('/'), 2000);
+          setError("접근 권한이 없습니다.");
+          setTimeout(() => router.replace("/"), 2000);
         } else {
-          setError(e instanceof Error ? e.message : '지원자 목록을 불러오지 못했습니다.');
+          setError(
+            e instanceof Error
+              ? e.message
+              : "지원자 목록을 불러오지 못했습니다.",
+          );
         }
       })
       .finally(() => setLoading(false));

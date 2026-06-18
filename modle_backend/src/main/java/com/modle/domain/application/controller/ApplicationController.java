@@ -79,7 +79,7 @@ public class ApplicationController {
 
     // MATCH-008: 의뢰인이 지원자에게 컨택한다 (CLIENT 전용).
     @PreAuthorize("hasRole('CLIENT')")
-    @PatchMapping("/applications/{id}/contact")
+    @PostMapping("/applications/{id}/contact")
     public ApiResponse<ApplicationResponse> contact(
             @PathVariable Long id,
             @AuthenticationPrincipal SecurityUser securityUser) {
