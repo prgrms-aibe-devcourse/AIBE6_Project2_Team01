@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import com.modle.domain.jobposting.entity.type.Region;
+import com.modle.global.entity.type.Region;
 import com.modle.domain.jobposting.service.AiRecommendService;
 import com.modle.domain.profile.entity.ModelCategory;
 import com.modle.domain.profile.entity.ModelRegion;

@@ -3,7 +3,7 @@ package com.modle.domain.jobposting.repository;
 import com.modle.domain.jobposting.entity.type.Category;
 import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
-import com.modle.domain.jobposting.entity.type.Region;
+import com.modle.global.entity.type.Region;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

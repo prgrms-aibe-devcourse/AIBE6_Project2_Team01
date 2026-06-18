@@ -9,7 +9,7 @@ import com.modle.domain.jobposting.dto.response.*;
 import com.modle.domain.jobposting.entity.type.Category;
 import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
-import com.modle.domain.jobposting.entity.type.Region;
+import com.modle.global.entity.type.Region;
 import com.modle.domain.jobposting.entity.type.ViewerType;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;

@@ -2,6 +2,7 @@ package com.modle.domain.jobposting.entity;
 
 import com.modle.domain.jobposting.entity.type.*;
 import com.modle.global.entity.BaseEntity;
+import com.modle.global.entity.type.Region;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

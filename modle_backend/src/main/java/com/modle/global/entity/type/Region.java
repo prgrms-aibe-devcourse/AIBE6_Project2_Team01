@@ -1,4 +1,4 @@
-package com.modle.domain.jobposting.entity.type;
+package com.modle.global.entity.type;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

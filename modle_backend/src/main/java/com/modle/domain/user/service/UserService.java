@@ -1,6 +1,6 @@
 package com.modle.domain.user.service;
 
-import com.modle.domain.jobposting.entity.type.Region;
+import com.modle.global.entity.type.Region;
 import com.modle.domain.user.dto.TokenPair;
 import com.modle.domain.user.dto.request.AdditionalInfoRequest;
 import com.modle.domain.user.dto.request.ClientRegisterRequest;
