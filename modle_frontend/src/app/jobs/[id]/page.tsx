@@ -8,6 +8,7 @@ import { checkApplyStatus, getApplicants } from "@/lib/api/application";
 import { addJobBookmark, getJobBookmarks, removeJobBookmark } from "@/lib/api/bookmark";
 import { API_BASE_URL, authenticatedFetch, client } from "@/lib/api/client";
 import { STATUS_COLORS, STATUS_LABELS, STATUS_TRANSITIONS } from "@/lib/constants/jobPostingStatus";
+import { getRegionLabel } from "@/lib/constants/region";
 import type { Model } from "@/types/model";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
