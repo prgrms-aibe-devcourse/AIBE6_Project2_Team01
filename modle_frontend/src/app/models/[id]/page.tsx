@@ -132,7 +132,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
               리뷰 ({modelData.reviewCount || 0})
             </div>
             <div className="flex-1 text-center py-4 font-medium text-gray-400 hover:text-black cursor-pointer transition-colors">
-              Q&A (0)
+              경력 사항
             </div>
           </div>
 
