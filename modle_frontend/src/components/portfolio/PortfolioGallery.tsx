@@ -1,10 +1,12 @@
 'use client';
 
-import { deletePortfolioImage } from '@/lib/api/portfolio';
+import { deletePortfolioImage, reorderPortfolioImages } from '@/lib/api/portfolio';
 import { Portfolio } from '@/types/model';
-import Image from 'next/image';
 import { useState } from 'react';
 import { PortfolioUploadModal } from './PortfolioUploadModal';
+import { SortablePortfolioItem } from './SortablePortfolioItem';
+import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 
 interface Props {
   modelId: number;
@@ -31,10 +33,29 @@ export function PortfolioGallery({ modelId, initialPortfolios = [] }: Props) {
     }
   };
 
-  // 최신순 정렬 (id 기준 역순)
-  const sortedPortfolios = [...portfolios].sort((a, b) => b.id - a.id);
-  const displayedPortfolios = sortedPortfolios.slice(0, visibleCount);
-  const hasMore = visibleCount < sortedPortfolios.length;
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      const oldIndex = portfolios.findIndex((p) => p.id === active.id);
+      const newIndex = portfolios.findIndex((p) => p.id === over.id);
+      
+      const newPortfolios = arrayMove(portfolios, oldIndex, newIndex);
+      setPortfolios(newPortfolios); // UI 즉시 반영 (Optimistic UI)
+      
+      try {
+        await reorderPortfolioImages(newPortfolios.map(p => p.id));
+      } catch {
+        alert('순서 저장에 실패했습니다.');
+        setPortfolios(portfolios); // 실패 시 롤백
+      }
+    }
+  };
+
+  // 최신순 정렬 (id 기준 역순) -> 백엔드에서 순서 적용이 되면 DB 정렬에 따르는게 맞지만 
+  // 현재는 초기 불러올때 id역순(또는 displayOrder)으로 받았다고 가정하고 프론트엔드에서는 배열 순서 그대로 렌더링
+  const displayedPortfolios = portfolios.slice(0, visibleCount);
+  const hasMore = visibleCount < portfolios.length;
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -57,36 +78,20 @@ export function PortfolioGallery({ modelId, initialPortfolios = [] }: Props) {
       </div>
 
       {/* Grid: 진짜 데이터 렌더링 */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 mb-4">
-        {displayedPortfolios.map((item) => (
-          <div key={item.id} className="relative aspect-[3/4] rounded-lg overflow-hidden group bg-gray-50 border border-gray-200">
-            <Image
-              src={item.imgUrl}
-              alt={`포트폴리오 ${item.id}`}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-            {/* 오버레이 */}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-              <button 
-                onClick={() => handleDelete(item.id)}
-                className="w-10 h-10 bg-red-500/80 hover:bg-red-600 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-colors" 
-                title="삭제하기"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            </div>
+      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={displayedPortfolios.map(p => p.id)} strategy={rectSortingStrategy}>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 mb-4">
+            {displayedPortfolios.map((item) => (
+              <SortablePortfolioItem key={item.id} item={item} onDelete={handleDelete} />
+            ))}
+            {portfolios.length === 0 && (
+              <div className="col-span-full py-12 text-center text-gray-400 font-medium tracking-wide">
+                등록된 포트폴리오가 없습니다.
+              </div>
+            )}
           </div>
-        ))}
-        {portfolios.length === 0 && (
-          <div className="col-span-full py-12 text-center text-gray-400 font-medium tracking-wide">
-            등록된 포트폴리오가 없습니다.
-          </div>
-        )}
-      </div>
+        </SortableContext>
+      </DndContext>
 
       {hasMore && (
         <div className="w-full py-8 mb-10 flex justify-center items-center">
@@ -104,7 +109,8 @@ export function PortfolioGallery({ modelId, initialPortfolios = [] }: Props) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={(newPortfolios) => {
-          setPortfolios(prev => [...prev, ...newPortfolios]);
+          // 새로 추가된 사진들을 배열의 맨 앞에 추가 (최신순)
+          setPortfolios(prev => [...newPortfolios, ...prev]);
           alert('포트폴리오 업로드가 완료되었습니다.');
         }}
       />

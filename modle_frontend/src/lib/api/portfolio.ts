@@ -33,3 +33,17 @@ export const deletePortfolioImage = async (portfolioId: number) => {
   
   return (data as { data?: unknown })?.data;
 };
+export async function reorderPortfolioImages(portfolioIds: number[]) {
+  const token = localStorage.getItem('accessToken');
+  const response = await fetch('/api/v1/portfolios/reorder', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ portfolioIds }),
+  });
+  if (!response.ok) {
+    throw new Error('순서 변경에 실패했습니다.');
+  }
+}
