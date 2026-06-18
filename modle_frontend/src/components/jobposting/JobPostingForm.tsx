@@ -1,7 +1,7 @@
 "use client";
 
 import { CATEGORY_OPTIONS } from "@/lib/constants/category";
-import { REGION_OPTIONS } from "@/lib/constants/region";
+import { REGION_OPTIONS, getRegionLabel } from "@/lib/constants/region";
 import { FormEvent, ReactNode, useState } from "react";
 
 export type Category =
