@@ -1,10 +1,13 @@
 package com.modle.infra.mail;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MailService {
@@ -12,14 +15,19 @@ public class MailService {
 
     // 이메일 발송 공통 메서드
     public void send(String to, String subject, String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(text);
-        mailSender.send(message);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject(subject);
+            message.setText(text);
+            mailSender.send(message);
+        } catch (Exception e) {
+            log.error("이메일 발송 실패 - to: {}, error: {}", to, e.getMessage());
+        }
     }
 
     // 이메일 인증 코드 발송
+    @Async
     public void sendVerificationCode(String to, String code) {
         String subject = "[모들] 이메일 인증 코드";
         String text = """
@@ -34,6 +42,7 @@ public class MailService {
     }
 
     // 의뢰인 승인 완료 이메일
+    @Async
     public void sendApprovalEmail(String to) {
         String subject = "[모들] 가입 승인 완료";
         String text = """
@@ -46,6 +55,7 @@ public class MailService {
     }
 
     // 의뢰인 가입 반려 이메일
+    @Async
     public void sendRejectionEmail(String to, String reason) {
         String subject = "[모들] 가입 반려 안내";
         String text = """
@@ -59,6 +69,7 @@ public class MailService {
     }
 
     // 신고 수락 안내 — 피신고자에게
+    @Async
     public void sendReportActionedEmail(String to) {
         String subject = "[모들] 신고 처리 결과 안내";
         String text = """
@@ -74,6 +85,7 @@ public class MailService {
     }
 
     // 신고 거절 안내 — 신고자에게
+    @Async
     public void sendReportDismissedEmail(String to, String reason) {
         String subject = "[모들] 신고 처리 결과 안내";
         String text = """
@@ -88,6 +100,7 @@ public class MailService {
         send(to, subject, text);
     }
 
+    @Async
     public void sendContractNotificationEmail(String to, String contractLink) {
         String subject = "[모들] 새로운 확인 요청";
         String text =  """

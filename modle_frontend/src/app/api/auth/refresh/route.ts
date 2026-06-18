@@ -26,7 +26,10 @@ export async function GET(request: NextRequest) {
     });
 
     if (!reissueRes.ok) {
-      return NextResponse.redirect(new URL('/login', request.url));
+      const response = NextResponse.redirect(new URL('/login', request.url));
+      response.cookies.delete('accessToken');
+      response.cookies.delete('refreshToken');
+      return response;
     }
 
     // 원래 페이지로 리다이렉트하면서 브라우저에 새 쿠키 설정
@@ -36,6 +39,9 @@ export async function GET(request: NextRequest) {
     }
     return response;
   } catch {
-    return NextResponse.redirect(new URL('/login', request.url));
+    const response = NextResponse.redirect(new URL('/login', request.url));
+    response.cookies.delete('accessToken');
+    response.cookies.delete('refreshToken');
+    return response;
   }
 }
