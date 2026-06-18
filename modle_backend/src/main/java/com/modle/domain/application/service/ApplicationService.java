@@ -13,6 +13,7 @@ import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.jobposting.service.JobPostingService;
+import com.modle.domain.message.dto.request.CreateConversationRequest;
 import com.modle.domain.message.dto.response.MessageConversationResponse;
 import com.modle.domain.message.entity.Message;
 import com.modle.domain.message.entity.MessageConversation;
@@ -79,7 +80,14 @@ public class ApplicationService {
                 .build();
         Application saved = applicationRepository.save(application);
 
-        // TODO(message 도메인 협의 필요): 지원 완료 시 의뢰인에게 알림 발송 연동
+        var conversation = messageService.createConversation(
+                jobPosting.getClientId(),
+                new CreateConversationRequest(userId, jobPostingId)
+        );
+        messageService.sendSystemMessage(
+                conversation.id(), userId, null,
+                "새로운 지원이 접수되었습니다."
+        );
         return ApplicationResponse.from(saved);
     }
 
