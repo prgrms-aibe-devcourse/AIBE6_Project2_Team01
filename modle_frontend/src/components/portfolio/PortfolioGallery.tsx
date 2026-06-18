@@ -12,25 +12,29 @@ interface Props {
 }
 
 export function PortfolioGallery({ modelId, initialPortfolios = [] }: Props) {
-  // 화면에 보여줄 사진 목록 상태
   const [portfolios, setPortfolios] = useState<Portfolio[]>(initialPortfolios);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const INITIAL_COUNT = 6;
+  const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
 
   // [삭제 로직]
   const handleDelete = async (id: number) => {
     if (!confirm('정말로 이 사진을 삭제하시겠습니까?')) return;
 
     try {
-      // 1. 백엔드에 삭제 요청
       await deletePortfolioImage(id);
-      
-      // 2. 화면에서 해당 사진 제거
       setPortfolios(prev => prev.filter(p => p.id !== id));
       alert('삭제되었습니다.');
     } catch {
       alert('삭제 중 오류가 발생했습니다.');
     }
   };
+
+  // 최신순 정렬 (id 기준 역순)
+  const sortedPortfolios = [...portfolios].sort((a, b) => b.id - a.id);
+  const displayedPortfolios = sortedPortfolios.slice(0, visibleCount);
+  const hasMore = visibleCount < sortedPortfolios.length;
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -53,9 +57,9 @@ export function PortfolioGallery({ modelId, initialPortfolios = [] }: Props) {
       </div>
 
       {/* Grid: 진짜 데이터 렌더링 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-10">
-        {portfolios.map((item) => (
-          <div key={item.id} className="relative aspect-[3/4] rounded-none overflow-hidden group bg-gray-50 border border-gray-200">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 mb-4">
+        {displayedPortfolios.map((item) => (
+          <div key={item.id} className="relative aspect-[3/4] rounded-lg overflow-hidden group bg-gray-50 border border-gray-200">
             <Image
               src={item.imgUrl}
               alt={`포트폴리오 ${item.id}`}
@@ -83,6 +87,18 @@ export function PortfolioGallery({ modelId, initialPortfolios = [] }: Props) {
           </div>
         )}
       </div>
+
+      {hasMore && (
+        <div className="w-full py-8 mb-10 flex justify-center items-center">
+          <button 
+            onClick={() => setVisibleCount(prev => prev + 6)}
+            className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 hover:border-black hover:bg-gray-50 text-black rounded-full transition-all shadow-sm"
+            title="더보기"
+          >
+            <span className="text-2xl font-light mb-1">+</span>
+          </button>
+        </div>
+      )}
 
       <PortfolioUploadModal 
         isOpen={isModalOpen}

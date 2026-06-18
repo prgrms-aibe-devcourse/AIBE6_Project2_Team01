@@ -14,10 +14,11 @@ interface ProfileGalleryProps {
 }
 
 export function ProfileGallery({ portfolios, mainFallback }: ProfileGalleryProps) {
-  const defaultImage = portfolios.length > 0 ? portfolios[0].imgUrl : mainFallback;
+  const sortedPortfolios = [...portfolios].sort((a, b) => b.id - a.id);
+  const defaultImage = sortedPortfolios.length > 0 ? sortedPortfolios[0].imgUrl : mainFallback;
   const [activeImage, setActiveImage] = useState<string>(defaultImage);
 
-  const thumbnails = portfolios.length > 0 ? portfolios : [{ id: 0, imgUrl: mainFallback }];
+  const thumbnails = sortedPortfolios.length > 0 ? sortedPortfolios : [{ id: 0, imgUrl: mainFallback }];
 
   return (
     <div className="w-full flex flex-col gap-2">
