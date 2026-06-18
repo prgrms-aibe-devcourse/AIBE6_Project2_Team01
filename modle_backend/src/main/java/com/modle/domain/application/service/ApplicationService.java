@@ -144,7 +144,9 @@ public class ApplicationService {
     }
 
     // MATCH-005: 내가 지원한 공고 목록 (모델)
-    public List<MyApplicationResponse> getMyApplications(Long modelId) {
+    public List<MyApplicationResponse> getMyApplications(Long userId) {
+        Long modelId = findModelIdByUserId(userId);
+
         List<Application> applications =
                 applicationRepository.findByModelIdAndStatusNotOrderByCreatedDateDesc(
                         modelId, ApplicationStatus.APPLICATION_CANCELLED);

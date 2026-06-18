@@ -50,6 +50,7 @@ public enum ErrorCode {
     CONTRACT_NOT_VIEWABLE(HttpStatus.BAD_REQUEST, "400-13", "열람 가능한 계약서가 아닙니다."),
     CONTRACT_TEMPLATE_LOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "500-3", "계약서 템플릿 로드에 실패했습니다."),
     CONTRACT_FORBIDDEN(HttpStatus.FORBIDDEN, "403-11", "계약서에 대한 권한이 없습니다."),
+    CONTRACT_CLIENT_AGREEMENT_REQUIRED(HttpStatus.BAD_REQUEST, "400-16", "클라이언트 동의가 완료된 계약서만 발송할 수 있습니다."),
 
     // 공고
     JOB_POSTING_NOT_FOUND(HttpStatus.NOT_FOUND, "404-2", "공고를 찾을 수 없습니다."),
@@ -83,6 +84,7 @@ public enum ErrorCode {
     APPLICATION_CONTACT_FORBIDDEN(HttpStatus.FORBIDDEN, "403-11", "해당 공고의 작성자만 컨택할 수 있습니다."),
     APPLICATION_ALREADY_CONTACTED(HttpStatus.CONFLICT, "409-7", "이미 컨택된 지원입니다."),
     APPLICATION_CONTACT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-14", "지원 완료(APPLIED) 상태에서만 컨택할 수 있습니다."),
+    APPLICATION_EXCEED_REQUIRED_COUNT(HttpStatus.BAD_REQUEST, "400-15", "모집 인원을 초과했습니다."),
 
     // 잘못된 접근
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "403-6", "권한이 없습니다."),

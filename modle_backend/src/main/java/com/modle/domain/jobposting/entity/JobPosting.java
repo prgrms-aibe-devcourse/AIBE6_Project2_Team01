@@ -45,6 +45,9 @@ public class JobPosting extends BaseEntity {
     private RequiredSex requiredSex;
 
     @Column
+    private Integer requiredCount; // null이면 모집 인원 제한 없음
+
+    @Column
     private Integer ageMin;
 
     @Column
@@ -130,3 +133,5 @@ public class JobPosting extends BaseEntity {
         this.status = newStatus;
     }
 }
+
+

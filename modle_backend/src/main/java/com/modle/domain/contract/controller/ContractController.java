@@ -11,6 +11,7 @@ import com.modle.global.auth.SecurityUser;
 import com.modle.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -83,6 +84,33 @@ public class ContractController {
         return ApiResponse.ok(
                 "계약서 열람 성공",
                 contractService.viewContract(securityUser.getId(), id)
+        );
+    }
+
+    @Operation(summary = "계약서 동의", description = "모델이 계약서에 동의합니다. 양측 모두 동의 시 자동 확정됩니다.")
+    @PatchMapping("/{id}/agree")
+    @PreAuthorize("hasRole('MODEL')")
+    public ApiResponse<ContractResponse> agreeContract(
+            @AuthenticationPrincipal SecurityUser securityUser,
+            @PathVariable Long id,
+            HttpServletRequest request
+    ) {
+        return ApiResponse.ok(
+                "계약서에 동의했습니다.",
+                contractService.agreeContract(securityUser.getId(), id, request.getRemoteAddr())
+        );
+    }
+
+    @Operation(summary = "계약서 거부", description = "모델이 계약서를 거부합니다.")
+    @PatchMapping("/{id}/reject")
+    @PreAuthorize("hasRole('MODEL')")
+    public ApiResponse<ContractResponse> rejectContract(
+            @AuthenticationPrincipal SecurityUser securityUser,
+            @PathVariable Long id
+    ) {
+        return ApiResponse.ok(
+                "계약서를 거부했습니다.",
+                contractService.rejectContract(securityUser.getId(), id)
         );
     }
 

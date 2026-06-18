@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ContractAgreementActions } from "@/components/contract/ContractAgreementActions";
 import { ContractNotifyButton } from "@/components/contract/ContractNotifyButton";
 import type { ContractStatus } from "@/lib/api/contract";
 
@@ -86,8 +87,8 @@ export default async function ContractDetailPage({
             </div>
           ) : (
             <div className="mt-4 rounded-xl bg-canvas-soft px-4 py-3 text-[14px] leading-6 text-body">
-              상세 조회 API 연동 전 임시 상세 화면입니다. 저장 직후 진입하면 방금
-              입력한 요약 정보를 함께 확인할 수 있습니다.
+              상세 조회 API 연동 전 임시 상세 화면입니다. 저장 직후 진입하면
+              방금 입력한 요약 정보를 함께 확인할 수 있습니다.
             </div>
           )}
         </header>
@@ -151,14 +152,23 @@ export default async function ContractDetailPage({
               </h2>
               <div className="mt-4 flex flex-col gap-3">
                 {Number.isFinite(contractId) ? (
-                  <ContractNotifyButton
-                    contractId={contractId}
-                    initialStatus={contractStatus}
-                    initialPdfUrl={pdfUrl}
-                  />
+                  <>
+                    <ContractNotifyButton
+                      contractId={contractId}
+                      initialStatus={contractStatus}
+                      initialPdfUrl={pdfUrl}
+                    />
+                    <ContractAgreementActions
+                      contractId={contractId}
+                      initialStatus={contractStatus}
+                    />
+                  </>
                 ) : null}
                 <ActionLink href="/contracts/new" label="새 계약서 다시 작성" />
-                <ActionLink href={`/contracts/${id}`} label="현재 상세 주소 유지" />
+                <ActionLink
+                  href={`/contracts/${id}`}
+                  label="현재 상세 주소 유지"
+                />
               </div>
             </section>
           </aside>

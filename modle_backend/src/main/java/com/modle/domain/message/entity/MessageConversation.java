@@ -1,11 +1,7 @@
 package com.modle.domain.message.entity;
 
 import com.modle.global.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -54,5 +50,11 @@ public class MessageConversation extends BaseEntity {
 
     public Long otherParticipantId(Long userId) {
         return clientId.equals(userId) ? modelId : clientId;
+    }
+
+    public void linkApplication(Long applicationId) {
+        if (this.applicationId == null) {
+            this.applicationId = applicationId;
+        }
     }
 }

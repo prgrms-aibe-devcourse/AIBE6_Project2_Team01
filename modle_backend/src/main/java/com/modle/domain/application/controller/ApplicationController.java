@@ -6,6 +6,8 @@ import com.modle.domain.application.dto.response.ApplicationResponse;
 import com.modle.domain.application.dto.response.ContactResponse;
 import com.modle.domain.application.dto.response.MyApplicationResponse;
 import com.modle.domain.application.service.ApplicationService;
+import com.modle.domain.contract.dto.response.ContractStatusResponse;
+import com.modle.domain.contract.service.ContractService;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import java.util.List;
 public class ApplicationController {
 
     private final ApplicationService applicationService;
+    private final ContractService contractService;
 
     // MATCH-001: 모델이 모집 중인 공고에 지원한다 (MODEL 전용).
     @PreAuthorize("hasRole('MODEL')")
@@ -94,4 +97,14 @@ public class ApplicationController {
             @AuthenticationPrincipal SecurityUser securityUser) {
         return ApiResponse.ok("컨택 이력 조회 성공", applicationService.getContacts(securityUser.getId(), id));
     }
+
+    // MATCH-011: 지원 건의 계약 상태를 조회한다 (의뢰인 또는 해당 지원의 모델).
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/applications/{id}/contract-status")
+    public ApiResponse<ContractStatusResponse> getContractStatus(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser securityUser) {
+        return ApiResponse.ok("계약 상태 조회 성공", contractService.getContractByApplicationId(securityUser.getId(), id));
+    }
+
 }

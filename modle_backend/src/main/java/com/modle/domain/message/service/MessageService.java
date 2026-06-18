@@ -270,6 +270,16 @@ public class MessageService {
             return MessageConversationResponse.from(existingConversation);
         }
 
+        // applicationId 없이 생성된 기존 공고 대화방에 지원 정보를 연결한다.
+        MessageConversation byPost = conversationRepository
+                .findFirstByClientIdAndModelIdAndPostIdOrderByCreatedDateDesc(
+                        clientUserId, modelUserId, jobPostingId)
+                .orElse(null);
+
+        if (byPost != null) {
+            byPost.linkApplication(applicationId);
+            return MessageConversationResponse.from(byPost);
+        }
         validateContractConversationPost(clientUserId, jobPostingId);
 
         MessageConversation conversation = MessageConversation.builder()

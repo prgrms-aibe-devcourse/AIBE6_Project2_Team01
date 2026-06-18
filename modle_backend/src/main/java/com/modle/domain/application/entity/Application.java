@@ -50,4 +50,12 @@ public class Application extends BaseEntity {
     public void markContractSent() {
         this.status = ApplicationStatus.CONTRACT_SENT;
     }
+
+    public void revertToContacted() {
+        this.status = ApplicationStatus.CONTACTED;
+    }
+
+    public void shoot() {
+        this.status = ApplicationStatus.SHOOTING;
+    }
 }

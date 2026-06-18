@@ -206,4 +206,12 @@ public class JobPostingService {
                 })
                 .toList();
     }
+
+    @Transactional
+    public void markShooting(Long jobPostingId) {
+        JobPosting jobPosting = jobPostingRepository.findByIdForUpdate(jobPostingId)
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
+
+        jobPosting.updateStatus(JobPostingStatus.SHOOTING);
+    }
 }
