@@ -4,7 +4,12 @@ import com.modle.domain.jobposting.dto.request.JobPostingCreateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingStatusUpdateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingTemplateGenerateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
-import com.modle.domain.jobposting.dto.response.*;
+import com.modle.domain.jobposting.dto.response.JobPostingDetailResponse;
+import com.modle.domain.jobposting.dto.response.JobPostingListResponse;
+import com.modle.domain.jobposting.dto.response.JobPostingResponse;
+import com.modle.domain.jobposting.dto.response.JobPostingTemplateGenerateResponse;
+import com.modle.domain.jobposting.dto.response.MyJobPostingResponse;
+import com.modle.domain.jobposting.dto.response.RecommendationListResponse;
 import com.modle.domain.jobposting.service.AiRecommendService;
 import com.modle.domain.jobposting.entity.type.ViewerType;
 import com.modle.domain.jobposting.service.JobPostingService;
@@ -33,13 +38,7 @@ public class JobPostingController {
     private final AiRecommendService aiRecommendService;
     private final JobPostingTemplateService jobPostingTemplateService;
 
-    // JOB-001: 카테고리별 공고 템플릿 목록 반환.
-    @GetMapping("/templates")
-    public ApiResponse<List<JobPostingTemplateResponse>> getTemplates(@RequestParam String category) {
-        return ApiResponse.ok("공고 템플릿 목록 조회 성공", jobPostingService.getTemplatesByCategory(category));
-    }
-
-    // AI 공고 본문 생성 (CLIENT 전용).
+    // JOB-001: AI 공고 본문 생성 (CLIENT 전용).
     @PreAuthorize("hasRole('CLIENT')")
     @PostMapping("/templates/generate")
     public ApiResponse<JobPostingTemplateGenerateResponse> generateTemplate(
