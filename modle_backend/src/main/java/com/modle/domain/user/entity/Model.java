@@ -2,6 +2,7 @@ package com.modle.domain.user.entity;
 
 import com.modle.domain.profile.entity.ModelCategory;
 import com.modle.domain.profile.entity.ModelTag;
+import com.modle.domain.profile.entity.Portfolio;
 import com.modle.domain.user.entity.type.Sex;
 import com.modle.global.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -64,9 +65,10 @@ public class Model extends BaseEntity {
     @Column(nullable = false)
     private int reviewCount = 0;
 
-    // 카테고리 매핑 리스트 아래쪽에 추가해 주세요.
     @OneToMany(mappedBy = "model", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<com.modle.domain.profile.entity.Portfolio> portfolios = new ArrayList<>();
+    @OrderBy("displayOrder ASC, id DESC") // 변경: 순서를 최우선, 없으면 최신순
+    private List<Portfolio> portfolios = new ArrayList<>();
+
 
     public static Model create(User user, String name, int height,
                                int weight, Sex sex, int age) {
