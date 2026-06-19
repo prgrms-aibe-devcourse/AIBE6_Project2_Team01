@@ -176,7 +176,7 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
 
       {/* ================= 카테고리 수정 모달 ================= */}
       {editingPortfolioId && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 p-4" onClick={() => setEditingPortfolioId(null)}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/10 backdrop-blur-[2px] p-4" onClick={() => setEditingPortfolioId(null)}>
           <div className="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold mb-4 text-black">카테고리 수정</h3>
             <select 
