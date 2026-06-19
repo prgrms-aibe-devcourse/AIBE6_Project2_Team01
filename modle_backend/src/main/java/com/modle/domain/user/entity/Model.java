@@ -94,4 +94,11 @@ public class Model extends BaseEntity {
         this.profileImageUrl = profileImageUrl;
         this.careerStartDate = careerStartDate;
     }
+
+    public void updateRating(int newRating) {
+        this.avgRating = Math.round(
+                ((this.avgRating * this.reviewCount) + newRating) / (this.reviewCount + 1.0) * 10
+        ) / 10.0;
+        this.reviewCount++;
+    }
 }

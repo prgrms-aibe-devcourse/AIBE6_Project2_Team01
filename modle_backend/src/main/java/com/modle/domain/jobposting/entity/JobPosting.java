@@ -132,6 +132,10 @@ public class JobPosting extends BaseEntity {
     public void updateStatus(JobPostingStatus newStatus) {
         this.status = newStatus;
     }
+
+    public void close() {
+        this.status = JobPostingStatus.CLOSED;
+    }
 }
 
 

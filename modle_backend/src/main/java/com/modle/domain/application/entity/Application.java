@@ -58,4 +58,8 @@ public class Application extends BaseEntity {
     public void shoot() {
         this.status = ApplicationStatus.SHOOTING;
     }
+
+    public void complete() {
+        this.status = ApplicationStatus.COMPLETED;
+    }
 }
