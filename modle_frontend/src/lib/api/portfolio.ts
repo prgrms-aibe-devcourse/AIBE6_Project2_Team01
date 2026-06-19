@@ -49,3 +49,18 @@ export async function reorderPortfolioImages(portfolioIds: number[]) {
     throw new Error('순서 변경에 실패했습니다.');
   }
 }
+
+export async function updatePortfolioCategory(portfolioId: number, category: string) {
+  const token = localStorage.getItem('accessToken');
+  const response = await fetch(`/api/v1/portfolios/${portfolioId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ category }),
+  });
+  if (!response.ok) {
+    throw new Error('카테고리 수정에 실패했습니다.');
+  }
+}

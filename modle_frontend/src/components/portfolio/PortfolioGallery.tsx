@@ -1,6 +1,7 @@
 'use client';
 
-import { deletePortfolioImage, reorderPortfolioImages } from '@/lib/api/portfolio';
+import Image from 'next/image';
+import { deletePortfolioImage, reorderPortfolioImages, updatePortfolioCategory } from '@/lib/api/portfolio';
 import { Portfolio } from '@/types/model';
 import { closestCenter, DndContext, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
@@ -17,6 +18,9 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
   // 화면에 보여줄 사진 목록 상태
   const [portfolios, setPortfolios] = useState<Portfolio[]>(initialPortfolios);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [editingPortfolioId, setEditingPortfolioId] = useState<number | null>(null);
+  const [editingCategory, setEditingCategory] = useState<string>('');
   
   const categories = ['HAIR', 'MAKEUP', 'HAND', 'FITTING', 'CLOTHING', 'FOOD', 'PRODUCT', 'ETC'];
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -128,7 +132,16 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
         <SortableContext items={displayedPortfolios.map(p => p.id)} strategy={rectSortingStrategy}>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 mb-4">
             {displayedPortfolios.map((item) => (
-              <SortablePortfolioItem key={item.id} item={item} onDelete={handleDelete} />
+              <SortablePortfolioItem 
+                key={item.id} 
+                item={item} 
+                onDelete={handleDelete} 
+                onZoom={() => setSelectedImage(item.imgUrl)} 
+                onEdit={(id, currentCategory) => {
+                  setEditingPortfolioId(id);
+                  setEditingCategory(currentCategory || '');
+                }}
+              />
             ))}
             {portfolios.length === 0 && (
               <div className="col-span-full py-12 text-center text-gray-400 font-medium tracking-wide">
@@ -160,6 +173,84 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
           alert('포트폴리오 업로드가 완료되었습니다.');
         }}
       />
+
+      {/* ================= 카테고리 수정 모달 ================= */}
+      {editingPortfolioId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 p-4" onClick={() => setEditingPortfolioId(null)}>
+          <div className="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold mb-4 text-black">카테고리 수정</h3>
+            <select 
+              value={editingCategory}
+              onChange={(e) => setEditingCategory(e.target.value)}
+              className="w-full border border-gray-300 rounded-md p-2 mb-6 text-black focus:border-black focus:ring-1 focus:ring-black outline-none transition-colors"
+            >
+              <option value="" disabled>카테고리를 선택하세요</option>
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            <div className="flex justify-end gap-2">
+              <button 
+                onClick={() => setEditingPortfolioId(null)}
+                className="px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                취소
+              </button>
+              <button 
+                onClick={async () => {
+                  if (!editingCategory) {
+                    alert('카테고리를 선택해주세요.');
+                    return;
+                  }
+                  try {
+                    await updatePortfolioCategory(editingPortfolioId, editingCategory);
+                    setPortfolios(prev => prev.map(p => p.id === editingPortfolioId ? { ...p, category: editingCategory } : p));
+                    alert('카테고리가 성공적으로 수정되었습니다.');
+                    setEditingPortfolioId(null);
+                  } catch (e: any) {
+                    alert(e.message || '수정 중 오류가 발생했습니다.');
+                  }
+                }}
+                className="px-4 py-2 text-sm text-white bg-black hover:bg-gray-900 rounded-md transition-colors"
+              >
+                저장
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= 크게 보기 모달 ================= */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-95 p-4 md:p-8"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button 
+            className="absolute top-4 right-4 md:top-8 md:right-8 text-white text-4xl hover:text-gray-300 transition-colors z-[101]"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedImage(null);
+            }}
+          >
+            &times;
+          </button>
+          
+          <div 
+            className="relative w-full max-w-5xl h-[80vh] md:h-[95vh] bg-transparent rounded-lg overflow-hidden flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()} 
+          >
+            <Image
+              src={selectedImage}
+              alt="포트폴리오 상세 이미지"
+              fill
+              className="object-contain"
+              sizes="100vw"
+              priority
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
