@@ -14,7 +14,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
 
-type ClientDetail = {
+type ClientInfo = {
+  clientProfileId?: number | null;
+  clientCompanyName?: string | null;
+  clientRegion?: string | null;
+  clientAvgRating?: number;
+  clientReviewCount?: number;
+};
+
+type ClientDetail = ClientInfo & {
   id: number;
   clientId: number;
   title: string;
@@ -34,13 +42,10 @@ type ClientDetail = {
   payType?: string;
   shootDate?: string;
   createdDate?: string;
-  clientRegion?: string | null;
-  clientAvgRating?: number;
-  clientReviewCount?: number;
   recommendedModelIds: number[];
 };
 
-type ModelDetail = {
+type ModelDetail = ClientInfo & {
   id: number;
   title: string;
   content: string;
@@ -59,13 +64,10 @@ type ModelDetail = {
   payType?: string;
   shootDate?: string;
   createdDate?: string;
-  clientRegion?: string | null;
-  clientAvgRating?: number;
-  clientReviewCount?: number;
   favorited: boolean;
 };
 
-type OtherDetail = {
+type OtherDetail = ClientInfo & {
   id: number;
   title: string;
   content: string;
@@ -77,9 +79,6 @@ type OtherDetail = {
   payType?: string;
   shootDate?: string;
   createdDate?: string;
-  clientRegion?: string | null;
-  clientAvgRating?: number;
-  clientReviewCount?: number;
 };
 
 type DetailData = ClientDetail | ModelDetail | OtherDetail;
@@ -477,17 +476,6 @@ export default function JobDetailPage({
               <dl className="mt-4 space-y-3 text-[13px] leading-5">
                 <InfoRow label="카테고리" value={detail.category} />
                 <InfoRow label="촬영 지역" value={getRegionLabel(detail.region)} />
-                {detail.clientRegion ? (
-                  <InfoRow label="의뢰인 지역" value={getRegionLabel(detail.clientRegion)} />
-                ) : null}
-                <InfoRow
-                  label="의뢰인 평점"
-                  value={
-                    (detail.clientReviewCount ?? 0) > 0
-                      ? `★ ${(detail.clientAvgRating ?? 0).toFixed(1)} (${detail.clientReviewCount}건)`
-                      : "리뷰 없음"
-                  }
-                />
                 <InfoRow
                   label="성별 조건"
                   value={
@@ -549,6 +537,36 @@ export default function JobDetailPage({
                 ) : null}
               </dl>
             </section>
+
+            {/* 의뢰인 정보 카드 */}
+            {detail.clientProfileId ? (
+              <section className="rounded-xl border border-hairline bg-surface p-6">
+                <h2 className="text-[15px] font-semibold leading-6 text-ink">
+                  의뢰인 정보
+                </h2>
+                <Link
+                  href={`/clients/${detail.clientProfileId}`}
+                  className="mt-4 flex items-center justify-between rounded-lg border border-hairline bg-canvas px-4 py-3 transition hover:border-hairline-strong hover:bg-canvas-soft"
+                >
+                  <div>
+                    <p className="text-[14px] font-semibold text-ink">
+                      {detail.clientCompanyName ?? "-"}
+                    </p>
+                    {detail.clientRegion ? (
+                      <p className="mt-0.5 text-[12px] text-mute">
+                        {getRegionLabel(detail.clientRegion)}
+                      </p>
+                    ) : null}
+                    <p className="mt-1 text-[12px] text-mute">
+                      {(detail.clientReviewCount ?? 0) > 0
+                        ? `★ ${(detail.clientAvgRating ?? 0).toFixed(1)} (${detail.clientReviewCount}건)`
+                        : "리뷰 없음"}
+                    </p>
+                  </div>
+                  <span className="text-[13px] text-mute">→</span>
+                </Link>
+              </section>
+            ) : null}
 
             {/* CLIENT 뷰 본인 공고: 상태 변경 */}
             {isOwner && nextStatuses.length > 0 ? (

@@ -24,6 +24,8 @@ public record JobPostingOtherDetailResponse(
         PayType payType,
         LocalDateTime shootDate,
         LocalDateTime createdDate,
+        Long clientProfileId,
+        String clientCompanyName,
         String clientRegion,
         double clientAvgRating,
         int clientReviewCount
@@ -41,6 +43,8 @@ public record JobPostingOtherDetailResponse(
                 jobPosting.getPayType(),
                 jobPosting.getShootDate(),
                 jobPosting.getCreatedDate(),
+                client != null ? client.getId() : null,
+                client != null ? client.getCompanyName() : null,
                 client != null ? client.getUser().getRegion() : null,
                 client != null ? client.getAvgRating() : 0.0,
                 client != null ? client.getReviewCount() : 0
