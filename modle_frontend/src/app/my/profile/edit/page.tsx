@@ -10,30 +10,41 @@ export const metadata = {
   title: '내 프로필 수정 | 모들',
 };
 
-export default async function MyProfileEditPage() {
-  try {
-    const cookieStore = await cookies();
-    const cookieString = cookieStore.toString();
-    const user = await getMe({ Cookie: cookieString });
+async function getProfileEditPageData() {
+  const cookieStore = await cookies();
+  const cookieString = cookieStore.toString();
+  const user = await getMe({ Cookie: cookieString });
 
-    if (user.role === 'CLIENT') {
-      const clientData = await getMyClient({ Cookie: cookieString });
-      return (
-        <main className="max-w-[1200px] mx-auto px-6 py-12">
-          <ClientEditForm initialData={clientData} />
-        </main>
-      );
-    } else {
-      // Default to MODEL
-      const modelData = await getMyModel({ Cookie: cookieString });
-      return (
-        <main className="max-w-[1200px] mx-auto px-6 py-12">
-          <ModelEditForm initialData={modelData} />
-        </main>
-      );
-    }
+  if (user.role === 'CLIENT') {
+    return {
+      role: 'CLIENT' as const,
+      data: await getMyClient({ Cookie: cookieString }),
+    };
+  }
+
+  return {
+    role: 'MODEL' as const,
+    data: await getMyModel({ Cookie: cookieString }),
+  };
+}
+
+export default async function MyProfileEditPage() {
+  let pageData: Awaited<ReturnType<typeof getProfileEditPageData>>;
+
+  try {
+    pageData = await getProfileEditPageData();
   } catch(error){
     console.error("내 프로필 로딩 실패:", error);
     notFound();
   }
+
+  return (
+    <main className="max-w-[1200px] mx-auto px-6 py-12">
+      {pageData.role === 'CLIENT' ? (
+        <ClientEditForm initialData={pageData.data} />
+      ) : (
+        <ModelEditForm initialData={pageData.data} />
+      )}
+    </main>
+  );
 }

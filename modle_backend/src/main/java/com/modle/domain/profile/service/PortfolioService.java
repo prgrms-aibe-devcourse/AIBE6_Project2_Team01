@@ -48,4 +48,21 @@ public class PortfolioService {
         // 2. DB에서 포트폴리오 데이터 삭제
         portfolioRepository.delete(portfolio);
     }
+
+   //
+    @Transactional
+    public void reorderPortfolios(List<Long> portfolioIds, Model currentModel) {
+        for (int i = 0; i < portfolioIds.size(); i++) {
+            Long id = portfolioIds.get(i);
+            Portfolio portfolio = portfolioRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
+
+            // 본인의 포트폴리오인지 검증 (방어 로직)
+            if (!portfolio.getModel().getId().equals(currentModel.getId())) {
+                throw new IllegalArgumentException("수정 권한이 없습니다.");
+            }
+
+            portfolio.updateDisplayOrder(i);
+        }
+    }
 }

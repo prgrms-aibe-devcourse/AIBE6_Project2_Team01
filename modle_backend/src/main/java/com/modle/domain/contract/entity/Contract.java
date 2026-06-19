@@ -82,6 +82,9 @@ public class Contract extends BaseEntity {
 
     private LocalDateTime confirmedAt;
 
+    @Lob
+    private String rejectReason;
+
     public static Contract createDraft(
             Long applicationId,
             ContractType contractType,
@@ -113,5 +116,76 @@ public class Contract extends BaseEntity {
 
     public void updatePdfUrl(String pdfUrl) {
         this.pdfUrl = pdfUrl;
+    }
+
+    public void rewriteDraft(
+            ContractType contractType,
+            LocalDateTime shootStartAt,
+            LocalDateTime shootEndAt,
+            String location,
+            BigDecimal payment,
+            PayType payType,
+            String usageScope,
+            String memo,
+            String pdfUrl
+    ) {
+        this.contractType = contractType;
+        this.shootStartAt = shootStartAt;
+        this.shootEndAt = shootEndAt;
+        this.location = location;
+        this.payment = payment;
+        this.payType = payType;
+        this.usageScope = usageScope;
+        this.memo = memo;
+        this.pdfUrl = pdfUrl;
+        this.signedPdfUrl = null;
+        this.status = ContractStatus.DRAFT;
+        this.clientAgreed = false;
+        this.modelAgreed = false;
+        this.clientAgreedAt = null;
+        this.modelAgreedAt = null;
+        this.clientIp = null;
+        this.modelIp = null;
+        this.viewedAt = null;
+        this.notifiedAt = null;
+        this.confirmedAt = null;
+        this.rejectReason = null;
+    }
+
+    public void notifyModel(LocalDateTime notifiedAt) {
+        this.status = ContractStatus.NOTIFIED;
+        this.notifiedAt = notifiedAt;
+    }
+
+    public void markViewedAt(LocalDateTime viewedAt) {
+        if (this.viewedAt == null) {
+            this.viewedAt = viewedAt;
+        }
+    }
+
+    public void clientAgree(LocalDateTime agreedAt, String ip) {
+        this.clientAgreed = true;
+        this.clientAgreedAt = agreedAt;
+        this.clientIp = ip;
+    }
+
+    public void modelAgree(LocalDateTime agreedAt, String ip) {
+        this.modelAgreed = true;
+        this.modelAgreedAt = agreedAt;
+        this.modelIp = ip;
+    }
+
+    public void confirm(LocalDateTime confirmedAt) {
+        this.status = ContractStatus.CONFIRMED;
+        this.confirmedAt = confirmedAt;
+    }
+
+    public void reject(String rejectReason) {
+        this.status = ContractStatus.REJECTED;
+        this.rejectReason = rejectReason;
+    }
+
+    public boolean isBothAgreed() {
+        return Boolean.TRUE.equals(this.clientAgreed) && Boolean.TRUE.equals(this.modelAgreed);
     }
 }

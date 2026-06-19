@@ -1,34 +1,50 @@
 package com.modle.domain.profile.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import com.modle.global.entity.type.Region;
+import com.modle.domain.jobposting.service.AiRecommendService;
 import com.modle.domain.profile.entity.ModelCategory;
+import com.modle.domain.profile.entity.ModelRegion;
 import com.modle.domain.profile.entity.ModelTag;
 import com.modle.domain.profile.entity.Tag;
 import com.modle.domain.profile.entity.type.Category;
 import com.modle.domain.profile.repository.TagRepository;
 import com.modle.domain.user.entity.Model;
 import com.modle.domain.user.entity.User;
-import com.modle.domain.profile.entity.ModelRegion;
-import com.modle.domain.jobposting.entity.Region;
+import com.modle.domain.user.entity.type.Sex;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.ModelSpecification;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import org.springframework.data.domain.Sort;
-import java.util.ArrayList;
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class ModelService {
     private final ModelRepository modelRepository;
     private final TagRepository tagRepository;
+    private final AiRecommendService aiRecommendService;
 
-    public long count(){
+    public long count() {
         return modelRepository.count();
     }
 
-    public List<Model> getList(String query, com.modle.domain.user.entity.type.Sex sex, List<Category> categories, List<String> regions, List<String> tags, String height, String sortType) {
+    public Page<Model> getList(String query, Sex sex, List<Category> categories, List<String> regions,
+            List<String> tags, String height, String sortType, int page, int size) {
+
         List<Specification<Model>> specs = new ArrayList<>();
         // 1. 이름 검색 (query)
         if (query != null && !query.trim().isEmpty()) {
@@ -44,13 +60,15 @@ public class ModelService {
         }
         // 4. 지역 (regions) - User 엔티티 기반
         if (regions != null && !regions.isEmpty()) {
-            List<String> mappedRegions = regions.stream().map(r -> {
+            List<String> mappedRegions = new java.util.ArrayList<>();
+            for (String r : regions) {
+                mappedRegions.add(r); // Add English value (e.g. SEOUL)
                 try {
-                    return com.modle.domain.jobposting.entity.Region.valueOf(r).getDisplayName();
+                    mappedRegions.add(Region.valueOf(r).getDisplayName()); // Add Korean value (e.g. 서울)
                 } catch (IllegalArgumentException e) {
-                    return r;
+                    // Ignore
                 }
-            }).toList();
+            }
             specs.add(ModelSpecification.hasRegions(mappedRegions));
         }
         // 5. 일반 태그 (tags) - ModelTag 엔티티 기반
@@ -74,8 +92,8 @@ public class ModelService {
                     break;
             }
         }
+
         Specification<Model> finalSpec = Specification.allOf(specs);
-        
         Sort sortObj;
         if ("RATING".equalsIgnoreCase(sortType)) {
             sortObj = Sort.by(Sort.Direction.DESC, "avgRating");
@@ -84,8 +102,11 @@ public class ModelService {
         } else {
             sortObj = Sort.by(Sort.Direction.DESC, "createdDate");
         }
-        
-        return modelRepository.findAll(finalSpec, sortObj);
+
+        Pageable pageable = PageRequest.of(page, size, sortObj);
+
+        return modelRepository.findAll(finalSpec, pageable);
+
     }
 
     public Model findById(Long id) {
@@ -99,25 +120,19 @@ public class ModelService {
 
     public Model create(
             User user, String name, int height,
-            int weight, com.modle.domain.user.entity.type.Sex sex, int age
-    ){
+            int weight, Sex sex, int age) {
         Model model = Model.create(user, name, height, weight, sex, age);
         Model savedModel = modelRepository.save(model);
-        
+
         // MVP: User.region을 초기 model_region으로 1개 복사
-        if (user.getRegion() != null && !user.getRegion().isBlank()) {
-            try {
-                Region regionEnum = Region.valueOf(user.getRegion());
-                ModelRegion modelRegion = new ModelRegion();
-                modelRegion.setModel(savedModel);
-                modelRegion.setRegion(regionEnum);
-                savedModel.getModelRegions().add(modelRegion);
-            } catch (IllegalArgumentException e) {
-                // Ignore if User.region is not a valid Region enum (like just "서울" instead of "SEOUL")
-                // Wait, User.region usually holds display names or keys? Let's assume it's valid enum names.
-            }
-        }
-        
+        toRegion(user.getRegion()).ifPresent(regionEnum -> {
+            ModelRegion modelRegion = new ModelRegion();
+            modelRegion.setModel(savedModel);
+            modelRegion.setRegion(regionEnum);
+            savedModel.getModelRegions().add(modelRegion);
+        });
+
+        requestModelEmbeddingRefresh(savedModel.getId());
         return savedModel;
     }
 
@@ -126,7 +141,7 @@ public class ModelService {
             String name,
             int height,
             int weight,
-            com.modle.domain.user.entity.type.Sex sex,
+            Sex sex,
             int age,
             List<String> categories,
             List<String> tags,
@@ -134,22 +149,27 @@ public class ModelService {
             String region,
             String profileImageUrl,
             java.time.LocalDate careerStartDate,
-            List<String> activeRegions
-        ) {
+            List<String> activeRegions) {
         model.update(name, height, weight, sex, age, introduction, profileImageUrl, careerStartDate);
-        model.getUser().updateRegion(region);
-        
+        if (region != null && !region.isBlank()) {
+            model.getUser().updateRegion(region);
+        }
+
         // 2. 활동 지역(ModelRegion) 업데이트
         model.getModelRegions().clear();
-        if (activeRegions != null) {
-            for (String regionName : activeRegions) {
-                try {
-                    Region regionEnum = Region.valueOf(regionName.toUpperCase());
+        List<String> regionNames = activeRegions;
+        if ((regionNames == null || regionNames.isEmpty()) && region != null && !region.isBlank()) {
+            regionNames = List.of(region);
+        }
+        if (regionNames != null) {
+            for (String regionName : regionNames) {
+                Optional<Region> regionEnum = toRegion(regionName);
+                if (regionEnum.isPresent()) {
                     ModelRegion modelRegion = new ModelRegion();
                     modelRegion.setModel(model);
-                    modelRegion.setRegion(regionEnum);
+                    modelRegion.setRegion(regionEnum.get());
                     model.getModelRegions().add(modelRegion);
-                } catch (IllegalArgumentException e) {
+                } else {
                     System.err.println("지원하지 않는 지역: " + regionName);
                 }
             }
@@ -159,13 +179,13 @@ public class ModelService {
         if (tags != null) {
             for (String tagName : tags) {
 
-                //태그 없으면 새로 생성
+                // 태그 없으면 새로 생성
                 Tag tag = tagRepository.findByName(tagName).orElseGet(() -> {
                     Tag newTag = new Tag();
                     newTag.setName(tagName);
                     return tagRepository.save(newTag);
                 });
-                //모델 테그 맵핑
+                // 모델 테그 맵핑
                 ModelTag modelTag = new ModelTag();
                 modelTag.setModel(model);
                 modelTag.setTag(tag);
@@ -189,10 +209,44 @@ public class ModelService {
                 }
             }
         }
+        requestModelEmbeddingRefresh(model.getId());
     }
 
     public void delete(Model model) {
         modelRepository.delete(model);
     }
-}
 
+    private void requestModelEmbeddingRefresh(Long modelId) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    refreshModelEmbedding(modelId);
+                }
+            });
+            return;
+        }
+        refreshModelEmbedding(modelId);
+    }
+
+    private void refreshModelEmbedding(Long modelId) {
+        try {
+            aiRecommendService.upsertModelEmbedding(modelId);
+        } catch (RuntimeException error) {
+            log.warn("Model embedding refresh failed. modelId={}", modelId, error);
+        }
+    }
+
+    private Optional<Region> toRegion(String regionName) {
+        if (regionName == null || regionName.isBlank()) {
+            return Optional.empty();
+        }
+        for (Region region : Region.values()) {
+            if (region.name().equalsIgnoreCase(regionName)
+                    || region.getDisplayName().equals(regionName)) {
+                return Optional.of(region);
+            }
+        }
+        return Optional.empty();
+    }
+}

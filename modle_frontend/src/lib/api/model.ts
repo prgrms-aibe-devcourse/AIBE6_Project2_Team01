@@ -6,10 +6,18 @@ interface ModelApiResponse extends Omit<Partial<Model>, 'rating'> {
 }
 
 export async function getModels(params: Record<string, any>): Promise<ModelListResponse> {
+  const safeQuery: Record<string, any> = { ...params };
+  for (const key in safeQuery) {
+    if (Array.isArray(safeQuery[key])) {
+      safeQuery[key] = safeQuery[key].join(',');
+    }
+  }
+
   const { data, error } = await client.GET('/api/v1/models', {
     params: {
-      query: params as never
-    }
+      query: safeQuery as never
+    },
+    cache: 'no-store'
   });
   
   if (error) {
@@ -18,10 +26,9 @@ export async function getModels(params: Record<string, any>): Promise<ModelListR
 
   const responseData = (data as { data?: unknown })?.data;
   
-  if (Array.isArray(responseData)) {
-    const models: Model[] = responseData.map((rawItem) => {
-      const item = rawItem as ModelApiResponse;
-      return {
+  const mapItem = (rawItem: unknown): Model => {
+    const item = rawItem as ModelApiResponse;
+    return {
       id: item.id ?? 0,
       userId: item.userId ?? 0,
       name: item.name || '이름 없음',
@@ -38,12 +45,24 @@ export async function getModels(params: Record<string, any>): Promise<ModelListR
       activeRegions: item.activeRegions,
       introduction: item.introduction || '',
       portfolios: item.portfolios || []
-      };
-    }).filter((item) => item.id > 0 && item.userId > 0);
+    };
+  };
 
+  if (responseData && typeof responseData === 'object' && !Array.isArray(responseData) && 'content' in responseData) {
+    const pageData = responseData as { content: unknown[], last: boolean, totalElements: number, totalPages: number };
+    const models = pageData.content.map(mapItem).filter((item) => item.id > 0 && item.userId > 0);
+    return {
+      models,
+      totalElements: pageData.totalElements || 0,
+      totalPages: pageData.totalPages || Math.ceil((pageData.totalElements || 0) / 12) || 1,
+      hasNext: !pageData.last
+    };
+  } else if (Array.isArray(responseData)) {
+    const models = responseData.map(mapItem).filter((item) => item.id > 0 && item.userId > 0);
     return {
       models,
       totalElements: responseData.length,
+      totalPages: Math.ceil(responseData.length / 12) || 1,
       hasNext: false
     };
   }

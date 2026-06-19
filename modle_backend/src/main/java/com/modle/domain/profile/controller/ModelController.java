@@ -5,6 +5,7 @@ import com.modle.domain.profile.dto.request.ModelModifyReqBody;
 import com.modle.domain.profile.entity.type.Category;
 import com.modle.domain.profile.service.ModelService;
 import com.modle.domain.user.entity.Model;
+import com.modle.domain.user.entity.type.Sex;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -31,26 +33,30 @@ public class ModelController {
         @Transactional(readOnly = true)
         @GetMapping
         @Operation(summary = "다건 조회 및 필터링")
-        public ApiResponse<List<ModelDto>> getItems(
+        public ApiResponse<Page<ModelDto>> getItems(
                 @RequestParam(required = false) String query,
                 @RequestParam(required = false) String gender,
                 @RequestParam(required = false) List<Category> categories,
-                @RequestParam(required = false) List<String> regions, // 지역 파라미터 추가
+                @RequestParam(required = false) List<String> regions,
                 @RequestParam(required = false) List<String> tags,
-                @RequestParam(required = false) String height, // 키 필터링 파라미터 추가
-                @RequestParam(required = false) String sort // 정렬 파라미터 추가
+                @RequestParam(required = false) String height,
+                @RequestParam(required = false) String sort,
+                @RequestParam(defaultValue = "0") int page,
+                @RequestParam(defaultValue = "12") int size
         ) {
-                // 성별 파라미터 처리
-                com.modle.domain.user.entity.type.Sex sexParam = null;
+                Sex sexParam = null;
                 if ("M".equalsIgnoreCase(gender) || "MALE".equalsIgnoreCase(gender)) {
-                        sexParam = com.modle.domain.user.entity.type.Sex.M;
+                        sexParam = Sex.M;
                 } else if ("F".equalsIgnoreCase(gender) || "FEMALE".equalsIgnoreCase(gender)) {
-                        sexParam = com.modle.domain.user.entity.type.Sex.F;
+                        sexParam = Sex.F;
                 }
-                // Service 호출
-                List<Model> items = modelService.getList(query, sexParam, categories, regions, tags, height, sort);
-                // DTO 변환
-                List<ModelDto> dtoList = items.stream().map(ModelDto::new).toList();
+
+                // Service 호출 시 page, size 파라미터 추가
+                Page<Model> items = modelService.getList(query, sexParam, categories, regions, tags, height, sort, page, size);
+
+                // DTO 변환 (리스트의 stream().map() 대신 Page의 내장 map() 사용)
+                Page<ModelDto> dtoList = items.map(ModelDto::new);
+
                 return new ApiResponse<>("200-1", "조회 성공", dtoList);
         }
 
@@ -140,4 +146,5 @@ public class ModelController {
                                 "%d번 모델 프로필이 삭제되었습니다.".formatted(id),
                                 new ModelDto(model));
         }
+
 }

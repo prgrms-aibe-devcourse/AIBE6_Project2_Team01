@@ -7,9 +7,10 @@ import com.modle.domain.message.entity.Message;
 import com.modle.domain.message.entity.MessageConversation;
 import com.modle.domain.message.repository.MessageConversationRepository;
 import com.modle.domain.message.repository.MessageRepository;
+import com.modle.domain.application.service.ApplicationService;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.jobposting.entity.JobPosting;
-import com.modle.domain.jobposting.entity.JobPostingStatus;
+import com.modle.domain.jobposting.entity.type.JobPostingStatus;
 import com.modle.domain.user.entity.User;
 import com.modle.domain.user.entity.type.Role;
 import com.modle.domain.user.service.UserService;
@@ -51,6 +52,9 @@ class MessageServiceTest {
     @Mock
     private JobPostingRepository jobPostingRepository;
 
+    @Mock
+    private ApplicationService applicationService;
+
     private MessageService messageService;
 
     @BeforeEach
@@ -59,7 +63,8 @@ class MessageServiceTest {
                 messageRepository,
                 conversationRepository,
                 userService,
-                jobPostingRepository
+                jobPostingRepository,
+                applicationService
         );
     }
 

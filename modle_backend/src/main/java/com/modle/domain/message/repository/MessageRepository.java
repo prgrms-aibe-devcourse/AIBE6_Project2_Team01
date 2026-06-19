@@ -23,4 +23,6 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             Long conversationId,
             Long receiverId
     );
+
+    List<Message> findByConversationIdOrderByCreatedAtAsc(Long conversationId);
 }

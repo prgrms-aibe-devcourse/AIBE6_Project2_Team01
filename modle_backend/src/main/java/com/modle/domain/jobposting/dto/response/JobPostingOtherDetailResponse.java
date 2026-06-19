@@ -1,11 +1,11 @@
 package com.modle.domain.jobposting.dto.response;
 
-import com.modle.domain.jobposting.entity.Category;
+import com.modle.domain.jobposting.entity.type.Category;
 import com.modle.domain.jobposting.entity.JobPosting;
-import com.modle.domain.jobposting.entity.JobPostingStatus;
-import com.modle.domain.jobposting.entity.PayType;
-import com.modle.domain.jobposting.entity.Region;
-import com.modle.domain.jobposting.entity.RequiredSex;
+import com.modle.domain.jobposting.entity.type.JobPostingStatus;
+import com.modle.domain.jobposting.entity.type.PayType;
+import com.modle.global.entity.type.Region;
+import com.modle.domain.jobposting.entity.type.RequiredSex;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ public record JobPostingOtherDetailResponse(
         PayType payType,
         LocalDateTime shootDate,
         LocalDateTime createdDate
-) {
+) implements JobPostingDetailResponse {
     public static JobPostingOtherDetailResponse from(JobPosting jobPosting) {
         return new JobPostingOtherDetailResponse(
                 jobPosting.getId(),

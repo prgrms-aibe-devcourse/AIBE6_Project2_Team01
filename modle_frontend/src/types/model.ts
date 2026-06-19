@@ -27,5 +27,6 @@ export interface Model {
 export interface ModelListResponse {
   models: Model[];
   totalElements: number;
+  totalPages: number;
   hasNext: boolean;
 }

@@ -4,6 +4,7 @@ import com.modle.domain.profile.dto.PortfolioDto;
 import com.modle.domain.profile.entity.Portfolio;
 import com.modle.domain.profile.service.ModelService;
 import com.modle.domain.profile.service.PortfolioService;
+import com.modle.domain.user.dto.PortfolioReorderRequest;
 import com.modle.domain.user.entity.Model;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.response.ApiResponse;
@@ -57,5 +58,14 @@ public class PortfolioController {
                 "200-1",
                 "포트폴리오 이미지가 삭제되었습니다."
         );
+    }
+    @PutMapping("/reorder")
+    public ApiResponse<Void> reorderPortfolios(
+            @RequestBody PortfolioReorderRequest request,
+            @AuthenticationPrincipal SecurityUser currentUser) {
+        Model model = modelService.findByUserId(currentUser.getId());
+        portfolioService.reorderPortfolios(request.getPortfolioIds(), model);
+
+        return new ApiResponse<>("200-1", "포트폴리오 순서가 변경되었습니다.");
     }
 }

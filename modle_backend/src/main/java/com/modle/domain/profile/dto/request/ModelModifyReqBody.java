@@ -1,5 +1,6 @@
 package com.modle.domain.profile.dto.request;
 
+import com.modle.domain.user.entity.type.Sex;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -18,7 +19,7 @@ public record ModelModifyReqBody (
         int weight,
 
         @NotNull
-        com.modle.domain.user.entity.type.Sex sex,
+        Sex sex,
 
         @NotNull
         int age,

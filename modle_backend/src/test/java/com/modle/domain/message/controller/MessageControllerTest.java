@@ -55,7 +55,13 @@ class MessageControllerTest {
                                 }
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(content().json("3"));
+                .andExpect(content().json("""
+                        {
+                          "resultCode": "200-1",
+                          "msg": "읽음 처리되었습니다.",
+                          "data": 3
+                        }
+                        """));
 
         verify(messageService).markConversationAsRead(1L, 100L);
     }

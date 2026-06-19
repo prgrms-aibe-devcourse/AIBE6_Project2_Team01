@@ -2,8 +2,13 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { client } from "@/lib/api/client";
-import { REGION_OPTIONS } from "@/lib/constants/region";
+import { REGION_OPTIONS, getRegionLabel } from "@/lib/constants/region";
 import type { components } from "@/lib/api/schema";
+import {
+  addJobBookmark,
+  getJobBookmarks,
+  removeJobBookmark,
+} from "@/lib/api/bookmark";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -53,13 +58,37 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true);
   const [favoritedIds, setFavoritedIds] = useState<Set<number>>(new Set());
 
-  const toggleFavorite = (id: number) => {
+  // 초기 북마크 목록 로드
+  useEffect(() => {
+    if (!isModel) return;
+    getJobBookmarks()
+      .then((bookmarks) => {
+        setFavoritedIds(new Set(bookmarks.map((b) => b.jobPostingId)));
+      })
+      .catch(() => {});
+  }, [isModel]);
+
+  const toggleFavorite = async (id: number) => {
+    const wasBookmarked = favoritedIds.has(id);
+    // 낙관적 업데이트
     setFavoritedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
+      if (wasBookmarked) next.delete(id);
       else next.add(id);
       return next;
     });
+    try {
+      if (wasBookmarked) await removeJobBookmark(id);
+      else await addJobBookmark(id);
+    } catch {
+      // 실패 시 롤백
+      setFavoritedIds((prev) => {
+        const next = new Set(prev);
+        if (wasBookmarked) next.add(id);
+        else next.delete(id);
+        return next;
+      });
+    }
   };
 
   useEffect(() => {
@@ -71,10 +100,8 @@ export default function JobsPage() {
           query: {
             region: region || undefined,
             category: category || undefined,
-            pageable: {
-              page,
-              size: 10,
-            } as any,
+            page,
+            size: 10,
           },
         },
       })
@@ -192,8 +219,8 @@ export default function JobsPage() {
                       <dd className="text-ink">{job.category}</dd>
                     </div>
                     <div className="flex gap-2">
-                      <dt className="text-mute">지역</dt>
-                      <dd className="text-ink">{job.region}</dd>
+                      <dt className="text-mute mr-1">지역</dt>
+                      <dd className="text-ink">{getRegionLabel(job.region)}</dd>
                     </div>
                     <div className="flex gap-2">
                       <dt className="text-mute">보수</dt>

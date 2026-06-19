@@ -1,5 +1,6 @@
 import { Model } from '@/types/model';
 import Image from 'next/image';
+import { getRegionLabel } from '@/lib/constants/region';
 import Link from 'next/link';
 
 interface Props {
@@ -30,12 +31,9 @@ export function ProfileHeader({ data }: Props) {
       <div className="flex-grow flex flex-col items-center md:items-start">
         <div className="flex flex-col md:flex-row md:items-end gap-3 mb-3">
           <h1 className="text-5xl text-black font-black uppercase tracking-tighter">{data.name}</h1>
-          <div className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-black">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span>{data.region || '서울, 대한민국'}</span>
+          <div className="flex items-center gap-1">
+            <span className="text-gray-400">📍</span>
+            <span>{getRegionLabel(data.region)}</span>
           </div>
           <div className="flex items-center gap-1 ml-0 md:ml-4 bg-black text-white px-3 py-1 text-xs font-bold uppercase tracking-widest border border-black">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">

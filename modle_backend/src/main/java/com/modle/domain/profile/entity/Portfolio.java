@@ -26,4 +26,10 @@ public class Portfolio extends BaseEntity {
         this.model = model;
         this.imgUrl = imgUrl;
     }
+    @Column(nullable = false)
+    private Integer displayOrder = 0; // 정렬 순서 (초기값 0)
+    public void updateDisplayOrder(Integer displayOrder) {
+        this.displayOrder = displayOrder;
+    }
+
 }

@@ -2,12 +2,18 @@ package com.modle.domain.jobposting.controller;
 
 import com.modle.domain.jobposting.dto.request.JobPostingCreateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingStatusUpdateRequest;
+import com.modle.domain.jobposting.dto.request.JobPostingTemplateGenerateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
+import com.modle.domain.jobposting.dto.response.JobPostingDetailResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingListResponse;
 import com.modle.domain.jobposting.dto.response.JobPostingResponse;
-import com.modle.domain.jobposting.dto.response.JobPostingTemplateResponse;
-import com.modle.domain.jobposting.entity.ViewerType;
+import com.modle.domain.jobposting.dto.response.JobPostingTemplateGenerateResponse;
+import com.modle.domain.jobposting.dto.response.MyJobPostingResponse;
+import com.modle.domain.jobposting.dto.response.RecommendationListResponse;
+import com.modle.domain.jobposting.service.AiRecommendService;
+import com.modle.domain.jobposting.entity.type.ViewerType;
 import com.modle.domain.jobposting.service.JobPostingService;
+import com.modle.domain.jobposting.service.JobPostingTemplateService;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -29,11 +35,16 @@ import java.util.List;
 public class JobPostingController {
 
     private final JobPostingService jobPostingService;
+    private final AiRecommendService aiRecommendService;
+    private final JobPostingTemplateService jobPostingTemplateService;
 
-    // JOB-001: 카테고리별 공고 템플릿 목록 반환.
-    @GetMapping("/templates")
-    public ApiResponse<List<JobPostingTemplateResponse>> getTemplates(@RequestParam String category) {
-        return ApiResponse.ok("공고 템플릿 목록 조회 성공", jobPostingService.getTemplatesByCategory(category));
+    // JOB-001: AI 공고 본문 생성 (CLIENT 전용).
+    @PreAuthorize("hasRole('CLIENT')")
+    @PostMapping("/templates/generate")
+    public ApiResponse<JobPostingTemplateGenerateResponse> generateTemplate(
+            @Valid @RequestBody JobPostingTemplateGenerateRequest request) {
+        String content = jobPostingTemplateService.generateContent(request);
+        return ApiResponse.ok("AI 본문 생성 성공", new JobPostingTemplateGenerateResponse(content));
     }
 
     // JOB-002: 공고 등록(상태=모집 중) 후 AI 모델 추천 트리거.
@@ -86,6 +97,30 @@ public class JobPostingController {
         );
     }
 
+    @GetMapping("/{id}/recommendations")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ApiResponse<RecommendationListResponse> getRecommendations(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        return ApiResponse.ok(
+                "추천 모델 목록 조회 성공",
+                aiRecommendService.getOrCreateRecommendations(id, securityUser.getId())
+        );
+    }
+
+    @PostMapping("/{id}/recommendations/unlock")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ApiResponse<RecommendationListResponse> unlockRecommendations(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        return ApiResponse.ok(
+                "추천 모델 잠금 해제 성공",
+                aiRecommendService.unlockRecommendations(id, securityUser.getId())
+        );
+    }
+
     // JOB-009: 공고 상태 변경 (CLIENT 본인만 가능).
     @PreAuthorize("hasRole('CLIENT')")
     @PatchMapping("/{id}/status")
@@ -98,14 +133,26 @@ public class JobPostingController {
 
     // JOB-006~008: 역할에 따라 공고 상세 반환 (MODEL → 모델 뷰, CLIENT → 클라이언트 뷰, 그 외 → OTHER 뷰).
     @GetMapping("/{id}")
-    public ApiResponse<Object> getJobPostingDetail(
+    public ApiResponse<JobPostingDetailResponse> getJobPostingDetail(
             @PathVariable Long id,
             @AuthenticationPrincipal SecurityUser securityUser) {
-        ViewerType viewerType = switch (securityUser.getRole()) {
+        ViewerType viewerType = securityUser == null ? ViewerType.OTHER : switch (securityUser.getRole()) {
             case "MODEL" -> ViewerType.MODEL;
             case "CLIENT" -> ViewerType.CLIENT;
             default -> ViewerType.OTHER;
         };
         return ApiResponse.ok("공고 상세 조회 성공", jobPostingService.getJobPostingDetail(id, viewerType));
+    }
+
+    // MATCH-006: 작성한 공고 목록 (의뢰인)
+    @PreAuthorize("hasRole('CLIENT')")
+    @GetMapping("/my")
+    public ApiResponse<List<MyJobPostingResponse>> getMyJobPostings(
+            @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        return ApiResponse.ok(
+                "작성한 공고 목록 조회 성공",
+                jobPostingService.getMyJobPostings(securityUser.getId())
+        );
     }
 }

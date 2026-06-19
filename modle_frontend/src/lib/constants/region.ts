@@ -17,3 +17,9 @@ export const REGION_OPTIONS = [
   { value: "GYEONGNAM", label: "경남" },
   { value: "JEJU", label: "제주" },
 ] as const;
+
+export const getRegionLabel = (value: string | undefined | null) => {
+  if (!value) return '지역 미상';
+  const option = REGION_OPTIONS.find(opt => opt.value === value);
+  return option ? option.label : value;
+};

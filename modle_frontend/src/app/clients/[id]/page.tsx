@@ -1,5 +1,6 @@
 import { getClientProfile } from '@/lib/api/clientProfile';
 import { notFound } from 'next/navigation';
+import { getRegionLabel } from '@/lib/constants/region';
 import Image from 'next/image';
 
 export const metadata = {
@@ -59,14 +60,13 @@ export default async function ClientDetailPage({ params }: PageProps) {
                  <span className="text-blue-600 underline cursor-pointer hover:text-blue-800">
                    후기 {clientData.reviewCount || 0}개
                  </span>
-                 <div className="w-px h-3 bg-gray-300"></div>
-                 <span className="text-gray-400">클라이언트 번호: {clientData.id}</span>
+
                </div>
 
                <div className="flex flex-col gap-3 text-sm tracking-wide">
                   <div className="flex">
-                     <span className="w-32 text-gray-500">사업자 등록번호</span>
-                     <span className="text-black font-semibold">{clientData.companyNumber || '미상'}</span>
+                     <span className="w-32 text-gray-500">지역</span>
+                     <span className="text-black font-semibold">{getRegionLabel(clientData.region)}</span>
                   </div>
                   <div className="flex">
                      <span className="w-32 text-gray-500">가입일</span>

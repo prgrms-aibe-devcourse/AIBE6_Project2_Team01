@@ -1,5 +1,6 @@
 import { Client } from '@/types/client';
 import Image from 'next/image';
+import { getRegionLabel } from '@/lib/constants/region';
 
 interface Props {
   data: Client;
@@ -30,13 +31,9 @@ export function ClientProfileInfo({ data }: Props) {
             <span className="px-4 py-1 border border-black bg-white text-black text-xs font-bold uppercase tracking-widest">
               {data.clientType === 'INDIVIDUAL' ? '개인' : '기업'}
             </span>
-            {data.companyNumber && (
-              <span className="px-4 py-1 border border-black bg-white text-black text-xs font-bold uppercase tracking-widest">
-                사업자번호: {data.companyNumber}
-              </span>
-            )}
+
             <span className="px-4 py-1 border border-black bg-white text-black text-xs font-bold uppercase tracking-widest">
-              {data.region || '지역 미상'}
+              {getRegionLabel(data.region)}
             </span>
           </div>
         </div>

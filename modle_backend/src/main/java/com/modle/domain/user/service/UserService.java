@@ -1,5 +1,7 @@
 package com.modle.domain.user.service;
 
+import com.modle.global.entity.type.Region;
+import com.modle.domain.user.dto.TokenPair;
 import com.modle.domain.user.dto.request.AdditionalInfoRequest;
 import com.modle.domain.user.dto.request.ClientRegisterRequest;
 import com.modle.domain.user.dto.request.ModelRegisterRequest;
@@ -11,6 +13,7 @@ import com.modle.domain.user.entity.type.UserStatus;
 import com.modle.domain.user.repository.ClientRepository;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.UserRepository;
+import com.modle.domain.jobposting.service.AiRecommendService;
 import com.modle.global.auth.JwtTokenProvider;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
@@ -32,6 +35,7 @@ public class UserService {
     private final AuthTokenService authTokenService;
     private final EmailVerifyService emailVerifyService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AiRecommendService aiRecommendService;
 
     @Transactional
     public User registerModel(ModelRegisterRequest request) {
@@ -56,7 +60,7 @@ public class UserService {
         // MVP: User.region을 초기 model_region으로 1개 복사
         if (user.getRegion() != null && !user.getRegion().isBlank()) {
             try {
-                com.modle.domain.jobposting.entity.Region regionEnum = com.modle.domain.jobposting.entity.Region.valueOf(user.getRegion());
+                Region regionEnum = Region.valueOf(user.getRegion());
                 com.modle.domain.profile.entity.ModelRegion modelRegion = new com.modle.domain.profile.entity.ModelRegion();
                 modelRegion.setModel(model);
                 modelRegion.setRegion(regionEnum);
@@ -131,8 +135,8 @@ public class UserService {
         return authTokenService.genRefreshToken(user);
     }
 
-    public String reissueAccessToken(String refreshToken) {
-        return authTokenService.reissueAccessToken(refreshToken);
+    public TokenPair reissueTokens(String refreshToken) {
+        return authTokenService.reissueTokens(refreshToken);
     }
 
     public void deleteRefreshToken(String refreshToken) {
@@ -175,7 +179,7 @@ public class UserService {
             
             if (user.getRegion() != null && !user.getRegion().isBlank()) {
                 try {
-                    com.modle.domain.jobposting.entity.Region regionEnum = com.modle.domain.jobposting.entity.Region.valueOf(user.getRegion());
+                    Region regionEnum = Region.valueOf(user.getRegion());
                     com.modle.domain.profile.entity.ModelRegion modelRegion = new com.modle.domain.profile.entity.ModelRegion();
                     modelRegion.setModel(model);
                     modelRegion.setRegion(regionEnum);
@@ -184,6 +188,7 @@ public class UserService {
                 } catch (IllegalArgumentException e) {
                 }
             }
+            aiRecommendService.upsertModelEmbedding(model.getId());
         } else if (request.role() == Role.CLIENT) {
             if (request.companyName() == null || request.companyNumber() == null
                     || request.clientType() == null) {

@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, ReactNode, useState } from "react";
+import { CATEGORY_OPTIONS } from "@/lib/constants/category";
 import { REGION_OPTIONS } from "@/lib/constants/region";
+import { FormEvent, ReactNode, useState } from "react";
 
 export type Category =
   | "HAIR"
@@ -33,12 +34,23 @@ export type Region =
 export type RequiredSex = "M" | "F" | "ANY";
 export type PayType = "CASH" | "SERVICE" | "FREE";
 
+export type AiGenerateParams = {
+  category: string;
+  title: string;
+  shootDate: string;
+  payType: string;
+  ageMin?: number;
+  ageMax?: number;
+  requiredSex?: string;
+};
+
 export type JobPostingFormState = {
   title: string;
   content: string;
   category: Category | "";
   region: Region | "";
   requiredSex: RequiredSex;
+  requiredCount: string;
   ageMin: string;
   ageMax: string;
   heightMin: string;
@@ -57,6 +69,7 @@ export const defaultFormState: JobPostingFormState = {
   category: "",
   region: "",
   requiredSex: "ANY",
+  requiredCount: "",
   ageMin: "",
   ageMax: "",
   heightMin: "",
@@ -69,32 +82,37 @@ export const defaultFormState: JobPostingFormState = {
   shootDate: "",
 };
 
-const CATEGORY_OPTIONS: { value: Category; label: string }[] = [
-  { value: "HAIR", label: "헤어" },
-  { value: "MAKEUP", label: "메이크업" },
-  { value: "CLOTHING", label: "의류" },
-  { value: "FITTING", label: "피팅" },
-  { value: "HAND", label: "핸드" },
-  { value: "FOOD", label: "음식" },
-  { value: "PRODUCT", label: "제품" },
-  { value: "ETC", label: "기타" },
-];
-
-
 
 type Props = {
   initialValues?: Partial<JobPostingFormState>;
   onSubmit: (data: JobPostingFormState) => Promise<void>;
   submitLabel: string;
+  externalCategory?: Category | "";
+  onAiGenerate?: (params: AiGenerateParams) => Promise<string>;
 };
 
-export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) {
+export function JobPostingForm({
+  initialValues,
+  onSubmit,
+  submitLabel,
+  externalCategory,
+  onAiGenerate,
+}: Props) {
   const [form, setForm] = useState<JobPostingFormState>({
     ...defaultFormState,
     ...initialValues,
   });
   const [status, setStatus] = useState<"idle" | "saving" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [aiState, setAiState] = useState<"idle" | "generating">("idle");
+  const [aiError, setAiError] = useState("");
+  const [aiGenerated, setAiGenerated] = useState(false);
+
+  const [prevExternalCategory, setPrevExternalCategory] = useState(externalCategory);
+  if (prevExternalCategory !== externalCategory && externalCategory) {
+    setPrevExternalCategory(externalCategory);
+    setForm((cur) => ({ ...cur, category: externalCategory }));
+  }
 
   const updateField = <K extends keyof JobPostingFormState>(
     key: K,
@@ -103,8 +121,54 @@ export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) 
     setForm((cur) => ({ ...cur, [key]: value }));
   };
 
+  const handleAiGenerate = async () => {
+    setAiError("");
+    const errors: string[] = [];
+    if (!form.title.trim()) errors.push("제목을 입력해주세요.");
+    if (!form.shootDate) errors.push("촬영 예정일을 입력해주세요.");
+    if (!form.payType) errors.push("보수 유형을 선택해주세요.");
+    if (!form.ageMin && !form.ageMax) errors.push("나이 최소 또는 최대를 입력해주세요.");
+    if (errors.length > 0) {
+      setAiError(errors.join(" "));
+      return;
+    }
+    setAiState("generating");
+    try {
+      const content = await onAiGenerate!({
+        category: form.category,
+        title: form.title,
+        shootDate: form.shootDate,
+        payType: form.payType,
+        ageMin: form.ageMin ? Number(form.ageMin) : undefined,
+        ageMax: form.ageMax ? Number(form.ageMax) : undefined,
+        requiredSex: form.requiredSex,
+      });
+      updateField("content", content);
+      setAiGenerated(true);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : "AI 본문 생성에 실패했습니다.");
+    } finally {
+      setAiState("idle");
+    }
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!form.content.trim()) {
+      setStatus("error");
+      setMessage("공고 본문을 입력해주세요.");
+      return;
+    }
+    if (!form.payType) {
+      setStatus("error");
+      setMessage("보수 유형을 선택해주세요.");
+      return;
+    }
+    if (!form.ageMin && !form.ageMax) {
+      setStatus("error");
+      setMessage("나이 최소 또는 최대를 입력해주세요.");
+      return;
+    }
     setStatus("saving");
     setMessage("");
     try {
@@ -124,14 +188,18 @@ export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) 
         : "border-hairline bg-surface text-body hover:border-hairline-strong"
     }`;
 
+  const aiMode = !!onAiGenerate && !!form.category;
+  const showAiButton = aiMode && !form.content;
+
   return (
     <form
       onSubmit={handleSubmit}
       className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"
     >
-      <section className="rounded-xl border border-hairline bg-surface p-6">
-        <div className="grid gap-6 md:grid-cols-2">
-          <Field label="제목" required className="md:col-span-2">
+      {/* 메인: 제목·내용 */}
+      <section className="flex flex-col rounded-xl border border-hairline bg-surface p-6">
+        <div className="flex flex-1 flex-col gap-6">
+          <Field label="제목" required>
             <input
               className={inputClass}
               value={form.title}
@@ -140,29 +208,66 @@ export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) 
             />
           </Field>
 
-          <Field label="내용" required className="md:col-span-2">
-            <textarea
-              className="min-h-32 w-full resize-y rounded-md border border-hairline bg-canvas-soft px-3 py-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
-              value={form.content}
-              onChange={(e) => updateField("content", e.target.value)}
-              required
-            />
+          <Field label="내용" required className="flex flex-1 flex-col">
+            {showAiButton ? (
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={handleAiGenerate}
+                  disabled={aiState === "generating"}
+                  className="flex h-14 w-full items-center justify-center rounded-md border-2 border-dashed border-primary bg-canvas-soft text-[15px] font-semibold text-primary transition hover:bg-canvas disabled:opacity-50"
+                >
+                  {aiState === "generating" ? "AI 본문 생성 중..." : "✦ AI 본문 생성"}
+                </button>
+                {aiError ? (
+                  <p className="rounded-md bg-error-soft px-3 py-2 text-[13px] leading-5 text-error">
+                    {aiError}
+                  </p>
+                ) : null}
+              </div>
+            ) : (
+              <div className="flex flex-1 flex-col gap-2">
+                {aiGenerated && (
+                  <div className="flex items-start gap-2 rounded-md border border-hairline bg-canvas-soft px-3 py-2 text-[13px] leading-5 text-mute">
+                    <p className="flex-1">✦ AI가 생성한 초안입니다. 내용을 검토하고 필요한 경우 수정 후 등록해주세요.</p>
+                    <button
+                      type="button"
+                      onClick={() => setAiGenerated(false)}
+                      className="shrink-0 hover:text-ink"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+                <textarea
+                  className="min-h-0 flex-1 w-full resize-none overflow-y-auto rounded-md border border-hairline bg-canvas-soft px-3 py-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
+                  value={form.content}
+                  onChange={(e) => {
+                    updateField("content", e.target.value);
+                    setAiGenerated(false);
+                  }}
+                />
+              </div>
+            )}
           </Field>
+        </div>
+      </section>
 
+      {/* 우측: 옵션 설정 + 등록 버튼 */}
+      <aside className="flex flex-col rounded-xl border border-hairline bg-surface p-6">
+        <h2 className="text-[15px] font-semibold leading-6 text-ink">옵션 설정</h2>
+
+        <div className="mt-4 flex-1 overflow-y-auto grid gap-4">
           <Field label="카테고리" required>
             <select
               className={inputClass}
               value={form.category}
-              onChange={(e) =>
-                updateField("category", e.target.value as Category)
-              }
+              onChange={(e) => updateField("category", e.target.value as Category)}
               required
             >
               <option value="">선택하세요</option>
               {CATEGORY_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
+                <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
           </Field>
@@ -171,16 +276,12 @@ export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) 
             <select
               className={inputClass}
               value={form.region}
-              onChange={(e) =>
-                updateField("region", e.target.value as Region)
-              }
+              onChange={(e) => updateField("region", e.target.value as Region)}
               required
             >
               <option value="">선택하세요</option>
               {REGION_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
+                <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
           </Field>
@@ -200,82 +301,113 @@ export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) 
             </div>
           </Field>
 
-          <Field label="촬영 예정일">
+          <Field label="최종 섭외 인원" required>
+            <input
+              className={inputClass}
+              type="number"
+              min={1}
+              max={100}
+              value={form.requiredCount}
+              onChange={(e) => updateField("requiredCount", e.target.value)}
+              required
+            />
+          </Field>
+
+          <Field label="촬영 예정일" required>
             <input
               className={inputClass}
               type="date"
               value={form.shootDate}
               onChange={(e) => updateField("shootDate", e.target.value)}
+              required
             />
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="최소 나이">
-              <input
-                className={inputClass}
-                type="number"
-                min={15}
-                max={80}
-                value={form.ageMin}
-                onChange={(e) => updateField("ageMin", e.target.value)}
-              />
-            </Field>
-            <Field label="최대 나이">
-              <input
-                className={inputClass}
-                type="number"
-                min={15}
-                max={80}
-                value={form.ageMax}
-                onChange={(e) => updateField("ageMax", e.target.value)}
-              />
-            </Field>
+          <div>
+            <span className="mb-2 block text-[13px] font-semibold leading-5 text-ink">
+              나이<span className="text-error"> *</span>
+              <span className="ml-1 font-normal text-mute">(최소 또는 최대)</span>
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <span className="mb-1 block text-[12px] leading-5 text-mute">최소</span>
+                <input
+                  className={inputClass}
+                  type="number"
+                  min={15}
+                  max={80}
+                  value={form.ageMin}
+                  onChange={(e) => updateField("ageMin", e.target.value)}
+                />
+              </div>
+              <div>
+                <span className="mb-1 block text-[12px] leading-5 text-mute">최대</span>
+                <input
+                  className={inputClass}
+                  type="number"
+                  min={15}
+                  max={80}
+                  value={form.ageMax}
+                  onChange={(e) => updateField("ageMax", e.target.value)}
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="최소 키 (cm)">
-              <input
-                className={inputClass}
-                type="number"
-                min={100}
-                max={220}
-                value={form.heightMin}
-                onChange={(e) => updateField("heightMin", e.target.value)}
-              />
-            </Field>
-            <Field label="최대 키 (cm)">
-              <input
-                className={inputClass}
-                type="number"
-                min={100}
-                max={220}
-                value={form.heightMax}
-                onChange={(e) => updateField("heightMax", e.target.value)}
-              />
-            </Field>
+          <div>
+            <span className="mb-2 block text-[13px] font-semibold leading-5 text-ink">키 (cm)</span>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <span className="mb-1 block text-[12px] leading-5 text-mute">최소</span>
+                <input
+                  className={inputClass}
+                  type="number"
+                  min={100}
+                  max={220}
+                  value={form.heightMin}
+                  onChange={(e) => updateField("heightMin", e.target.value)}
+                />
+              </div>
+              <div>
+                <span className="mb-1 block text-[12px] leading-5 text-mute">최대</span>
+                <input
+                  className={inputClass}
+                  type="number"
+                  min={100}
+                  max={220}
+                  value={form.heightMax}
+                  onChange={(e) => updateField("heightMax", e.target.value)}
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="최소 몸무게 (kg)">
-              <input
-                className={inputClass}
-                type="number"
-                min={30}
-                max={150}
-                value={form.weightMin}
-                onChange={(e) => updateField("weightMin", e.target.value)}
-              />
-            </Field>
-            <Field label="최대 몸무게 (kg)">
-              <input
-                className={inputClass}
-                type="number"
-                min={30}
-                max={150}
-                value={form.weightMax}
-                onChange={(e) => updateField("weightMax", e.target.value)}
-              />
-            </Field>
+          <div>
+            <span className="mb-2 block text-[13px] font-semibold leading-5 text-ink">몸무게 (kg)</span>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <span className="mb-1 block text-[12px] leading-5 text-mute">최소</span>
+                <input
+                  className={inputClass}
+                  type="number"
+                  min={30}
+                  max={150}
+                  value={form.weightMin}
+                  onChange={(e) => updateField("weightMin", e.target.value)}
+                />
+              </div>
+              <div>
+                <span className="mb-1 block text-[12px] leading-5 text-mute">최대</span>
+                <input
+                  className={inputClass}
+                  type="number"
+                  min={30}
+                  max={150}
+                  value={form.weightMax}
+                  onChange={(e) => updateField("weightMax", e.target.value)}
+                />
+              </div>
+            </div>
           </div>
 
           <Field label="최소 경력 (개월)">
@@ -289,7 +421,7 @@ export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) 
             />
           </Field>
 
-          <Field label="보수 유형">
+          <Field label="보수 유형" required>
             <div className="grid grid-cols-3 gap-2">
               {(["CASH", "SERVICE", "FREE"] as const).map((pt) => (
                 <button
@@ -320,31 +452,6 @@ export function JobPostingForm({ initialValues, onSubmit, submitLabel }: Props) 
             </Field>
           ) : null}
         </div>
-      </section>
-
-      <aside className="h-fit rounded-xl border border-hairline bg-surface p-6">
-        <h2 className="text-lg font-semibold leading-[26px] text-ink">
-          미리보기
-        </h2>
-        <dl className="mt-5 space-y-4 text-[13px] leading-5">
-          <PreviewRow label="제목" value={form.title} />
-          <PreviewRow label="카테고리" value={form.category} />
-          <PreviewRow label="지역" value={form.region} />
-          <PreviewRow label="성별" value={form.requiredSex} />
-          <PreviewRow
-            label="보수"
-            value={
-              form.payType === "FREE"
-                ? "무료"
-                : form.payType === "SERVICE"
-                  ? "서비스 제공"
-                  : form.payment
-                    ? `${Number(form.payment).toLocaleString("ko-KR")}원`
-                    : "-"
-            }
-          />
-          <PreviewRow label="촬영일" value={form.shootDate} />
-        </dl>
 
         <div className="mt-6 border-t border-hairline pt-5">
           <button
@@ -384,14 +491,5 @@ function Field({
       </span>
       {children}
     </label>
-  );
-}
-
-function PreviewRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="grid grid-cols-[88px_1fr] gap-3">
-      <dt className="text-mute">{label}</dt>
-      <dd className="min-w-0 break-words text-ink">{value || "-"}</dd>
-    </div>
   );
 }

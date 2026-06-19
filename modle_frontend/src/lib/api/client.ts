@@ -22,6 +22,7 @@ const REISSUE_EXEMPT_PATHS = [
 ];
 
 let sessionExpiredHandler: (() => void) | null = null;
+let ongoingReissue: Promise<boolean> | null = null;
 
 /** refreshToken까지 만료되어 재발급이 실패했을 때 호출할 콜백을 등록 AuthProvider가 mount 시 등록 */
 export function setSessionExpiredHandler(handler: (() => void) | null) {
@@ -39,12 +40,20 @@ export async function authenticatedFetch(
     return response;
   }
 
-  const reissueResponse = await fetch("/api/v1/auth/reissue", {
-    method: "POST",
-    credentials: "include",
-  });
+  if (!ongoingReissue) {
+    ongoingReissue = fetch(`${API_BASE_URL}/api/v1/auth/reissue`, {
+      method: "POST",
+      credentials: "include",
+    })
+      .then((r) => r.ok)
+      .finally(() => {
+        ongoingReissue = null;
+      });
+  }
 
-  if (!reissueResponse.ok) {
+  const reissueOk = await ongoingReissue;
+
+  if (!reissueOk) {
     sessionExpiredHandler?.();
     return response;
   }
@@ -72,12 +81,20 @@ client.use({
       return undefined;
     }
 
-    const reissueRes = await fetch(`${API_BASE_URL}/api/v1/auth/reissue`, {
-      method: "POST",
-      credentials: "include",
-    });
+    if (!ongoingReissue) {
+      ongoingReissue = fetch(`${API_BASE_URL}/api/v1/auth/reissue`, {
+        method: "POST",
+        credentials: "include",
+      })
+        .then((r) => r.ok)
+        .finally(() => {
+          ongoingReissue = null;
+        });
+    }
 
-    if (!reissueRes.ok) {
+    const reissueOk = await ongoingReissue;
+
+    if (!reissueOk) {
       sessionExpiredHandler?.();
       return undefined;
     }
