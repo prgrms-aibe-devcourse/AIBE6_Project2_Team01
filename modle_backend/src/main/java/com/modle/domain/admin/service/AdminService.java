@@ -14,6 +14,7 @@ import com.modle.domain.user.entity.type.UserStatus;
 import com.modle.domain.user.repository.ClientRepository;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.UserRepository;
+import com.modle.domain.user.service.AuthTokenService;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
 import com.modle.infra.mail.MailService;
@@ -32,6 +33,7 @@ public class AdminService {
     private final ReportRepository reportRepository;
     private final ApplicationRepository applicationRepository;
     private final ModelRepository modelRepository;
+    private final AuthTokenService authTokenService;
 
     // 승인 대기 중인 의뢰인 목록 조회
     @Transactional(readOnly = true)
@@ -109,6 +111,7 @@ public class AdminService {
         }
 
         user.suspend();
+        authTokenService.deleteRefreshToken(userId);
         mailService.sendSuspendEmail(user.getEmail());
         return new UserDto(user);
     }
