@@ -85,6 +85,10 @@ public enum ErrorCode {
     APPLICATION_ALREADY_CONTACTED(HttpStatus.CONFLICT, "409-7", "이미 컨택된 지원입니다."),
     APPLICATION_CONTACT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-14", "지원 완료(APPLIED) 상태에서만 컨택할 수 있습니다."),
     APPLICATION_EXCEED_REQUIRED_COUNT(HttpStatus.BAD_REQUEST, "400-15", "모집 인원을 초과했습니다."),
+    APPLICATION_HOLD_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-17", "촬영 진행(SHOOTING) 상태에서만 보류할 수 있습니다."),
+    APPLICATION_CANCEL_SHOOTING_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-18", "보류(ON_HOLD) 상태에서만 촬영을 취소할 수 있습니다."),
+    APPLICATION_RESUME_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-19", "보류(ON_HOLD) 상태에서만 촬영을 재개할 수 있습니다."),
+    APPLICATION_RE_RECRUIT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-20", "보류(ON_HOLD) 상태에서만 재모집할 수 있습니다."),
 
     // 잘못된 접근
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "403-6", "권한이 없습니다."),

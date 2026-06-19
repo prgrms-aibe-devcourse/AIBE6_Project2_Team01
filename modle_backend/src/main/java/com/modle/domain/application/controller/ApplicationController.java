@@ -1,6 +1,8 @@
 package com.modle.domain.application.controller;
 
 import com.modle.domain.application.dto.request.ApplicationCreateRequest;
+import com.modle.domain.application.dto.request.CancelShootingRequest;
+import com.modle.domain.application.dto.request.HoldRequest;
 import com.modle.domain.application.dto.response.ApplicantResponse;
 import com.modle.domain.application.dto.response.ApplicationResponse;
 import com.modle.domain.application.dto.response.ContactResponse;
@@ -11,6 +13,7 @@ import com.modle.domain.contract.service.ContractService;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -105,6 +108,44 @@ public class ApplicationController {
             @PathVariable Long id,
             @AuthenticationPrincipal SecurityUser securityUser) {
         return ApiResponse.ok("계약 상태 조회 성공", contractService.getContractByApplicationId(securityUser.getId(), id));
+    }
+
+    // MATCH-013: 촬영 보류 (의뢰인 전용)
+    @PreAuthorize("hasRole('CLIENT')")
+    @PatchMapping("/applications/{id}/hold")
+    public ApiResponse<ApplicationResponse> holdShooting(
+            @PathVariable Long id,
+            @RequestBody @Valid HoldRequest request,
+            @AuthenticationPrincipal SecurityUser securityUser) {
+        return ApiResponse.ok("촬영 보류 성공", applicationService.holdShooting(securityUser.getId(), id, request));
+    }
+
+    // MATCH-012: 촬영 취소 (의뢰인 전용)
+    @PreAuthorize("hasRole('CLIENT')")
+    @PatchMapping("/applications/{id}/cancel-shooting")
+    public ApiResponse<ApplicationResponse> cancelShooting(
+            @PathVariable Long id,
+            @RequestBody @Valid CancelShootingRequest request,
+            @AuthenticationPrincipal SecurityUser securityUser) {
+        return ApiResponse.ok("촬영 취소 성공", applicationService.cancelShooting(securityUser.getId(), id, request));
+    }
+
+    // MATCH-014: 촬영 재개 (의뢰인 전용)
+    @PreAuthorize("hasRole('CLIENT')")
+    @PatchMapping("/applications/{id}/resume")
+    public ApiResponse<ApplicationResponse> resumeShooting(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser securityUser) {
+        return ApiResponse.ok("촬영 재개 성공", applicationService.resumeShooting(securityUser.getId(), id));
+    }
+
+    // re-recruit: 재모집 (의뢰인 전용)
+    @PreAuthorize("hasRole('CLIENT')")
+    @PostMapping("/applications/{id}/re-recruit")
+    public ApiResponse<ApplicationResponse> reRecruit(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser securityUser) {
+        return ApiResponse.ok("재모집 요청 성공", applicationService.reRecruit(securityUser.getId(), id));
     }
 
 }
