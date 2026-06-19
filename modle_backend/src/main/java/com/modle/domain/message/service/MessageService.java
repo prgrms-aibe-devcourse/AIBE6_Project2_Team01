@@ -198,6 +198,15 @@ public class MessageService {
         return unreadMessages.size();
     }
 
+    @Transactional
+    public void deleteConversation(Long userId, Long conversationId) {
+        MessageConversation conversation = findConversation(conversationId);
+        validateParticipant(conversation, userId);
+
+        messageRepository.deleteByConversationId(conversationId);
+        conversationRepository.delete(conversation);
+    }
+
     public MessageConversation findConversationByApplicationId(Long applicationId) {
         return conversationRepository.findByApplicationId(applicationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MESSAGE_CONVERSATION_NOT_FOUND));
@@ -280,6 +289,18 @@ public class MessageService {
             byPost.linkApplication(applicationId);
             return MessageConversationResponse.from(byPost);
         }
+
+        MessageConversation byParticipant = conversationRepository
+                .findFirstByClientIdAndModelIdOrderByCreatedDateDesc(clientUserId, modelUserId)
+                .orElse(null);
+
+        if (byParticipant != null
+                && byParticipant.getPostId() == null
+                && byParticipant.getApplicationId() == null) {
+            byParticipant.bindProposal(jobPostingId, applicationId);
+            return MessageConversationResponse.from(byParticipant);
+        }
+
         validateContractConversationPost(clientUserId, jobPostingId);
 
         MessageConversation conversation = MessageConversation.builder()

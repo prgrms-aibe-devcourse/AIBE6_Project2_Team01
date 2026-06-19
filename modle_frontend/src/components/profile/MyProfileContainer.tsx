@@ -4,6 +4,8 @@ import { MyProfileView } from '@/components/model/MyProfileView';
 import { PortfolioGallery } from '@/components/portfolio/PortfolioGallery';
 import { BookmarkedJobs } from '@/components/profile/BookmarkedJobs';
 import { MyApplications } from '@/components/profile/MyApplications';
+import { MyCareerList } from '@/components/profile/MyCareerList';
+import { ReviewList } from '@/components/review/ReviewList';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ProfileTabs } from '@/components/profile/ProfileTabs';
 import { Model } from '@/types/model';
@@ -39,6 +41,10 @@ export function MyProfileContainer({ initialData }: Props) {
         {activeTab === 'favorites' && <BookmarkedJobs />}
 
         {activeTab === 'applications' && <MyApplications />}
+        {activeTab === 'career' && <MyCareerList />}
+        {activeTab === 'reviews' && initialData.userId && (
+          <ReviewList targetUserId={initialData.userId} totalCount={initialData.reviewCount} />
+        )}
 
         {/* 임시 처리 (나머지 탭) */}
         {['contracts'].includes(activeTab) && (

@@ -124,3 +124,13 @@ export async function markConversationAsRead(
   );
   if (!response.ok) throw new Error("쪽지를 읽음 처리하지 못했습니다.");
 }
+
+export async function deleteConversation(conversationId: number): Promise<void> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/api/v1/messages/conversations/${conversationId}`,
+    {
+      method: "DELETE",
+    },
+  );
+  if (!response.ok) throw new Error("대화방을 삭제하지 못했습니다.");
+}

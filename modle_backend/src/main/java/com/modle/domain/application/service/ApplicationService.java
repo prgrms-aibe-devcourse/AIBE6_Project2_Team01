@@ -21,6 +21,8 @@ import com.modle.domain.message.entity.Message;
 import com.modle.domain.message.entity.MessageConversation;
 import com.modle.domain.message.repository.MessageRepository;
 import com.modle.domain.message.service.MessageService;
+import com.modle.domain.profile.entity.Career;
+import com.modle.domain.profile.repository.CareerRepository;
 import com.modle.domain.user.entity.Model;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.global.exception.CustomException;
@@ -29,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -45,6 +48,7 @@ public class ApplicationService {
     private final ModelRepository modelRepository;
     private final MessageService messageService;
     private final MessageRepository messageRepository;
+    private final CareerRepository careerRepository;
 
     public Application getApplication(Long applicationId) {
         return applicationRepository.findById(applicationId)
@@ -320,6 +324,56 @@ public class ApplicationService {
             throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
         }
         return jobPosting;
+    }
+
+    // MATCH-016: 촬영 완료 처리 (의뢰인)
+    @Transactional
+    public ApplicationResponse completeApplication(Long clientId, Long applicationId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
+
+        JobPosting jobPosting = jobPostingRepository.findById(application.getJobPostingId())
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
+
+        // 공고 작성자 검증
+        if (!jobPosting.getClientId().equals(clientId)) {
+            throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
+        }
+
+        // SHOOTING 상태에서만 가능
+        if (application.getStatus() != ApplicationStatus.SHOOTING) {
+            throw new CustomException(ErrorCode.INVALID_STATUS_CHANGE);
+        }
+
+        application.complete();
+
+        // Career 자동 생성
+        Career career = Career.createFromJobPosting(
+                application.getModelId(),
+                jobPosting.getId(),
+                jobPosting.getTitle(),
+                jobPosting.getCategory().name(),
+                jobPosting.getRegion().name(),
+                jobPosting.getShootDate(),
+                LocalDateTime.now()
+        );
+        careerRepository.save(career);
+
+        // 완료 인원 >= 필요 인원 시 공고 자동 마감
+        autoCloseJobPostingIfNeeded(jobPosting);
+
+        return ApplicationResponse.from(application);
+    }
+
+    private void autoCloseJobPostingIfNeeded(JobPosting jobPosting) {
+        if (jobPosting.getRequiredCount() == null) return;
+
+        long completedCount = applicationRepository.countByJobPostingIdAndStatus(
+                jobPosting.getId(), ApplicationStatus.COMPLETED);
+
+        if (completedCount >= jobPosting.getRequiredCount()) {
+            jobPosting.close();
+        }
     }
 
     private String createContactMessage(String jobPostingTitle) {

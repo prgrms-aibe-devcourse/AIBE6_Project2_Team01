@@ -109,6 +109,7 @@ public class JobPosting extends BaseEntity {
 
     public void update(String title, String content, Category category, Region region,
                        RequiredSex requiredSex,
+                       Integer requiredCount,
                        Integer ageMin, Integer ageMax,
                        Integer heightMin, Integer heightMax,
                        Integer weightMin, Integer weightMax,
@@ -119,6 +120,7 @@ public class JobPosting extends BaseEntity {
         this.category = category;
         this.region = region;
         this.requiredSex = requiredSex != null ? requiredSex : RequiredSex.ANY;
+        this.requiredCount = requiredCount;
         this.ageMin = ageMin;
         this.ageMax = ageMax;
         this.heightMin = heightMin;
@@ -133,6 +135,10 @@ public class JobPosting extends BaseEntity {
 
     public void updateStatus(JobPostingStatus newStatus) {
         this.status = newStatus;
+    }
+
+    public void close() {
+        this.status = JobPostingStatus.CLOSED;
     }
 }
 

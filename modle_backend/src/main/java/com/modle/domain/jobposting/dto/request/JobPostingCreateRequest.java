@@ -27,6 +27,10 @@ public record JobPostingCreateRequest(
 
         RequiredSex requiredSex,
 
+        @Min(1)
+        @Max(100)
+        Integer requiredCount,
+
         @Min(15) @Max(80)
         Integer ageMin,
 

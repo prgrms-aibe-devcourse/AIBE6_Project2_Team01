@@ -101,6 +101,21 @@ export async function getApplicationContacts(
   return body.data as ContactHistory[];
 }
 
+export async function completeApplication(
+  applicationId: number,
+): Promise<ApplicationResponse> {
+  const res = await authenticatedFetch(
+    `${API_BASE_URL}/api/v1/applications/${applicationId}/complete`,
+    { method: "PATCH", credentials: "include" },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(getErrorMessage(body, "촬영 완료 처리에 실패했습니다."));
+  }
+  const body = await res.json();
+  return body.data as ApplicationResponse;
+}
+
 // ── 공유 상수 ───────────────────────────────────────────────
 export const APPLICATION_STATUS_LABELS: Record<string, string> = {
   APPLIED: "지원 완료",

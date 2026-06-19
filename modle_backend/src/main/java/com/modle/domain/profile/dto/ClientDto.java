@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 public record ClientDto(
         @NonNull long id,
+        @NonNull long userId,
         @NonNull LocalDateTime createdDate,
         @NonNull LocalDateTime modifiedDate,
         @NonNull String clientType,
@@ -22,6 +23,7 @@ public record ClientDto(
     public ClientDto(Client client) {
         this(
                 client.getId(),
+                client.getUser().getId(),
                 client.getCreatedDate(),
                 client.getModifiedDate(),
                 client.getClientType() != null ? client.getClientType().name() : "UNKNOWN",

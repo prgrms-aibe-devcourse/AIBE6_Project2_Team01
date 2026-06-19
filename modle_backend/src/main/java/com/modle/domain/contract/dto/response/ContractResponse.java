@@ -21,6 +21,7 @@ public record ContractResponse(
         String memo,
         String pdfUrl,
         String signedPdfUrl,
+        String rejectReason,
         ContractStatus status
 ) {
     public static ContractResponse from(Contract contract) {
@@ -37,6 +38,7 @@ public record ContractResponse(
                 contract.getMemo(),
                 contract.getPdfUrl(),
                 contract.getSignedPdfUrl(),
+                contract.getRejectReason(),
                 contract.getStatus()
         );
     }

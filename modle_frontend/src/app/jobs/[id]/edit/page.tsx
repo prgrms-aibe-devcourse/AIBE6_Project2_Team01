@@ -61,6 +61,7 @@ export default function EditJobPage({
           region: (d.region as JobPostingFormState["region"]) ?? "",
           requiredSex:
             (d.requiredSex as "M" | "F" | "ANY" | undefined) ?? "ANY",
+          requiredCount: d.requiredCount != null ? String(d.requiredCount) : "",
           ageMin: d.ageMin != null ? String(d.ageMin) : "",
           ageMax: d.ageMax != null ? String(d.ageMax) : "",
           heightMin: d.heightMin != null ? String(d.heightMin) : "",
@@ -117,6 +118,9 @@ export default function EditJobPage({
           | "GYEONGNAM"
           | "JEJU",
         requiredSex: formData.requiredSex,
+        requiredCount: formData.requiredCount
+          ? Number(formData.requiredCount)
+          : undefined,
         ageMin: formData.ageMin ? Number(formData.ageMin) : undefined,
         ageMax: formData.ageMax ? Number(formData.ageMax) : undefined,
         heightMin: formData.heightMin ? Number(formData.heightMin) : undefined,

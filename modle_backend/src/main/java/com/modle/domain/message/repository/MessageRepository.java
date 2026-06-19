@@ -4,6 +4,9 @@ import com.modle.domain.message.entity.Message;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,4 +28,8 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     );
 
     List<Message> findByConversationIdOrderByCreatedAtAsc(Long conversationId);
+
+    @Modifying
+    @Query("DELETE FROM Message m WHERE m.conversationId = :conversationId")
+    int deleteByConversationId(@Param("conversationId") Long conversationId);
 }

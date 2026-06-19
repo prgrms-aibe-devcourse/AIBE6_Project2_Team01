@@ -46,6 +46,7 @@ public class JobPostingService {
                 .region(request.region())
                 .status(JobPostingStatus.RECRUITING)
                 .requiredSex(request.requiredSex())
+                .requiredCount(request.requiredCount())
                 .ageMin(request.ageMin())
                 .ageMax(request.ageMax())
                 .heightMin(request.heightMin())
@@ -81,7 +82,7 @@ public class JobPostingService {
         }
 
         jobPosting.update(request.title(), request.content(), request.category(), request.region(),
-                request.requiredSex(), request.ageMin(), request.ageMax(),
+                request.requiredSex(), request.requiredCount(),request.ageMin(), request.ageMax(),
                 request.heightMin(), request.heightMax(),
                 request.weightMin(), request.weightMax(),
                 request.minCareerMonths(),

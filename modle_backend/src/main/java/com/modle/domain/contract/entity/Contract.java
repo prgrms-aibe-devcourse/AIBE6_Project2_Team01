@@ -82,6 +82,9 @@ public class Contract extends BaseEntity {
 
     private LocalDateTime confirmedAt;
 
+    @Lob
+    private String rejectReason;
+
     public static Contract createDraft(
             Long applicationId,
             ContractType contractType,
@@ -146,6 +149,7 @@ public class Contract extends BaseEntity {
         this.viewedAt = null;
         this.notifiedAt = null;
         this.confirmedAt = null;
+        this.rejectReason = null;
     }
 
     public void notifyModel(LocalDateTime notifiedAt) {
@@ -176,8 +180,9 @@ public class Contract extends BaseEntity {
         this.confirmedAt = confirmedAt;
     }
 
-    public void reject() {
+    public void reject(String rejectReason) {
         this.status = ContractStatus.REJECTED;
+        this.rejectReason = rejectReason;
     }
 
     public boolean isBothAgreed() {

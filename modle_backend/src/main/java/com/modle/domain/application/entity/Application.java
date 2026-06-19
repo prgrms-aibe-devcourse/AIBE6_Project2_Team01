@@ -65,6 +65,10 @@ public class Application extends BaseEntity {
         this.status = ApplicationStatus.SHOOTING;
     }
 
+    public void complete() {
+        this.status = ApplicationStatus.COMPLETED;
+    }
+
     public void hold(String reason) {
         this.status = ApplicationStatus.ON_HOLD;
         this.holdReason = reason;

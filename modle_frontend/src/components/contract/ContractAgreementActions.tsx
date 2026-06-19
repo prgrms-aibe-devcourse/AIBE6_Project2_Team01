@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import {
   agreeContract,
+  formatContractStatus,
+  getContractStatus,
   rejectContract,
   viewContract,
   type ContractStatus,
@@ -13,14 +15,17 @@ import {
 type ContractAgreementActionsProps = {
   contractId: number;
   initialStatus: ContractStatus;
+  applicationId?: number;
 };
 
 export function ContractAgreementActions({
   contractId,
   initialStatus,
+  applicationId,
 }: ContractAgreementActionsProps) {
   const { user, isLoading } = useAuth();
   const [status, setStatus] = useState<ContractStatus>(initialStatus);
+  const [rejectReason, setRejectReason] = useState("");
   const [requestStatus, setRequestStatus] = useState<
     "idle" | "loading" | "agree" | "reject" | "success" | "error"
   >("idle");
@@ -31,6 +36,7 @@ export function ContractAgreementActions({
       return;
     }
 
+    const currentApplicationId = applicationId;
     let ignore = false;
 
     async function loadContractStatus() {
@@ -38,7 +44,9 @@ export function ContractAgreementActions({
       setMessage("");
 
       try {
-        const contract = await viewContract(contractId);
+        const contract = currentApplicationId
+          ? await getContractStatus(currentApplicationId)
+          : await viewContract(contractId);
 
         if (ignore) {
           return;
@@ -65,7 +73,7 @@ export function ContractAgreementActions({
     return () => {
       ignore = true;
     };
-  }, [contractId, isLoading, user?.role]);
+  }, [applicationId, contractId, isLoading, user?.role]);
 
   if (isLoading || user?.role !== "MODEL") {
     return null;
@@ -100,12 +108,19 @@ export function ContractAgreementActions({
   };
 
   const handleReject = async () => {
+    if (!rejectReason.trim()) {
+      setRequestStatus("error");
+      setMessage("거절 사유를 입력해 주세요.");
+      return;
+    }
+
     setRequestStatus("reject");
     setMessage("");
 
     try {
-      const contract = await rejectContract(contractId);
+      const contract = await rejectContract(contractId, rejectReason.trim());
       setStatus(contract.status);
+      setRejectReason("");
       setRequestStatus("success");
       setMessage("계약을 거절했습니다.");
     } catch (error) {
@@ -118,6 +133,26 @@ export function ContractAgreementActions({
 
   return (
     <div className="space-y-3">
+      {canRespond ? (
+        <div className="space-y-2">
+          <label
+            htmlFor={`contract-reject-reason-${contractId}`}
+            className="block text-[13px] font-semibold leading-5 text-ink"
+          >
+            거절 사유
+          </label>
+          <textarea
+            id={`contract-reject-reason-${contractId}`}
+            value={rejectReason}
+            onChange={(event) => setRejectReason(event.target.value)}
+            disabled={isSubmitting}
+            maxLength={500}
+            className="min-h-24 w-full resize-y rounded-md border border-hairline bg-canvas-soft px-3 py-3 text-[14px] leading-6 text-ink outline-none transition focus:border-ink disabled:text-mute"
+            placeholder="거절 사유를 입력해 주세요."
+          />
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-2 gap-3">
         <button
           type="button"
@@ -147,7 +182,7 @@ export function ContractAgreementActions({
 
       {!canRespond ? (
         <p className="rounded-md bg-canvas-soft px-3 py-2 text-[13px] leading-5 text-body">
-          현재 상태: {status}
+          현재 상태: {formatContractStatus(status)}
         </p>
       ) : null}
 
