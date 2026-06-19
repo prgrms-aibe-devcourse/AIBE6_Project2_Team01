@@ -419,7 +419,7 @@ export default function JobDetailPage({
                   삭제
                 </button>
               </div>
-            ) : !user || isModelDetail(detail) ? (
+            ) : !user || user.role === "MODEL" ? (
               <div className="flex gap-3">
                 <button
                   type="button"
