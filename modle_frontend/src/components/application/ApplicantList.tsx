@@ -39,7 +39,7 @@ export function ApplicantList({ applicants }: Props) {
   const [items, setItems] = useState(applicants);
   const [submittingIds, setSubmittingIds] = useState<Set<number>>(new Set());
   const [completingIds, setCompletingIds] = useState<Set<number>>(new Set());
-  const [holdingIds, setHoldingIds] = useState<Set<number>>(new Set());
+  const [holdingIds] = useState<Set<number>>(new Set());
   const [resumingIds, setResumingIds] = useState<Set<number>>(new Set());
   const [reRecruitingIds, setReRecruitingIds] = useState<Set<number>>(new Set());
   const [reviewedIds, setReviewedIds] = useState<Set<number>>(new Set());

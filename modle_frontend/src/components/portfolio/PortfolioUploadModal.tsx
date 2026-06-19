@@ -12,6 +12,7 @@ interface Props {
 }
 
 export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
+  const [category, setCategory] = useState<string>('HAIR');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -22,6 +23,7 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
   useEffect(() => {
     if (!isOpen) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCategory('HAIR');
       setSelectedFiles([]);
       setPreviews((prev) => {
         prev.forEach(url => URL.revokeObjectURL(url));
@@ -86,7 +88,7 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
     setIsUploading(true);
 
     try {
-      const newPortfolios = await uploadPortfolioImages(selectedFiles);
+      const newPortfolios = await uploadPortfolioImages(selectedFiles, category);
       onSuccess(newPortfolios);
       onClose();
     } catch {
@@ -116,6 +118,27 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
         {/* Content */}
         <div className="p-6 overflow-y-auto">
           
+          {/* Category Select */}
+          <div className="mb-6">
+            <label className="block text-sm font-bold text-black uppercase tracking-wider mb-2">
+              카테고리 선택
+            </label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full border border-gray-300 p-3 bg-white focus:outline-none focus:border-black transition-colors text-sm"
+            >
+              <option value="HAIR">HAIR</option>
+              <option value="MAKEUP">MAKEUP</option>
+              <option value="HAND">HAND</option>
+              <option value="FITTING">FITTING</option>
+              <option value="CLOTHING">CLOTHING</option>
+              <option value="FOOD">FOOD</option>
+              <option value="PRODUCT">PRODUCT</option>
+              <option value="ETC">ETC</option>
+            </select>
+          </div>
+
           {/* Drag & Drop Zone */}
           <div
             onDragOver={handleDragOver}

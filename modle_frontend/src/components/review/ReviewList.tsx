@@ -26,7 +26,7 @@ export function ReviewList({ targetUserId, totalCount }: Props) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setIsLoading(true);
+    Promise.resolve().then(() => setIsLoading(true));
     getReviews(targetUserId)
       .then(setReviews)
       .catch((e: unknown) =>

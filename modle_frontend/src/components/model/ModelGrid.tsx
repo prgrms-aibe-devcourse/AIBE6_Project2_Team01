@@ -21,7 +21,7 @@ export function ModelGrid({
   models: Model[], 
   totalPages: number, 
   currentPage: number,
-  searchParams: Record<string, any> 
+  searchParams: Record<string, string | string[] | undefined> 
 }) {
   const { user } = useAuth();
   const isClient = user?.role === 'CLIENT';

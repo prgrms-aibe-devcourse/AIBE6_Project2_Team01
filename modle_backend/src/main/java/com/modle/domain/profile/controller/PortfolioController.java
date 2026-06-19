@@ -1,13 +1,16 @@
 package com.modle.domain.profile.controller;
 
 import com.modle.domain.profile.dto.PortfolioDto;
+import com.modle.domain.profile.dto.request.PortfolioModifyReqBody;
 import com.modle.domain.profile.entity.Portfolio;
+import com.modle.domain.profile.entity.type.Category;
 import com.modle.domain.profile.service.ModelService;
 import com.modle.domain.profile.service.PortfolioService;
 import com.modle.domain.user.dto.PortfolioReorderRequest;
 import com.modle.domain.user.entity.Model;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.response.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,12 +32,14 @@ public class PortfolioController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<List<PortfolioDto>> uploadPortfolios(
             @RequestParam("files") List<MultipartFile> files, // ⭐ List로 받기
-            @AuthenticationPrincipal SecurityUser currentUser) throws IOException {
+            @AuthenticationPrincipal SecurityUser currentUser,
+            @RequestParam("category")Category category
+    ) throws IOException {
 
         Model model = modelService.findByUserId(currentUser.getId());
 
         // 다건 저장 로직 호출
-        List<Portfolio> portfolios = portfolioService.addPortfolios(model, files);
+        List<Portfolio> portfolios = portfolioService.addPortfolios(model, files, category);
         // 엔티티 리스트를 DTO 리스트로 변환
         List<PortfolioDto> portfolioDtos = portfolios.stream()
                 .map(PortfolioDto::new)
@@ -59,6 +64,19 @@ public class PortfolioController {
                 "포트폴리오 이미지가 삭제되었습니다."
         );
     }
+    //portfolio 정보변경
+    @PutMapping("/{id}")
+    public ApiResponse<Void> modifyPortfolio(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser currentUser,
+            @Valid @RequestBody PortfolioModifyReqBody reqBody
+    ){
+        Model model = modelService.findByUserId(currentUser.getId());
+        portfolioService.update(id, model, reqBody.category());
+        return new ApiResponse<>("200-1", "포트폴리오 정보가 수정 되었습니다.");
+    }
+
+
     @PutMapping("/reorder")
     public ApiResponse<Void> reorderPortfolios(
             @RequestBody PortfolioReorderRequest request,
@@ -68,4 +86,5 @@ public class PortfolioController {
 
         return new ApiResponse<>("200-1", "포트폴리오 순서가 변경되었습니다.");
     }
+
 }

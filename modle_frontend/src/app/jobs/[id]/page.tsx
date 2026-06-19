@@ -263,7 +263,7 @@ export default function JobDetailPage({
   useEffect(() => {
     if (authLoading) return;
     if (!user || user.role !== "MODEL") {
-      setHasApplied(false);
+      Promise.resolve().then(() => setHasApplied(false));
       return;
     }
     checkApplyStatus(postingId)
