@@ -1,5 +1,6 @@
 package com.modle.domain.profile.entity;
 
+import com.modle.domain.profile.entity.type.Category;
 import com.modle.domain.user.entity.Model;
 import com.modle.global.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -7,10 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-//id	BIGINT PK	고유 식별자
-//model_id	BIGINT FK	MODEL 참조
-//img_url	VARCHAR(500)	파일 URL
-//created_at	DATETIME	등록일시
+
 @Entity
 @Getter
 @Setter
@@ -22,9 +20,12 @@ public class Portfolio extends BaseEntity {
     private Model model;
     @Column(length = 500, nullable = false)
     private String imgUrl;
-    public Portfolio(Model model, String imgUrl) {
+    @Enumerated(EnumType.STRING)
+    private Category category;
+    public Portfolio(Model model, String imgUrl, Category category) {
         this.model = model;
         this.imgUrl = imgUrl;
+        this.category = category;
     }
     @Column(nullable = false)
     private Integer displayOrder = 0; // 정렬 순서 (초기값 0)
