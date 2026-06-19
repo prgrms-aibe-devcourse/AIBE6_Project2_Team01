@@ -1,7 +1,7 @@
 import { API_BASE_URL } from "./client";
 import { getErrorMessage } from "./error";
 
-export type ReportTargetType = "JOB_POSTING" | "PROFILE" | "MESSAGE";
+export type ReportTargetType = "JOB_POSTING" | "PROFILE" | "MESSAGE" | "NO_SHOW";
 export type ReportReason = "SPAM" | "INAPPROPRIATE" | "FRAUD" | "HARASSMENT" | "OTHER";
 
 export const REASON_LABELS: Record<ReportReason, string> = {
