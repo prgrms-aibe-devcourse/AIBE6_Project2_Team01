@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -138,9 +139,55 @@ public class JobPostingService {
             throw new CustomException(ErrorCode.JOB_POSTING_INVALID_STATUS_TRANSITION);
         }
 
+        // SHOOTING 상태에서 직접 종료 시 활성 지원(SHOOTING/ON_HOLD)이 있으면 차단
+        Set<JobPostingStatus> directTerminalFromShooting = Set.of(JobPostingStatus.CANCELLED, JobPostingStatus.COMPLETED);
+        if (jobPosting.getStatus() == JobPostingStatus.SHOOTING
+                && directTerminalFromShooting.contains(request.status())) {
+            boolean hasActive = applicationRepository.existsByJobPostingIdAndStatusIn(
+                    jobPostingId,
+                    List.of(ApplicationStatus.SHOOTING, ApplicationStatus.ON_HOLD)
+            );
+            if (hasActive) {
+                throw new CustomException(ErrorCode.JOB_POSTING_HAS_ACTIVE_APPLICATION);
+            }
+        }
+
         jobPosting.updateStatus(request.status());
-        // TODO(지원 도메인): SHOOTING 전환 시 해당 공고의 지원 비활성화 처리
         return JobPostingResponse.from(jobPosting);
+    }
+
+    // 재모집: 기존 공고를 마감하고 동일 내용으로 새 공고(RECRUITING)를 생성한다.
+    @Transactional
+    public JobPosting cloneForReRecruit(Long jobPostingId) {
+        JobPosting original = jobPostingRepository.findById(jobPostingId)
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
+
+        original.updateStatus(JobPostingStatus.CLOSED);
+
+        JobPosting clone = JobPosting.builder()
+                .clientId(original.getClientId())
+                .title(original.getTitle())
+                .content(original.getContent())
+                .category(original.getCategory())
+                .region(original.getRegion())
+                .status(JobPostingStatus.RECRUITING)
+                .requiredSex(original.getRequiredSex())
+                .requiredCount(original.getRequiredCount())
+                .ageMin(original.getAgeMin())
+                .ageMax(original.getAgeMax())
+                .heightMin(original.getHeightMin())
+                .heightMax(original.getHeightMax())
+                .weightMin(original.getWeightMin())
+                .weightMax(original.getWeightMax())
+                .minCareerMonths(original.getMinCareerMonths())
+                .payment(original.getPayment())
+                .payType(original.getPayType())
+                .shootDate(original.getShootDate())
+                .build();
+
+        JobPosting saved = jobPostingRepository.save(clone);
+        eventPublisher.publishEvent(new JobPostingCreatedEvent(saved.getId()));
+        return saved;
     }
 
     public List<JobPostingListResponse> getMyRecruitingJobPostings(Long clientId) {

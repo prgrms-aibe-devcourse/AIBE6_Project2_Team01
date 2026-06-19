@@ -248,49 +248,57 @@ public class ApplicationService {
     @Transactional
     public ApplicationResponse holdShooting(Long clientId, Long applicationId, HoldRequest request) {
         Application application = getApplication(applicationId);
-        getJobPostingAndValidateOwner(application.getJobPostingId(), clientId);
+        JobPosting jobPosting = getJobPostingAndValidateOwner(application.getJobPostingId(), clientId);
 
         if (application.getStatus() != ApplicationStatus.SHOOTING) {
             throw new CustomException(ErrorCode.APPLICATION_HOLD_NOT_ALLOWED);
         }
 
         application.hold(request.holdReason());
-        // TODO(Phase 2): JobPosting 상태 SHOOTING → ON_HOLD 전환
+        jobPosting.updateStatus(JobPostingStatus.ON_HOLD);
         return ApplicationResponse.from(application);
     }
 
-    // MATCH-012: 촬영 취소 (ON_HOLD → SHOOTING_CANCELLED)
+    // MATCH-012: 촬영 취소 (ON_HOLD → SHOOTING_CANCELLED, 공고 CANCELLED 처리)
     @Transactional
     public ApplicationResponse cancelShooting(Long clientId, Long applicationId, CancelShootingRequest request) {
         Application application = getApplication(applicationId);
-        getJobPostingAndValidateOwner(application.getJobPostingId(), clientId);
+        JobPosting jobPosting = getJobPostingAndValidateOwner(application.getJobPostingId(), clientId);
 
         if (application.getStatus() != ApplicationStatus.ON_HOLD) {
             throw new CustomException(ErrorCode.APPLICATION_CANCEL_SHOOTING_NOT_ALLOWED);
         }
 
         application.cancelShooting(request.cancelReason());
-        // TODO(Phase 2): JobPosting 상태 ON_HOLD → CANCELLED (공고 삭제 처리)
+        jobPosting.updateStatus(JobPostingStatus.CANCELLED);
         return ApplicationResponse.from(application);
     }
 
-    // MATCH-014: 촬영 재개 (ON_HOLD → SHOOTING)
+    // MATCH-014: 촬영 재개 (ON_HOLD → SHOOTING, 모델 알림 발송)
     @Transactional
     public ApplicationResponse resumeShooting(Long clientId, Long applicationId) {
         Application application = getApplication(applicationId);
-        getJobPostingAndValidateOwner(application.getJobPostingId(), clientId);
+        JobPosting jobPosting = getJobPostingAndValidateOwner(application.getJobPostingId(), clientId);
 
         if (application.getStatus() != ApplicationStatus.ON_HOLD) {
             throw new CustomException(ErrorCode.APPLICATION_RESUME_NOT_ALLOWED);
         }
 
         application.resume();
-        // TODO(Phase 2): JobPosting 상태 ON_HOLD → SHOOTING 전환
-        // TODO(Phase 2): 모델에게 촬영 재개 알림 발송
+        jobPosting.updateStatus(JobPostingStatus.SHOOTING);
+
+        Model model = modelRepository.findById(application.getModelId())
+                .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
+        MessageConversation conversation = messageService.findConversationByApplicationId(applicationId);
+        messageService.sendSystemMessage(
+                conversation.getId(), clientId, model.getUser().getId(),
+                "촬영이 재개되었습니다. 일정을 확인해 주세요."
+        );
+
         return ApplicationResponse.from(application);
     }
 
-    // re-recruit: 재모집 (ON_HOLD → SHOOTING_CANCELLED, 새 공고 생성)
+    // re-recruit: 재모집 (ON_HOLD → SHOOTING_CANCELLED, 기존 공고 마감 + 새 공고 생성)
     @Transactional
     public ApplicationResponse reRecruit(Long clientId, Long applicationId) {
         Application application = getApplication(applicationId);
@@ -301,7 +309,7 @@ public class ApplicationService {
         }
 
         application.closeForReRecruit();
-        // TODO(Phase 2): 기존 공고 마감 + 기존 공고 내용으로 새 공고 생성
+        jobPostingService.cloneForReRecruit(application.getJobPostingId());
         return ApplicationResponse.from(application);
     }
 

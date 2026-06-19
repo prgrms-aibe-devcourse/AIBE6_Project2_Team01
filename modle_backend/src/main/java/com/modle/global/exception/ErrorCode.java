@@ -58,6 +58,7 @@ public enum ErrorCode {
     JOB_POSTING_FORBIDDEN(HttpStatus.FORBIDDEN, "403-5", "공고에 대한 권한이 없습니다."),
     JOB_POSTING_INVALID_FILTER_VALUE(HttpStatus.BAD_REQUEST, "400-8", "유효하지 않은 필터 값입니다."),
     JOB_POSTING_INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "400-9", "유효하지 않은 상태 전환입니다."),
+    JOB_POSTING_HAS_ACTIVE_APPLICATION(HttpStatus.CONFLICT, "409-8", "촬영 진행 중인 지원이 있어 공고 상태를 변경할 수 없습니다. 지원 플로우를 통해 처리해주세요."),
 
     // 쪽지
     MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG-001", "쪽지를 찾을 수 없습니다."),
