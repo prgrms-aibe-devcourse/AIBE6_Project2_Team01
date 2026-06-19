@@ -1,8 +1,5 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { ReportModal } from "@/components/ui/ReportModal";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -20,6 +17,10 @@ import type {
   MessageThread,
   RecruitingJob,
 } from "@/types/message";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
 const POLLING_INTERVAL_MS = 30_000;
 const MAX_MESSAGE_LENGTH = 2_000;
@@ -36,7 +37,9 @@ function buildThreads(
   inbox: MessageInbox,
   currentThreads: MessageThread[] = [],
 ): MessageThread[] {
-  const currentMap = new Map(currentThreads.map((thread) => [thread.id, thread]));
+  const currentMap = new Map(
+    currentThreads.map((thread) => [thread.id, thread]),
+  );
 
   return [...inbox.conversations]
     .sort((a, b) => {
@@ -75,7 +78,10 @@ function buildThreads(
     });
 }
 
-function draftThread(recipientId: number, postId: number | null): MessageThread {
+function draftThread(
+  recipientId: number,
+  postId: number | null,
+): MessageThread {
   return {
     id: `draft:${recipientId}:${postId ?? "none"}`,
     conversationId: null,
@@ -96,7 +102,9 @@ export function MessageWorkspace() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
   const [threads, setThreads] = useState<MessageThread[]>([]);
-  const [currentUser, setCurrentUser] = useState<MessageParticipant | null>(null);
+  const [currentUser, setCurrentUser] = useState<MessageParticipant | null>(
+    null,
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [jobs, setJobs] = useState<RecruitingJob[]>([]);
   const [content, setContent] = useState("");
@@ -104,10 +112,13 @@ export function MessageWorkspace() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [reportingMessageId, setReportingMessageId] = useState<number | null>(null);
+  const [reportingMessageId, setReportingMessageId] = useState<number | null>(
+    null,
+  );
 
   const selectedThread = useMemo(
-    () => threads.find((thread) => thread.id === selectedId) ?? threads[0] ?? null,
+    () =>
+      threads.find((thread) => thread.id === selectedId) ?? threads[0] ?? null,
     [selectedId, threads],
   );
 
@@ -122,7 +133,8 @@ export function MessageWorkspace() {
     );
   }, [searchQuery, threads]);
 
-  const selectedJob = jobs.find((job) => job.id === selectedThread?.postId) ?? null;
+  const selectedJob =
+    jobs.find((job) => job.id === selectedThread?.postId) ?? null;
 
   useEffect(() => {
     if (!isAuthLoading && !user) {
@@ -150,7 +162,9 @@ export function MessageWorkspace() {
         setThreads((currentThreads) => {
           const loadedThreads = buildThreads(inbox, currentThreads);
           const existingTarget = draft
-            ? loadedThreads.find((thread) => thread.participantId === draft.participantId)
+            ? loadedThreads.find(
+                (thread) => thread.participantId === draft.participantId,
+              )
             : null;
           const targetThread = existingTarget ?? draft;
 
@@ -162,7 +176,7 @@ export function MessageWorkspace() {
             if (targetThread) return targetThread.id;
             return loadedThreads.some((thread) => thread.id === current)
               ? current
-              : loadedThreads[0]?.id ?? null;
+              : (loadedThreads[0]?.id ?? null);
           });
 
           if (existingTarget) {
@@ -241,7 +255,11 @@ export function MessageWorkspace() {
                   unreadCount: 0,
                   messages: thread.messages.map((message) =>
                     message.receiverId === currentUserId
-                      ? { ...message, isRead: true, readAt: new Date().toISOString() }
+                      ? {
+                          ...message,
+                          isRead: true,
+                          readAt: new Date().toISOString(),
+                        }
                       : message,
                   ),
                 }
@@ -259,7 +277,9 @@ export function MessageWorkspace() {
     const updated = draftThread(selectedThread.participantId, nextPostId);
 
     setThreads((current) =>
-      current.map((thread) => (thread.id === selectedThread.id ? updated : thread)),
+      current.map((thread) =>
+        thread.id === selectedThread.id ? updated : thread,
+      ),
     );
     setSelectedId(updated.id);
   }
@@ -276,7 +296,10 @@ export function MessageWorkspace() {
       const wasDraft = !selectedThread.conversationId;
       const conversation = selectedThread.conversationId
         ? null
-        : await createConversation(selectedThread.participantId, selectedThread.postId);
+        : await createConversation(
+            selectedThread.participantId,
+            selectedThread.postId,
+          );
       const conversationId = selectedThread.conversationId ?? conversation!.id;
       const saved = await sendMessage(conversationId, trimmed, null);
 
@@ -324,7 +347,9 @@ export function MessageWorkspace() {
           <div className="mx-auto grid size-12 place-items-center rounded-full bg-canvas-soft text-xl">
             💬
           </div>
-          <p className="mt-5 font-semibold text-ink">아직 시작된 대화가 없습니다.</p>
+          <p className="mt-5 font-semibold text-ink">
+            아직 시작된 대화가 없습니다.
+          </p>
           <p className="mt-2 text-sm text-mute">
             모델 상세 페이지에서 먼저 문의를 시작해 주세요.
           </p>
@@ -372,7 +397,9 @@ export function MessageWorkspace() {
 
           <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
             {visibleThreads.length === 0 ? (
-              <p className="px-4 py-10 text-center text-sm text-mute">검색 결과가 없습니다.</p>
+              <p className="px-4 py-10 text-center text-sm text-mute">
+                검색 결과가 없습니다.
+              </p>
             ) : (
               visibleThreads.map((thread) => (
                 <button
@@ -413,10 +440,14 @@ export function MessageWorkspace() {
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <strong className="truncate text-sm">{thread.participantName}</strong>
+                      <strong className="truncate text-sm">
+                        {thread.participantName}
+                      </strong>
                       <span
                         className={`shrink-0 text-[11px] ${
-                          selectedThread.id === thread.id ? "text-white/55" : "text-mute"
+                          selectedThread.id === thread.id
+                            ? "text-white/55"
+                            : "text-mute"
                         }`}
                       >
                         {thread.time}
@@ -424,7 +455,9 @@ export function MessageWorkspace() {
                     </div>
                     <p
                       className={`mt-1 truncate text-xs ${
-                        selectedThread.id === thread.id ? "text-white/65" : "text-mute"
+                        selectedThread.id === thread.id
+                          ? "text-white/65"
+                          : "text-mute"
                       }`}
                     >
                       {thread.preview}
@@ -486,7 +519,9 @@ export function MessageWorkspace() {
 
           {!selectedThread.conversationId && (
             <label className="flex shrink-0 items-center gap-2 border-b border-hairline px-4 py-2 text-xs md:hidden">
-              <span className="shrink-0 font-semibold text-body">연결 공고</span>
+              <span className="shrink-0 font-semibold text-body">
+                연결 공고
+              </span>
               <select
                 className="h-9 min-w-0 flex-1 rounded-lg border border-hairline bg-white px-3 text-xs"
                 onChange={(event) => changeDraftPost(event.target.value)}
@@ -501,6 +536,33 @@ export function MessageWorkspace() {
               </select>
             </label>
           )}
+
+          {selectedThread.postId ? (
+            <div className="shrink-0 border-b border-hairline bg-white px-4 py-3 xl:hidden">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-mute">
+                Proposal
+              </p>
+              <div className="mt-2 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-ink">
+                    {selectedJob?.title ?? `공고 #${selectedThread.postId}`}
+                  </p>
+                  {selectedJob ? (
+                    <p className="mt-1 text-xs text-mute">
+                      {selectedJob.region} ·{" "}
+                      {selectedJob.shootDate ?? "촬영일 미정"}
+                    </p>
+                  ) : null}
+                </div>
+                <Link
+                  href={`/jobs/${selectedThread.postId}`}
+                  className="shrink-0 text-xs font-semibold text-ink underline underline-offset-2"
+                >
+                  공고 상세 보기
+                </Link>
+              </div>
+            </div>
+          ) : null}
 
           <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto bg-canvas-soft px-4 py-4 md:px-6">
             {selectedThread.messages.length === 0 ? (
@@ -522,7 +584,9 @@ export function MessageWorkspace() {
                 const mine = message.senderId === currentUser?.id;
                 const date = new Date(message.createdAt);
                 const previous =
-                  index > 0 ? new Date(selectedThread.messages[index - 1].createdAt) : null;
+                  index > 0
+                    ? new Date(selectedThread.messages[index - 1].createdAt)
+                    : null;
                 const showDate =
                   !previous || date.toDateString() !== previous.toDateString();
 
@@ -612,7 +676,8 @@ export function MessageWorkspace() {
               </button>
             </div>
             <p className="mt-1.5 text-right text-[10px] text-mute">
-              {content.length.toLocaleString()} / {MAX_MESSAGE_LENGTH.toLocaleString()}
+              {content.length.toLocaleString()} /{" "}
+              {MAX_MESSAGE_LENGTH.toLocaleString()}
             </p>
           </form>
         </section>
@@ -638,8 +703,12 @@ export function MessageWorkspace() {
               </div>
             )}
 
-            <h3 className="mt-3 font-bold text-ink">{selectedThread.participantName}</h3>
-            <p className="mt-1 text-xs text-mute">{selectedThread.participantRole}</p>
+            <h3 className="mt-3 font-bold text-ink">
+              {selectedThread.participantName}
+            </h3>
+            <p className="mt-1 text-xs text-mute">
+              {selectedThread.participantRole}
+            </p>
           </div>
 
           <div className="mt-5">
@@ -654,6 +723,14 @@ export function MessageWorkspace() {
                     ? `공고 #${selectedThread.postId}`
                     : "일반 채팅")}
               </h4>
+              {selectedThread.postId ? (
+                <Link
+                  href={`/jobs/${selectedThread.postId}`}
+                  className="mt-3 inline-flex text-xs font-semibold text-ink underline underline-offset-2"
+                >
+                  공고 상세 보기
+                </Link>
+              ) : null}
               {selectedJob && (
                 <>
                   <p className="mt-3 text-xs text-body">{selectedJob.region}</p>

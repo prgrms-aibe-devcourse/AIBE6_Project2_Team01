@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
 import {
   createContractPdf,
+  formatContractStatus,
+  getContractStatus,
   notifyContract,
   type ContractStatus,
 } from "@/lib/api/contract";
@@ -13,12 +15,14 @@ type ContractNotifyButtonProps = {
   contractId: number;
   initialStatus: ContractStatus;
   initialPdfUrl?: string;
+  applicationId?: number;
 };
 
 export function ContractNotifyButton({
   contractId,
   initialStatus,
   initialPdfUrl = "",
+  applicationId,
 }: ContractNotifyButtonProps) {
   const { user, isLoading } = useAuth();
   const [status, setStatus] = useState<ContractStatus>(initialStatus);
@@ -27,6 +31,36 @@ export function ContractNotifyButton({
     "idle" | "pdf" | "notify" | "success" | "error"
   >("idle");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (isLoading || user?.role !== "CLIENT" || !applicationId) {
+      return;
+    }
+
+    const currentApplicationId = applicationId;
+    let ignore = false;
+
+    async function loadContractStatus() {
+      try {
+        const contract = await getContractStatus(currentApplicationId);
+
+        if (ignore) {
+          return;
+        }
+
+        setStatus(contract.status);
+        setPdfUrl(contract.pdfUrl ?? "");
+      } catch {
+        // 초기 화면 진입 시에는 기존 쿼리값으로도 동작 가능하도록 조회 실패를 무시합니다.
+      }
+    }
+
+    void loadContractStatus();
+
+    return () => {
+      ignore = true;
+    };
+  }, [applicationId, isLoading, user?.role]);
 
   if (isLoading || user?.role !== "CLIENT") {
     return null;
@@ -110,7 +144,7 @@ export function ContractNotifyButton({
         </button>
       ) : (
         <p className="rounded-md bg-canvas-soft px-3 py-2 text-[13px] leading-5 text-body">
-          현재 상태: {status}
+          현재 상태: {formatContractStatus(status)}
         </p>
       )}
 

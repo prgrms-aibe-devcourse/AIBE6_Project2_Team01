@@ -1,5 +1,9 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
+import { useMemo, useRef, useState } from "react";
+
 import { Toast, type ToastState } from "@/components/ui/Toast";
 import { ReviewModal } from "@/components/review/ReviewModal";
 import {
@@ -10,13 +14,22 @@ import {
   type ApplicantInfo,
   type ContactHistory,
 } from "@/lib/api/application";
-import Image from "next/image";
-import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import {
+  formatContractStatus,
+  getContractStatus,
+  type ContractStatusResponse,
+} from "@/lib/api/contract";
 
 interface Props {
   applicants: ApplicantInfo[];
 }
+
+type ContractStatusModalState = {
+  applicant: ApplicantInfo;
+  data: ContractStatusResponse | null;
+  error: string;
+  loading: boolean;
+};
 
 export function ApplicantList({ applicants }: Props) {
   const [items, setItems] = useState(applicants);
@@ -29,6 +42,8 @@ export function ApplicantList({ applicants }: Props) {
   const [historyError, setHistoryError] = useState("");
   const [reviewTarget, setReviewTarget] = useState<ApplicantInfo | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
+  const [contractStatusModal, setContractStatusModal] =
+    useState<ContractStatusModalState | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedStatusLabel = useMemo(() => {
@@ -44,6 +59,7 @@ export function ApplicantList({ applicants }: Props) {
 
   async function handleContact(applicationId: number) {
     setSubmittingIds((prev) => new Set(prev).add(applicationId));
+
     try {
       const updated = await contactApplication(applicationId);
       setItems((prev) =>
@@ -53,7 +69,7 @@ export function ApplicantList({ applicants }: Props) {
             : item,
         ),
       );
-      showToast({ type: "success", message: "지원자 컨택을 완료했습니다." });
+      showToast({ type: "success", message: "지원자 컨택이 완료되었습니다." });
     } catch (error) {
       showToast({
         type: "error",
@@ -111,11 +127,44 @@ export function ApplicantList({ applicants }: Props) {
     }
   }
 
+  async function handleOpenContractStatus(applicant: ApplicantInfo) {
+    setContractStatusModal({
+      applicant,
+      data: null,
+      error: "",
+      loading: true,
+    });
+
+    try {
+      const status = await getContractStatus(applicant.applicationId);
+      setContractStatusModal({
+        applicant,
+        data: status,
+        error: "",
+        loading: false,
+      });
+    } catch (error) {
+      setContractStatusModal({
+        applicant,
+        data: null,
+        error:
+          error instanceof Error
+            ? error.message
+            : "계약 상태를 불러오지 못했습니다.",
+        loading: false,
+      });
+    }
+  }
+
   function closeHistory() {
     setSelectedApplicant(null);
     setHistoryItems([]);
     setHistoryError("");
     setLoadingHistoryId(null);
+  }
+
+  function closeContractStatus() {
+    setContractStatusModal(null);
   }
 
   function handleReviewSuccess() {
@@ -124,7 +173,6 @@ export function ApplicantList({ applicants }: Props) {
       showToast({ type: "success", message: "리뷰가 작성됐습니다." });
     }
     setReviewTarget(null);
-  }
 
   if (items.length === 0) {
     return (
@@ -140,7 +188,6 @@ export function ApplicantList({ applicants }: Props) {
     <>
       {toast ? <Toast toast={toast} /> : null}
 
-      {/* 컨택 이력 모달 */}
       {selectedApplicant ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="flex max-h-[80vh] w-full max-w-2xl flex-col border border-hairline bg-surface shadow-xl">
@@ -196,6 +243,93 @@ export function ApplicantList({ applicants }: Props) {
           onSuccess={handleReviewSuccess}
           onClose={() => setReviewTarget(null)}
         />
+      {contractStatusModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="flex max-h-[80vh] w-full max-w-2xl flex-col border border-hairline bg-surface shadow-xl">
+            <div className="flex items-start justify-between border-b border-hairline px-5 py-4">
+              <div>
+                <h2 className="text-[18px] font-bold text-ink">
+                  {contractStatusModal.applicant.modelName} 계약 상태
+                </h2>
+                <p className="mt-1 text-[13px] text-mute">
+                  지원 ID #{contractStatusModal.applicant.applicationId}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeContractStatus}
+                className="text-[14px] font-medium text-mute transition hover:text-ink"
+              >
+                닫기
+              </button>
+            </div>
+
+            <div className="overflow-y-auto px-5 py-4">
+              {contractStatusModal.loading ? (
+                <p className="py-10 text-center text-[14px] text-mute">
+                  계약 상태를 불러오는 중입니다.
+                </p>
+              ) : contractStatusModal.error ? (
+                <p className="py-10 text-center text-[14px] text-error">
+                  {contractStatusModal.error}
+                </p>
+              ) : contractStatusModal.data ? (
+                <div className="grid gap-3">
+                  <ModalStatusRow
+                    label="계약서 ID"
+                    value={`#${contractStatusModal.data.contractId}`}
+                  />
+                  <ModalStatusRow
+                    label="계약 발송"
+                    value={contractStatusModal.data.contractSent ? "완료" : "미발송"}
+                  />
+                  <ModalStatusRow
+                    label="클라이언트 동의"
+                    value={contractStatusModal.data.clientAgreed ? "완료" : "대기"}
+                  />
+                  <ModalStatusRow
+                    label="모델 동의"
+                    value={contractStatusModal.data.modelAgreed ? "완료" : "대기"}
+                  />
+                  <ModalStatusRow
+                    label="계약 상태"
+                    value={formatContractStatus(contractStatusModal.data.status)}
+                  />
+                  <ModalStatusRow
+                    label="촬영 진행 가능"
+                    value={contractStatusModal.data.shootingAvailable ? "가능" : "불가"}
+                  />
+                  <ModalStatusRow
+                    label="PDF"
+                    value={
+                      contractStatusModal.data.pdfUrl ? "생성 완료" : "아직 생성되지 않았습니다."
+                    }
+                  />
+                  {contractStatusModal.data.pdfUrl ? (
+                    <a
+                      href={contractStatusModal.data.pdfUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex h-10 items-center justify-center border border-black px-3 text-[13px] font-semibold text-black transition hover:bg-black hover:text-white"
+                    >
+                      PDF 열기
+                    </a>
+                  ) : null}
+                  {contractStatusModal.data.status === "REJECTED" ? (
+                    <ModalStatusRow
+                      label="거절 사유"
+                      value={
+                        contractStatusModal.data.rejectReason ??
+                        "거절 사유가 없습니다."
+                      }
+                      breakWords
+                    />
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
       ) : null}
 
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -204,6 +338,12 @@ export function ApplicantList({ applicants }: Props) {
           const isCompleting = completingIds.has(applicationId);
           const isSubmitting = submittingIds.has(applicationId);
           const isReviewed = reviewedIds.has(applicationId);
+          const isSubmitting = submittingIds.has(applicant.applicationId);
+          const canContact = applicant.status === "APPLIED";
+          const canCreateContract =
+            applicant.status === "CONTACTED" ||
+            applicant.status === "CONTRACT_SENT";
+          const canCheckContractStatus = applicant.status !== "APPLIED";
 
           return (
             <li key={applicationId} className="border border-gray-200 bg-white p-5">
@@ -235,6 +375,13 @@ export function ApplicantList({ applicants }: Props) {
                   <dt className="w-16 shrink-0 text-gray-400">지원 상태</dt>
                   <dd className="font-medium text-black">
                     {APPLICATION_STATUS_LABELS[status] ?? status}
+                    {APPLICATION_STATUS_LABELS[applicant.status] ?? applicant.status}
+                  </dd>
+                </div>
+                <div className="flex gap-2">
+                  <dt className="w-16 shrink-0 text-gray-400">컨택 여부</dt>
+                  <dd className="font-medium text-black">
+                    {applicant.contacted ? "완료" : "-"}
                   </dd>
                 </div>
                 <div className="flex gap-2">
@@ -319,10 +466,48 @@ export function ApplicantList({ applicants }: Props) {
                   {loadingHistoryId === applicationId ? "불러오는 중..." : "이력 보기"}
                 </button>
               </div>
+
+              {canCheckContractStatus ? (
+                <button
+                  type="button"
+                  onClick={() => handleOpenContractStatus(applicant)}
+                  className="mt-2 flex h-10 w-full items-center justify-center border border-gray-300 px-3 text-[13px] font-semibold text-gray-700 transition hover:border-black hover:text-black"
+                >
+                  계약 상태 보기
+                </button>
+              ) : null}
+
+              {canCreateContract ? (
+                <Link
+                  href={`/contracts/new?applicationId=${applicant.applicationId}`}
+                  className="mt-2 flex h-10 items-center justify-center border border-black bg-black px-3 text-[13px] font-semibold text-white transition hover:opacity-85"
+                >
+                  계약서 작성
+                </Link>
+              ) : null}
             </li>
           );
         })}
       </ul>
     </>
+  );
+}
+
+function ModalStatusRow({
+  label,
+  value,
+  breakWords = false,
+}: {
+  label: string;
+  value: string;
+  breakWords?: boolean;
+}) {
+  return (
+    <div className="rounded-xl bg-canvas px-4 py-3">
+      <p className="text-[12px] font-semibold text-mute">{label}</p>
+      <p className={`mt-1 text-[14px] leading-6 text-ink ${breakWords ? "break-all" : ""}`}>
+        {value}
+      </p>
+    </div>
   );
 }

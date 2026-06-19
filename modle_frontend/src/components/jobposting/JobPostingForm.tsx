@@ -1,7 +1,7 @@
 "use client";
 
 import { CATEGORY_OPTIONS } from "@/lib/constants/category";
-import { REGION_OPTIONS, getRegionLabel } from "@/lib/constants/region";
+import { REGION_OPTIONS } from "@/lib/constants/region";
 import { FormEvent, ReactNode, useState } from "react";
 
 export type Category =
@@ -41,6 +41,7 @@ export type AiGenerateParams = {
   payType: string;
   ageMin?: number;
   ageMax?: number;
+  requiredSex?: string;
 };
 
 export type JobPostingFormState = {
@@ -49,6 +50,7 @@ export type JobPostingFormState = {
   category: Category | "";
   region: Region | "";
   requiredSex: RequiredSex;
+  requiredCount: string;
   ageMin: string;
   ageMax: string;
   heightMin: string;
@@ -67,6 +69,7 @@ export const defaultFormState: JobPostingFormState = {
   category: "",
   region: "",
   requiredSex: "ANY",
+  requiredCount: "",
   ageMin: "",
   ageMax: "",
   heightMin: "",
@@ -138,6 +141,7 @@ export function JobPostingForm({
         payType: form.payType,
         ageMin: form.ageMin ? Number(form.ageMin) : undefined,
         ageMax: form.ageMax ? Number(form.ageMax) : undefined,
+        requiredSex: form.requiredSex,
       });
       updateField("content", content);
       setAiGenerated(true);
@@ -192,9 +196,10 @@ export function JobPostingForm({
       onSubmit={handleSubmit}
       className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"
     >
-      <section className="rounded-xl border border-hairline bg-surface p-6">
-        <div className="grid gap-6 md:grid-cols-2">
-          <Field label="제목" required className="md:col-span-2">
+      {/* 메인: 제목·내용 */}
+      <section className="flex flex-col rounded-xl border border-hairline bg-surface p-6">
+        <div className="flex flex-1 flex-col gap-6">
+          <Field label="제목" required>
             <input
               className={inputClass}
               value={form.title}
@@ -203,7 +208,7 @@ export function JobPostingForm({
             />
           </Field>
 
-          <Field label="내용" required className="md:col-span-2">
+          <Field label="내용" required className="flex flex-1 flex-col">
             {showAiButton ? (
               <div className="flex flex-col gap-2">
                 <button
@@ -221,7 +226,7 @@ export function JobPostingForm({
                 ) : null}
               </div>
             ) : (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-1 flex-col gap-2">
                 {aiGenerated && (
                   <div className="flex items-start gap-2 rounded-md border border-hairline bg-canvas-soft px-3 py-2 text-[13px] leading-5 text-mute">
                     <p className="flex-1">✦ AI가 생성한 초안입니다. 내용을 검토하고 필요한 경우 수정 후 등록해주세요.</p>
@@ -235,7 +240,7 @@ export function JobPostingForm({
                   </div>
                 )}
                 <textarea
-                  className="min-h-32 w-full resize-y rounded-md border border-hairline bg-canvas-soft px-3 py-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
+                  className="min-h-0 flex-1 w-full resize-none overflow-y-auto rounded-md border border-hairline bg-canvas-soft px-3 py-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
                   value={form.content}
                   onChange={(e) => {
                     updateField("content", e.target.value);
@@ -245,21 +250,24 @@ export function JobPostingForm({
               </div>
             )}
           </Field>
+        </div>
+      </section>
 
+      {/* 우측: 옵션 설정 + 등록 버튼 */}
+      <aside className="flex flex-col rounded-xl border border-hairline bg-surface p-6">
+        <h2 className="text-[15px] font-semibold leading-6 text-ink">옵션 설정</h2>
+
+        <div className="mt-4 flex-1 overflow-y-auto grid gap-4">
           <Field label="카테고리" required>
             <select
               className={inputClass}
               value={form.category}
-              onChange={(e) =>
-                updateField("category", e.target.value as Category)
-              }
+              onChange={(e) => updateField("category", e.target.value as Category)}
               required
             >
               <option value="">선택하세요</option>
               {CATEGORY_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
+                <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
           </Field>
@@ -268,16 +276,12 @@ export function JobPostingForm({
             <select
               className={inputClass}
               value={form.region}
-              onChange={(e) =>
-                updateField("region", e.target.value as Region)
-              }
+              onChange={(e) => updateField("region", e.target.value as Region)}
               required
             >
               <option value="">선택하세요</option>
               {REGION_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
+                <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
           </Field>
@@ -297,6 +301,18 @@ export function JobPostingForm({
             </div>
           </Field>
 
+          <Field label="최종 섭외 인원" required>
+            <input
+              className={inputClass}
+              type="number"
+              min={1}
+              max={100}
+              value={form.requiredCount}
+              onChange={(e) => updateField("requiredCount", e.target.value)}
+              required
+            />
+          </Field>
+
           <Field label="촬영 예정일" required>
             <input
               className={inputClass}
@@ -307,13 +323,12 @@ export function JobPostingForm({
             />
           </Field>
 
-          {/* 나이: 최소 또는 최대 중 하나 이상 필수 */}
-          <div className="md:col-span-2">
+          <div>
             <span className="mb-2 block text-[13px] font-semibold leading-5 text-ink">
               나이<span className="text-error"> *</span>
-              <span className="ml-1 font-normal text-mute">(최소 또는 최대 중 하나 이상)</span>
+              <span className="ml-1 font-normal text-mute">(최소 또는 최대)</span>
             </span>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <div>
                 <span className="mb-1 block text-[12px] leading-5 text-mute">최소</span>
                 <input
@@ -339,50 +354,60 @@ export function JobPostingForm({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="최소 키 (cm)">
-              <input
-                className={inputClass}
-                type="number"
-                min={100}
-                max={220}
-                value={form.heightMin}
-                onChange={(e) => updateField("heightMin", e.target.value)}
-              />
-            </Field>
-            <Field label="최대 키 (cm)">
-              <input
-                className={inputClass}
-                type="number"
-                min={100}
-                max={220}
-                value={form.heightMax}
-                onChange={(e) => updateField("heightMax", e.target.value)}
-              />
-            </Field>
+          <div>
+            <span className="mb-2 block text-[13px] font-semibold leading-5 text-ink">키 (cm)</span>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <span className="mb-1 block text-[12px] leading-5 text-mute">최소</span>
+                <input
+                  className={inputClass}
+                  type="number"
+                  min={100}
+                  max={220}
+                  value={form.heightMin}
+                  onChange={(e) => updateField("heightMin", e.target.value)}
+                />
+              </div>
+              <div>
+                <span className="mb-1 block text-[12px] leading-5 text-mute">최대</span>
+                <input
+                  className={inputClass}
+                  type="number"
+                  min={100}
+                  max={220}
+                  value={form.heightMax}
+                  onChange={(e) => updateField("heightMax", e.target.value)}
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="최소 몸무게 (kg)">
-              <input
-                className={inputClass}
-                type="number"
-                min={30}
-                max={150}
-                value={form.weightMin}
-                onChange={(e) => updateField("weightMin", e.target.value)}
-              />
-            </Field>
-            <Field label="최대 몸무게 (kg)">
-              <input
-                className={inputClass}
-                type="number"
-                min={30}
-                max={150}
-                value={form.weightMax}
-                onChange={(e) => updateField("weightMax", e.target.value)}
-              />
-            </Field>
+          <div>
+            <span className="mb-2 block text-[13px] font-semibold leading-5 text-ink">몸무게 (kg)</span>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <span className="mb-1 block text-[12px] leading-5 text-mute">최소</span>
+                <input
+                  className={inputClass}
+                  type="number"
+                  min={30}
+                  max={150}
+                  value={form.weightMin}
+                  onChange={(e) => updateField("weightMin", e.target.value)}
+                />
+              </div>
+              <div>
+                <span className="mb-1 block text-[12px] leading-5 text-mute">최대</span>
+                <input
+                  className={inputClass}
+                  type="number"
+                  min={30}
+                  max={150}
+                  value={form.weightMax}
+                  onChange={(e) => updateField("weightMax", e.target.value)}
+                />
+              </div>
+            </div>
           </div>
 
           <Field label="최소 경력 (개월)">
@@ -427,31 +452,6 @@ export function JobPostingForm({
             </Field>
           ) : null}
         </div>
-      </section>
-
-      <aside className="h-fit rounded-xl border border-hairline bg-surface p-6">
-        <h2 className="text-lg font-semibold leading-[26px] text-ink">
-          미리보기
-        </h2>
-        <dl className="mt-5 space-y-4 text-[13px] leading-5">
-          <PreviewRow label="제목" value={form.title} />
-          <PreviewRow label="카테고리" value={form.category} />
-          <PreviewRow label="지역" value={getRegionLabel(form.region)} />
-          <PreviewRow label="성별" value={form.requiredSex} />
-          <PreviewRow
-            label="보수"
-            value={
-              form.payType === "FREE"
-                ? "무료"
-                : form.payType === "SERVICE"
-                  ? "서비스 제공"
-                  : form.payment
-                    ? `${Number(form.payment).toLocaleString("ko-KR")}원`
-                    : "-"
-            }
-          />
-          <PreviewRow label="촬영일" value={form.shootDate} />
-        </dl>
 
         <div className="mt-6 border-t border-hairline pt-5">
           <button
@@ -491,14 +491,5 @@ function Field({
       </span>
       {children}
     </label>
-  );
-}
-
-function PreviewRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="grid grid-cols-[88px_1fr] gap-3">
-      <dt className="text-mute">{label}</dt>
-      <dd className="min-w-0 break-words text-ink">{value || "-"}</dd>
-    </div>
   );
 }

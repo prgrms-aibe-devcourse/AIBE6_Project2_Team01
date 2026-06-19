@@ -57,4 +57,13 @@ public class MessageConversation extends BaseEntity {
             this.applicationId = applicationId;
         }
     }
+
+    public void bindProposal(Long postId, Long applicationId) {
+        if (this.postId == null) {
+            this.postId = postId;
+        }
+        if (this.applicationId == null) {
+            this.applicationId = applicationId;
+        }
+    }
 }

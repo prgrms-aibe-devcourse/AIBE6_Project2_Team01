@@ -13,6 +13,20 @@ export type ContractStatus =
   | "CONFIRMED"
   | "CANCELLED";
 
+export const CONTRACT_STATUS_LABELS: Record<ContractStatus, string> = {
+  DRAFT: "초안",
+  NOTIFIED: "발송 완료",
+  VIEWED: "열람 완료",
+  AGREED: "동의 완료",
+  REJECTED: "거절",
+  CONFIRMED: "계약 확정",
+  CANCELLED: "취소",
+};
+
+export function formatContractStatus(status: ContractStatus): string {
+  return CONTRACT_STATUS_LABELS[status] ?? status;
+}
+
 export type ContractResponse = {
   id: number;
   applicationId: number;
@@ -26,6 +40,7 @@ export type ContractResponse = {
   memo: string | null;
   pdfUrl: string | null;
   signedPdfUrl: string | null;
+  rejectReason: string | null;
   status: ContractStatus;
 };
 
@@ -35,20 +50,48 @@ export type ContractPdfResponse = {
   status: ContractStatus;
 };
 
+export type ContractDraftResponse = {
+  contractId: number;
+  applicationId: number;
+  contractType: "TEMPLATE" | "FILE";
+  shootStartAt: string;
+  shootEndAt: string;
+  location: string;
+  payment: number;
+  payType: "CASH" | "SERVICE" | "FREE";
+  usageScope: string;
+  memo: string | null;
+  pdfUrl: string | null;
+  status: ContractStatus;
+};
+
 export type ContractViewResponse = {
   id: number;
   applicationId: number;
+  contractType: "TEMPLATE" | "FILE";
+  shootStartAt: string;
+  shootEndAt: string;
+  location: string;
+  payment: number;
+  payType: "CASH" | "SERVICE" | "FREE";
+  usageScope: string;
+  memo: string | null;
   status: ContractStatus;
   pdfUrl: string | null;
+  signedPdfUrl: string | null;
+  rejectReason: string | null;
   viewedAt: string | null;
 };
 
 export type ContractStatusResponse = {
   contractId: number;
   applicationId: number;
+  contractSent: boolean;
   status: ContractStatus;
   clientAgreed: boolean;
   modelAgreed: boolean;
+  pdfUrl: string | null;
+  rejectReason: string | null;
   shootingAvailable: boolean;
 };
 
@@ -126,11 +169,16 @@ export async function agreeContract(
 
 export async function rejectContract(
   contractId: number,
+  rejectReason: string,
 ): Promise<ContractResponse> {
   const response = await authenticatedFetch(
     `${API_BASE_URL}/api/v1/contracts/${contractId}/reject`,
     {
       method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ rejectReason }),
     },
   );
 
@@ -156,4 +204,21 @@ export async function getContractStatus(
   }
 
   return ((await response.json()) as ApiResponse<ContractStatusResponse>).data;
+}
+
+export async function getContractDraft(
+  applicationId: number,
+): Promise<ContractDraftResponse> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/api/v1/applications/${applicationId}/contract-draft`,
+    {
+      method: "GET",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("계약 임시저장 정보를 조회하지 못했습니다.");
+  }
+
+  return ((await response.json()) as ApiResponse<ContractDraftResponse>).data;
 }

@@ -6,6 +6,7 @@ import com.modle.domain.application.dto.response.ApplicationResponse;
 import com.modle.domain.application.dto.response.ContactResponse;
 import com.modle.domain.application.dto.response.MyApplicationResponse;
 import com.modle.domain.application.service.ApplicationService;
+import com.modle.domain.contract.dto.response.ContractDraftResponse;
 import com.modle.domain.contract.dto.response.ContractStatusResponse;
 import com.modle.domain.contract.service.ContractService;
 import com.modle.global.auth.SecurityUser;
@@ -105,6 +106,17 @@ public class ApplicationController {
             @PathVariable Long id,
             @AuthenticationPrincipal SecurityUser securityUser) {
         return ApiResponse.ok("계약 상태 조회 성공", contractService.getContractByApplicationId(securityUser.getId(), id));
+    }
+
+    @PreAuthorize("hasRole('CLIENT')")
+    @GetMapping("/applications/{id}/contract-draft")
+    public ApiResponse<ContractDraftResponse> getContractDraft(
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser securityUser) {
+        return ApiResponse.ok(
+                "계약 임시저장 조회 성공",
+                contractService.getDraftContract(securityUser.getId(), id)
+        );
     }
 
     // MATCH-016: 촬영 완료 처리 (의뢰인)

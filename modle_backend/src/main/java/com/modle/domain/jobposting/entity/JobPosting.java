@@ -81,6 +81,7 @@ public class JobPosting extends BaseEntity {
     @Builder
     private JobPosting(Long clientId, String title, String content, Category category, Region region,
                        JobPostingStatus status, RequiredSex requiredSex,
+                       Integer requiredCount,
                        Integer ageMin, Integer ageMax,
                        Integer heightMin, Integer heightMax,
                        Integer weightMin, Integer weightMax,
@@ -93,6 +94,7 @@ public class JobPosting extends BaseEntity {
         this.region = region;
         this.status = status;
         this.requiredSex = requiredSex != null ? requiredSex : RequiredSex.ANY;
+        this.requiredCount = requiredCount;
         this.ageMin = ageMin;
         this.ageMax = ageMax;
         this.heightMin = heightMin;
@@ -107,6 +109,7 @@ public class JobPosting extends BaseEntity {
 
     public void update(String title, String content, Category category, Region region,
                        RequiredSex requiredSex,
+                       Integer requiredCount,
                        Integer ageMin, Integer ageMax,
                        Integer heightMin, Integer heightMax,
                        Integer weightMin, Integer weightMax,
@@ -117,6 +120,7 @@ public class JobPosting extends BaseEntity {
         this.category = category;
         this.region = region;
         this.requiredSex = requiredSex != null ? requiredSex : RequiredSex.ANY;
+        this.requiredCount = requiredCount;
         this.ageMin = ageMin;
         this.ageMax = ageMax;
         this.heightMin = heightMin;
