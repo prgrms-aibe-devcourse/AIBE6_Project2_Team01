@@ -3,6 +3,8 @@ package com.modle.domain.jobposting.service;
 import com.modle.domain.application.entity.type.ApplicationStatus;
 import com.modle.domain.application.repository.ApplicationRepository;
 import com.modle.domain.jobposting.dto.request.JobPostingCreateRequest;
+import com.modle.domain.user.entity.Client;
+import com.modle.domain.user.repository.ClientRepository;
 import com.modle.domain.jobposting.dto.request.JobPostingStatusUpdateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
 import com.modle.domain.jobposting.dto.response.*;
@@ -33,6 +35,7 @@ public class JobPostingService {
     private final JobPostingRepository jobPostingRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final ApplicationRepository applicationRepository;
+    private final ClientRepository clientRepository;
 
 
     // JOB-002: 공고를 저장하고(상태=모집 중) AI 모델 추천을 비동기로 트리거한다.
@@ -213,10 +216,12 @@ public class JobPostingService {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
+        Client client = clientRepository.findByUserId(jobPosting.getClientId()).orElse(null);
+
         return switch (viewerType) {
-            case MODEL -> JobPostingModelDetailResponse.from(jobPosting);
-            case CLIENT -> JobPostingClientDetailResponse.from(jobPosting);
-            case OTHER -> JobPostingOtherDetailResponse.from(jobPosting);
+            case MODEL -> JobPostingModelDetailResponse.from(jobPosting, client);
+            case CLIENT -> JobPostingClientDetailResponse.from(jobPosting, client);
+            case OTHER -> JobPostingOtherDetailResponse.from(jobPosting, client);
         };
     }
 

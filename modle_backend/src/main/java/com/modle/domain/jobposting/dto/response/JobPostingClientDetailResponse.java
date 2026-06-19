@@ -6,6 +6,7 @@ import com.modle.domain.jobposting.entity.type.JobPostingStatus;
 import com.modle.domain.jobposting.entity.type.PayType;
 import com.modle.global.entity.type.Region;
 import com.modle.domain.jobposting.entity.type.RequiredSex;
+import com.modle.domain.user.entity.Client;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,10 +33,13 @@ public record JobPostingClientDetailResponse(
         PayType payType,
         LocalDateTime shootDate,
         LocalDateTime createdDate,
+        String clientRegion,
+        double clientAvgRating,
+        int clientReviewCount,
         // TODO(AI추천): AI 추천 단위 구현 후 실제 추천 모델 목록으로 교체
         List<Long> recommendedModelIds
 ) implements JobPostingDetailResponse {
-    public static JobPostingClientDetailResponse from(JobPosting jobPosting) {
+    public static JobPostingClientDetailResponse from(JobPosting jobPosting, Client client) {
         return new JobPostingClientDetailResponse(
                 jobPosting.getId(),
                 jobPosting.getClientId(),
@@ -56,6 +60,9 @@ public record JobPostingClientDetailResponse(
                 jobPosting.getPayType(),
                 jobPosting.getShootDate(),
                 jobPosting.getCreatedDate(),
+                client != null ? client.getUser().getRegion() : null,
+                client != null ? client.getAvgRating() : 0.0,
+                client != null ? client.getReviewCount() : 0,
                 List.of()
         );
     }

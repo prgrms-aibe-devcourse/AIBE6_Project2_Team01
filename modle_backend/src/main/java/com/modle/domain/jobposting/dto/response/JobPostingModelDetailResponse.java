@@ -6,6 +6,7 @@ import com.modle.domain.jobposting.entity.type.JobPostingStatus;
 import com.modle.domain.jobposting.entity.type.PayType;
 import com.modle.global.entity.type.Region;
 import com.modle.domain.jobposting.entity.type.RequiredSex;
+import com.modle.domain.user.entity.Client;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -30,10 +31,13 @@ public record JobPostingModelDetailResponse(
         PayType payType,
         LocalDateTime shootDate,
         LocalDateTime createdDate,
+        String clientRegion,
+        double clientAvgRating,
+        int clientReviewCount,
         // TODO(즐겨찾기): 즐겨찾기 단위 구현 후 실제 값으로 교체
         boolean favorited
 ) implements JobPostingDetailResponse {
-    public static JobPostingModelDetailResponse from(JobPosting jobPosting) {
+    public static JobPostingModelDetailResponse from(JobPosting jobPosting, Client client) {
         return new JobPostingModelDetailResponse(
                 jobPosting.getId(),
                 jobPosting.getTitle(),
@@ -53,6 +57,9 @@ public record JobPostingModelDetailResponse(
                 jobPosting.getPayType(),
                 jobPosting.getShootDate(),
                 jobPosting.getCreatedDate(),
+                client != null ? client.getUser().getRegion() : null,
+                client != null ? client.getAvgRating() : 0.0,
+                client != null ? client.getReviewCount() : 0,
                 false
         );
     }

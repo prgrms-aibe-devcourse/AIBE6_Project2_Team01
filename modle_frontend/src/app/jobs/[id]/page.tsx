@@ -34,6 +34,9 @@ type ClientDetail = {
   payType?: string;
   shootDate?: string;
   createdDate?: string;
+  clientRegion?: string | null;
+  clientAvgRating?: number;
+  clientReviewCount?: number;
   recommendedModelIds: number[];
 };
 
@@ -56,6 +59,9 @@ type ModelDetail = {
   payType?: string;
   shootDate?: string;
   createdDate?: string;
+  clientRegion?: string | null;
+  clientAvgRating?: number;
+  clientReviewCount?: number;
   favorited: boolean;
 };
 
@@ -71,6 +77,9 @@ type OtherDetail = {
   payType?: string;
   shootDate?: string;
   createdDate?: string;
+  clientRegion?: string | null;
+  clientAvgRating?: number;
+  clientReviewCount?: number;
 };
 
 type DetailData = ClientDetail | ModelDetail | OtherDetail;
@@ -467,7 +476,18 @@ export default function JobDetailPage({
               </h2>
               <dl className="mt-4 space-y-3 text-[13px] leading-5">
                 <InfoRow label="카테고리" value={detail.category} />
-                <InfoRow label="지역" value={getRegionLabel(detail.region)} />
+                <InfoRow label="촬영 지역" value={getRegionLabel(detail.region)} />
+                {detail.clientRegion ? (
+                  <InfoRow label="의뢰인 지역" value={getRegionLabel(detail.clientRegion)} />
+                ) : null}
+                <InfoRow
+                  label="의뢰인 평점"
+                  value={
+                    (detail.clientReviewCount ?? 0) > 0
+                      ? `★ ${(detail.clientAvgRating ?? 0).toFixed(1)} (${detail.clientReviewCount}건)`
+                      : "리뷰 없음"
+                  }
+                />
                 <InfoRow
                   label="성별 조건"
                   value={
