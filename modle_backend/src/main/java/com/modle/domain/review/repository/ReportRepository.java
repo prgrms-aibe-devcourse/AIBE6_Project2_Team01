@@ -6,8 +6,8 @@ import com.modle.domain.review.entity.type.ReportTargetType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
     // 중복 신고 방지용
@@ -19,4 +19,8 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     Page<Report> findByTargetType(ReportTargetType targetType, Pageable pageable);
     Page<Report> findByStatus(ReportStatus status, Pageable pageable);
     Page<Report> findByTargetTypeAndStatus(ReportTargetType targetType, ReportStatus status, Pageable pageable);
+
+    // 노쇼 PENDING 목록
+    List<Report> findByTargetTypeAndStatusOrderByCreatedDateDesc(
+            ReportTargetType targetType, ReportStatus status);
 }
