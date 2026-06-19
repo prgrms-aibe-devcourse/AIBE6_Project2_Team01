@@ -10,9 +10,8 @@ import com.modle.domain.user.entity.Client;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
-// JOB-007: 의뢰인 뷰 — 공고 정보 + AI 추천 모델 섹션 (수락 버튼 없음)
+// JOB-007: 의뢰인 뷰 — 공고 정보 (AI 추천은 GET /jobs/{id}/recommendations 별도 API)
 public record JobPostingClientDetailResponse(
         Long id,
         Long clientId,
@@ -37,9 +36,7 @@ public record JobPostingClientDetailResponse(
         String clientCompanyName,
         String clientRegion,
         double clientAvgRating,
-        int clientReviewCount,
-        // TODO(AI추천): AI 추천 단위 구현 후 실제 추천 모델 목록으로 교체
-        List<Long> recommendedModelIds
+        int clientReviewCount
 ) implements JobPostingDetailResponse {
     public static JobPostingClientDetailResponse from(JobPosting jobPosting, Client client) {
         return new JobPostingClientDetailResponse(
@@ -66,8 +63,7 @@ public record JobPostingClientDetailResponse(
                 client != null ? client.getCompanyName() : null,
                 client != null ? client.getUser().getRegion() : null,
                 client != null ? client.getAvgRating() : 0.0,
-                client != null ? client.getReviewCount() : 0,
-                List.of()
+                client != null ? client.getReviewCount() : 0
         );
     }
 }

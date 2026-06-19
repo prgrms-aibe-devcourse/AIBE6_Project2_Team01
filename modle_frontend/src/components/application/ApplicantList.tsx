@@ -56,6 +56,7 @@ export function ApplicantList({ applicants }: Props) {
   const [reviewTarget, setReviewTarget] = useState<ApplicantInfo | null>(null);
   const [contractStatusModal, setContractStatusModal] =
     useState<ContractStatusModalState | null>(null);
+  const [reRecruitConfirmId, setReRecruitConfirmId] = useState<number | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -175,7 +176,6 @@ export function ApplicantList({ applicants }: Props) {
   }
 
   async function handleReRecruit(applicationId: number) {
-    if (!confirm("재모집 시 현재 공고는 마감되고 동일 내용으로 새 공고가 생성됩니다. 진행하시겠습니까?")) return;
     setReRecruitingIds((prev) => new Set(prev).add(applicationId));
     try {
       const updated = await reRecruit(applicationId);
@@ -311,6 +311,59 @@ export function ApplicantList({ applicants }: Props) {
                   className="h-11 flex-1 rounded-lg bg-primary text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:opacity-50"
                 >
                   {reasonModal.submitting ? "처리 중..." : "확인"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* 재모집 확인 모달 */}
+      {reRecruitConfirmId !== null ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="flex w-full max-w-md flex-col border border-hairline bg-surface shadow-xl">
+            <div className="flex items-center justify-between border-b border-hairline px-5 py-4">
+              <h2 className="text-[18px] font-bold text-ink">재모집 안내</h2>
+              <button
+                type="button"
+                onClick={() => setReRecruitConfirmId(null)}
+                className="text-[14px] font-medium text-mute transition hover:text-ink"
+              >
+                닫기
+              </button>
+            </div>
+            <div className="px-5 py-5 flex flex-col gap-5">
+              <div className="rounded-lg bg-canvas-soft border border-hairline px-4 py-4 text-[13px] leading-6 text-body space-y-1">
+                <p>
+                  현재 공고는{" "}
+                  <span className="font-semibold text-ink">마감(CLOSED)</span> 처리됩니다.
+                </p>
+                <p>
+                  동일한 내용으로{" "}
+                  <span className="font-semibold text-ink">새 공고가 모집 중</span> 상태로 생성됩니다.
+                </p>
+                <p className="text-mute text-[12px] pt-1">
+                  ※ 취소(CANCELLED)가 아닌 마감 처리이며, 새 공고에서 지원을 다시 받을 수 있습니다.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setReRecruitConfirmId(null)}
+                  className="h-11 flex-1 border border-hairline bg-surface text-[14px] font-semibold text-ink transition hover:border-hairline-strong"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const id = reRecruitConfirmId;
+                    setReRecruitConfirmId(null);
+                    void handleReRecruit(id);
+                  }}
+                  className="h-11 flex-1 bg-primary text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover"
+                >
+                  재모집 시작
                 </button>
               </div>
             </div>
@@ -603,7 +656,7 @@ export function ApplicantList({ applicants }: Props) {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleReRecruit(applicationId)}
+                        onClick={() => setReRecruitConfirmId(applicationId)}
                         disabled={reRecruitingIds.has(applicationId)}
                         className="h-10 flex-1 border border-gray-400 px-3 text-[13px] font-semibold text-gray-700 transition hover:border-black hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
                       >

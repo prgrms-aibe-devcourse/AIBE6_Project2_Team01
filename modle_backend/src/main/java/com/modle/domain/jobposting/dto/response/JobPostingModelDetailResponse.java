@@ -35,9 +35,7 @@ public record JobPostingModelDetailResponse(
         String clientCompanyName,
         String clientRegion,
         double clientAvgRating,
-        int clientReviewCount,
-        // TODO(즐겨찾기): 즐겨찾기 단위 구현 후 실제 값으로 교체
-        boolean favorited
+        int clientReviewCount
 ) implements JobPostingDetailResponse {
     public static JobPostingModelDetailResponse from(JobPosting jobPosting, Client client) {
         return new JobPostingModelDetailResponse(
@@ -63,8 +61,7 @@ public record JobPostingModelDetailResponse(
                 client != null ? client.getCompanyName() : null,
                 client != null ? client.getUser().getRegion() : null,
                 client != null ? client.getAvgRating() : 0.0,
-                client != null ? client.getReviewCount() : 0,
-                false
+                client != null ? client.getReviewCount() : 0
         );
     }
 }

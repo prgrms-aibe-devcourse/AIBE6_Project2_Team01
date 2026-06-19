@@ -213,7 +213,6 @@ public class ApplicationService {
 
         application.contact();
 
-        // TODO(message 도메인 협의 필요): 모델에게 컨택 쪽지 발송 연동
         return ApplicationResponse.from(application);
     }
 
