@@ -2,13 +2,15 @@ import { Portfolio } from '@/types/model';
 import { client } from './client';
 
 // 1. 여러 장 업로드 함수
-export const uploadPortfolioImages = async (files: File[]): Promise<Portfolio[]> => {
+export const uploadPortfolioImages = async (files: File[], category: string): Promise<Portfolio[]> => {
   const formData = new FormData();
   
   // 선택된 여러 개의 파일을 'files'라는 이름으로 모두 담기
   files.forEach((file) => {
     formData.append('files', file); 
   });
+  formData.append('category', category); // 카테고리 추가
+
   const { data, error } = await client.POST('/api/v1/portfolios', {
     body: formData as never,
   });

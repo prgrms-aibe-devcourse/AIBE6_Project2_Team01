@@ -18,6 +18,20 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
   const [portfolios, setPortfolios] = useState<Portfolio[]>(initialPortfolios);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
+  const categories = ['HAIR', 'MAKEUP', 'HAND', 'FITTING', 'CLOTHING', 'FOOD', 'PRODUCT', 'ETC'];
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategories(prev => 
+      prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
+    );
+  };
+
+  const filteredPortfolios = portfolios.filter(p => 
+    selectedCategories.length === 0 || (p.category && selectedCategories.includes(p.category))
+  );
+  
   const INITIAL_COUNT = 6;
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
 
@@ -55,8 +69,8 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
 
   // 최신순 정렬 (id 기준 역순) -> 백엔드에서 순서 적용이 되면 DB 정렬에 따르는게 맞지만 
   // 현재는 초기 불러올때 id역순(또는 displayOrder)으로 받았다고 가정하고 프론트엔드에서는 배열 순서 그대로 렌더링
-  const displayedPortfolios = portfolios.slice(0, visibleCount);
-  const hasMore = visibleCount < portfolios.length;
+  const displayedPortfolios = filteredPortfolios.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredPortfolios.length;
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -66,16 +80,47 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
           <p className="text-xs text-gray-500 tracking-wide">업로드된 {portfolios.length}개의 작품</p>
         </div>
         
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-2 bg-black border border-black hover:bg-gray-900 text-white text-xs font-bold uppercase tracking-widest transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          포트폴리오 업로드
-        </button>
+        <div className="flex gap-3 items-center">
+          {/* 필터 영역 */}
+          <div className="relative">
+            <button 
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm font-medium transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              필터 {selectedCategories.length > 0 && `(${selectedCategories.length})`}
+            </button>
+
+            {isFilterOpen && (
+              <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 p-2">
+                {categories.map(cat => (
+                  <label key={cat} className="flex items-center gap-2 p-2 hover:bg-gray-50 cursor-pointer rounded">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedCategories.includes(cat)} 
+                      onChange={() => handleCategoryChange(cat)}
+                      className="rounded border-gray-300 accent-black w-4 h-4"
+                    />
+                    <span className="text-sm text-gray-700">{cat}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 px-6 py-2 bg-black border border-black hover:bg-gray-900 text-white text-xs font-bold uppercase tracking-widest transition-colors rounded-md"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            업로드
+          </button>
+        </div>
       </div>
 
       {/* Grid: 진짜 데이터 렌더링 */}
