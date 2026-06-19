@@ -5,8 +5,8 @@ interface ModelApiResponse extends Omit<Partial<Model>, 'rating'> {
   avgRating?: number;
 }
 
-export async function getModels(params: Record<string, any>): Promise<ModelListResponse> {
-  const safeQuery: Record<string, any> = { ...params };
+export async function getModels(params: Record<string, string | string[] | undefined>): Promise<ModelListResponse> {
+  const safeQuery: Record<string, string | string[] | undefined> = { ...params };
   for (const key in safeQuery) {
     if (Array.isArray(safeQuery[key])) {
       safeQuery[key] = safeQuery[key].join(',');

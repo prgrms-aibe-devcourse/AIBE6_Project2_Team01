@@ -207,8 +207,8 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
                     setPortfolios(prev => prev.map(p => p.id === editingPortfolioId ? { ...p, category: editingCategory } : p));
                     alert('카테고리가 성공적으로 수정되었습니다.');
                     setEditingPortfolioId(null);
-                  } catch (e: any) {
-                    alert(e.message || '수정 중 오류가 발생했습니다.');
+                  } catch (e: unknown) {
+                    alert((e as Error).message || '수정 중 오류가 발생했습니다.');
                   }
                 }}
                 className="px-4 py-2 text-sm text-white bg-black hover:bg-gray-900 rounded-md transition-colors"
