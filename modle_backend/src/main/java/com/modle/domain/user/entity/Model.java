@@ -8,6 +8,7 @@ import com.modle.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,14 +42,17 @@ public class Model extends BaseEntity {
 
 
 
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "model", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<com.modle.domain.profile.entity.ModelRegion> modelRegions = new ArrayList<>();
 
     // 태그 매핑 리스트
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "model", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ModelTag> modelTags = new ArrayList<>();
 
     // 카테고리 매핑 리스트
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "model", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ModelCategory> modelCategories = new ArrayList<>();
 
@@ -65,6 +69,7 @@ public class Model extends BaseEntity {
     @Column(nullable = false)
     private int reviewCount = 0;
 
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "model", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("displayOrder ASC, id DESC") // 변경: 순서를 최우선, 없으면 최신순
     private List<Portfolio> portfolios = new ArrayList<>();

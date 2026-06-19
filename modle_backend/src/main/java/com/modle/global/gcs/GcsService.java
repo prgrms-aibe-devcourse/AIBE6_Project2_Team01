@@ -17,6 +17,7 @@ public class GcsService {
     private final Storage storage;
     @Value("${gcs.bucket}")
     private String bucketName;
+
     public String uploadImage(MultipartFile file) throws IOException {
         // 1. 파일 이름이 겹치지 않게 고유한 랜덤 이름(UUID) 생성
         String uuid = UUID.randomUUID().toString();

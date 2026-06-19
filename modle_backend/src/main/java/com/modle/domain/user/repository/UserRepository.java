@@ -16,4 +16,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
     List<User> findByStatusAndRejectedDateBefore(UserStatus status, LocalDateTime dateTime);
+
+    // 경고 횟수 N 이상인 유저 목록
+    List<User> findByWarningCountGreaterThanEqualOrderByWarningCountDesc(int warningCount);
 }

@@ -91,9 +91,8 @@ export function ContractStatusOverview({
           value={contractStatus.shootingAvailable ? "가능" : "불가"}
         />
         <StatusRow
-          label="PDF URL"
-          value={contractStatus.pdfUrl ?? "아직 생성되지 않았습니다."}
-          breakWords
+          label="계약서 파일"
+          value={contractStatus.pdfUrl ? "열람 가능" : "아직 생성되지 않았습니다."}
         />
         {contractStatus.status === "REJECTED" ? (
           <StatusRow

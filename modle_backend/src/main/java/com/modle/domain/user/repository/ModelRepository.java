@@ -1,6 +1,7 @@
 package com.modle.domain.user.repository;
 
 import com.modle.domain.user.entity.Model;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface ModelRepository extends JpaRepository<Model,Long>, JpaSpecificationExecutor<Model> {
+    @EntityGraph(attributePaths = {"user"})
     Optional<Model> findByUserId(Long userId);
 
     @Query(value = """

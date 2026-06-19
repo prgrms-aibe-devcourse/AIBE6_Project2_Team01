@@ -159,6 +159,7 @@ public class JobPostingService {
         }
 
         jobPosting.updateStatus(request.status());
+
         messageService.sendStatusChangeNotifications(jobPostingId, clientId, request.status(), request.reason());
         return JobPostingResponse.from(jobPosting);
     }

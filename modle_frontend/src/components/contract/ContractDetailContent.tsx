@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { ContractAgreementActions } from "@/components/contract/ContractAgreementActions";
 import { ContractNotifyButton } from "@/components/contract/ContractNotifyButton";
@@ -8,8 +8,8 @@ import { ContractStatusOverview } from "@/components/contract/ContractStatusOver
 import { useAuth } from "@/hooks/useAuth";
 import {
   formatContractStatus,
-  type ContractStatus,
   viewContract,
+  type ContractStatus,
 } from "@/lib/api/contract";
 
 type ContractDetailContentProps = {
@@ -27,6 +27,7 @@ type ContractDetailContentProps = {
     usageScope?: string;
     memo?: string;
     pdfUrl?: string;
+    signedPdfUrl?: string;
     status?: string;
   };
 };
@@ -41,6 +42,7 @@ type DetailState = {
   usageScope: string;
   memo: string;
   pdfUrl: string;
+  signedPdfUrl: string;
   rejectReason: string;
   status: ContractStatus;
 };
@@ -62,61 +64,11 @@ export function ContractDetailContent({
 }: ContractDetailContentProps) {
   const { user, isLoading } = useAuth();
   const [loadError, setLoadError] = useState("");
+  const [isViewingContract, setIsViewingContract] = useState(false);
+  const [hasViewedContract, setHasViewedContract] = useState(false);
   const [detail, setDetail] = useState<DetailState>(() =>
     buildDetailFromQuery(initialQuery),
   );
-
-  useEffect(() => {
-    if (isLoading || user?.role !== "MODEL") {
-      return;
-    }
-
-    let ignore = false;
-
-    async function loadContract() {
-      try {
-        const contract = await viewContract(contractId);
-
-        if (ignore) {
-          return;
-        }
-
-        setDetail({
-          applicationId: contract.applicationId,
-          contractType: contract.contractType,
-          payType: contract.payType,
-          payment: contract.payment,
-          shootSchedule: formatSchedule(
-            contract.shootStartAt,
-            contract.shootEndAt,
-          ),
-          location: contract.location ?? "-",
-          usageScope: contract.usageScope ?? "-",
-          memo: contract.memo?.trim() || "없음",
-          pdfUrl: contract.pdfUrl?.trim() || "",
-          rejectReason: contract.rejectReason?.trim() || "",
-          status: contract.status,
-        });
-        setLoadError("");
-      } catch (error) {
-        if (ignore) {
-          return;
-        }
-
-        setLoadError(
-          error instanceof Error
-            ? error.message
-            : "계약서 상세 정보를 불러오지 못했습니다.",
-        );
-      }
-    }
-
-    void loadContract();
-
-    return () => {
-      ignore = true;
-    };
-  }, [contractId, isLoading, user?.role]);
 
   const paymentText = useMemo(() => {
     if (!detail.payType) {
@@ -137,6 +89,54 @@ export function ContractDetailContent({
   }, [detail.payType, detail.payment]);
 
   const isCreatedFromDraft = initialQuery.source === "draft-created";
+  const isModelUser = user?.role === "MODEL";
+  const statusText =
+    isModelUser && !hasViewedContract
+      ? "확인 전"
+      : formatContractStatus(detail.status);
+
+  const handleViewContract = async () => {
+    setIsViewingContract(true);
+    setLoadError("");
+
+    try {
+      const contract = await viewContract(contractId);
+
+      setDetail({
+        applicationId: contract.applicationId,
+        contractType: contract.contractType,
+        payType: contract.payType,
+        payment: contract.payment,
+        shootSchedule: formatSchedule(
+          contract.shootStartAt,
+          contract.shootEndAt,
+        ),
+        location: contract.location ?? "-",
+        usageScope: contract.usageScope ?? "-",
+        memo: contract.memo?.trim() || "없음",
+        pdfUrl: contract.pdfUrl?.trim() || "",
+        signedPdfUrl: contract.signedPdfUrl?.trim() || "",
+        rejectReason: contract.rejectReason?.trim() || "",
+        status: contract.status,
+      });
+      setHasViewedContract(true);
+
+      const documentUrl =
+        contract.signedPdfUrl?.trim() || contract.pdfUrl?.trim() || "";
+
+      if (documentUrl) {
+        window.open(documentUrl, "_blank", "noopener,noreferrer");
+      }
+    } catch (error) {
+      setLoadError(
+        error instanceof Error
+          ? error.message
+          : "계약서 정보를 불러오지 못했습니다.",
+      );
+    } finally {
+      setIsViewingContract(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-canvas text-ink">
@@ -151,23 +151,23 @@ export function ContractDetailContent({
                 계약서 상세
               </h1>
               <p className="text-[15px] leading-6 text-body">
-                계약서 ID #{contractId}가 {formatContractStatus(detail.status)} 상태입니다.
+                계약서 ID #{contractId}가 {statusText} 상태입니다.
               </p>
             </div>
             <span className="inline-flex h-8 w-fit items-center gap-2 rounded-full bg-canvas-soft px-3 text-[13px] font-semibold leading-5 text-body">
               <span className="h-1.5 w-1.5 rounded-full bg-warning" />
-              {formatContractStatus(detail.status)}
+              {statusText}
             </span>
           </div>
           {isCreatedFromDraft ? (
             <div className="mt-4 rounded-xl bg-success-soft px-4 py-3 text-[14px] leading-6 text-success">
-              계약서 작성 화면에서 입력한 정보로 초안을 생성했습니다. PDF를
-              생성한 뒤 내용을 확인하고 모델에게 발송하시면 됩니다.
+              계약서 작성 화면에서 입력한 정보로 초안을 생성했습니다. PDF를 생성한 뒤 내용을 확인하고 모델에게 발송하시면 됩니다.
             </div>
           ) : (
             <div className="mt-4 rounded-xl bg-canvas-soft px-4 py-3 text-[14px] leading-6 text-body">
-              계약 상세 API와 연결된 화면입니다. 모델은 실제 계약서 데이터를
-              기준으로 상세 정보를 확인할 수 있습니다.
+              {isModelUser && !hasViewedContract
+                ? "계약서 확인 버튼을 눌러 열람한 뒤 상세 정보와 동의 여부를 확인하실 수 있습니다."
+                : "계약 상세 API와 연결된 화면입니다. 실제 계약서 데이터를 기준으로 상세 정보를 확인할 수 있습니다."}
             </div>
           )}
           {loadError ? (
@@ -211,8 +211,14 @@ export function ContractDetailContent({
               />
               <DetailRow label="기타 조건" value={detail.memo} fullWidth />
               <DetailRow
-                label="PDF URL"
-                value={detail.pdfUrl || "아직 생성되지 않았습니다."}
+                label="계약서 파일"
+                value={
+                  isModelUser && !hasViewedContract
+                    ? "계약서 확인 버튼으로 열람하실 수 있습니다."
+                    : getDocumentUrl(detail)
+                      ? "열람 가능합니다."
+                      : "아직 생성되지 않았습니다."
+                }
                 fullWidth
               />
               {detail.status === "REJECTED" ? (
@@ -242,25 +248,46 @@ export function ContractDetailContent({
                 계약 액션
               </h2>
               <div className="mt-4 flex flex-col gap-3">
+                {isModelUser ? (
+                  <button
+                    type="button"
+                    onClick={handleViewContract}
+                    disabled={isLoading || isViewingContract}
+                    className="h-11 rounded-md border border-hairline bg-canvas-soft px-4 text-[15px] font-semibold leading-6 text-ink transition hover:border-hairline-strong disabled:text-mute"
+                  >
+                    {isViewingContract ? "계약서 확인 중" : "계약서 확인"}
+                  </button>
+                ) : null}
+
                 <ContractNotifyButton
                   contractId={contractId}
                   applicationId={detail.applicationId}
                   initialStatus={detail.status}
-                  initialPdfUrl={detail.pdfUrl}
+                  initialPdfUrl={getDocumentUrl(detail)}
                 />
+
                 <ContractAgreementActions
                   contractId={contractId}
-                  applicationId={detail.applicationId}
                   initialStatus={detail.status}
+                  hasViewedContract={hasViewedContract}
+                  onStatusChange={({ status, rejectReason, signedPdfUrl }) => {
+                    setDetail((prev) => ({
+                      ...prev,
+                      status,
+                      rejectReason,
+                      signedPdfUrl: signedPdfUrl || prev.signedPdfUrl,
+                    }));
+                  }}
                 />
               </div>
             </section>
 
             {detail.applicationId != null ? (
               <ContractStatusOverview
+                key={`${detail.applicationId}-${detail.status}`}
                 applicationId={detail.applicationId}
                 initialStatus={detail.status}
-                initialPdfUrl={detail.pdfUrl}
+                initialPdfUrl={getDocumentUrl(detail)}
               />
             ) : null}
           </aside>
@@ -292,9 +319,14 @@ function buildDetailFromQuery(
     usageScope: query.usageScope?.trim() || "-",
     memo: query.memo?.trim() || "없음",
     pdfUrl: query.pdfUrl?.trim() || "",
+    signedPdfUrl: query.signedPdfUrl?.trim() || "",
     rejectReason: "",
     status: resolveContractStatus(query.status),
   };
+}
+
+function getDocumentUrl(detail: Pick<DetailState, "signedPdfUrl" | "pdfUrl">) {
+  return detail.signedPdfUrl || detail.pdfUrl;
 }
 
 function formatSchedule(shootStartAt: string, shootEndAt: string) {
