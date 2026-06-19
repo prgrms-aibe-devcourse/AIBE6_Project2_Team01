@@ -203,7 +203,7 @@ export default function JobsPage() {
               <li key={job.id} className="relative">
                 <Link
                   href={`/jobs/${job.id}`}
-                  className="block rounded-xl border border-hairline bg-surface p-5 transition hover:border-hairline-strong"
+                  className="relative block rounded-xl border border-hairline bg-surface p-5 transition hover:border-hairline-strong"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <h2 className="line-clamp-2 text-[15px] font-semibold leading-6 text-ink">
@@ -243,6 +243,11 @@ export default function JobsPage() {
                       </div>
                     ) : null}
                   </dl>
+                  {job.requiredCount != null ? (
+                    <span className={`absolute bottom-3 text-[11px] font-medium text-mute ${isModel ? "right-10" : "right-3"}`}>
+                      {job.requiredCount}명
+                    </span>
+                  ) : null}
                 </Link>
                 {isModel ? (
                   <button
