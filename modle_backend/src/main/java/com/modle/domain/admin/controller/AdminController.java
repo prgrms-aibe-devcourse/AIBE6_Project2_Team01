@@ -1,8 +1,10 @@
 package com.modle.domain.admin.controller;
 
 import com.modle.domain.admin.dto.request.RejectRequest;
+import com.modle.domain.admin.dto.response.NoShowReportResponse;
 import com.modle.domain.admin.dto.response.PendingClientResponse;
 import com.modle.domain.admin.service.AdminService;
+import com.modle.domain.user.dto.UserDto;
 import com.modle.domain.user.entity.Client;
 import com.modle.global.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -45,5 +47,36 @@ public class AdminController {
     ) {
         adminService.rejectClient(userId, request.reason());
         return new ApiResponse<>("200-1", "의뢰인 가입을 반려했습니다.");
+    }
+
+    // 경고 횟수 N 이상 유저 목록
+    @GetMapping("/users/warnings")
+    public ApiResponse<List<UserDto>> getUsersByWarningCount(
+            @RequestParam(defaultValue = "3") int minCount
+    ) {
+        return ApiResponse.ok(
+                "경고 유저 목록 조회 성공",
+                adminService.getUsersByWarningCount(minCount)
+        );
+    }
+
+    // 노쇼 신고 PENDING 목록
+    @GetMapping("/reports/no-show")
+    public ApiResponse<List<NoShowReportResponse>> getPendingNoShowReports() {
+        return ApiResponse.ok(
+                "노쇼 신고 목록 조회 성공",
+                adminService.getPendingNoShowReports()
+        );
+    }
+
+    // 계정 정지
+    @PatchMapping("/users/{userId}/suspend")
+    public ApiResponse<UserDto> suspendUser(
+            @PathVariable Long userId
+    ) {
+        return ApiResponse.ok(
+                "계정이 정지되었습니다.",
+                adminService.suspendUser(userId)
+        );
     }
 }
