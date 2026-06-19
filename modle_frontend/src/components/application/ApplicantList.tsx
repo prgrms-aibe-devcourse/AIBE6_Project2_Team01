@@ -10,6 +10,10 @@ import {
   APPLICATION_STATUS_LABELS,
   contactApplication,
   completeApplication,
+  holdShooting,
+  cancelShooting,
+  resumeShooting,
+  reRecruit,
   getApplicationContacts,
   type ApplicantInfo,
   type ContactHistory,
@@ -35,7 +39,16 @@ export function ApplicantList({ applicants }: Props) {
   const [items, setItems] = useState(applicants);
   const [submittingIds, setSubmittingIds] = useState<Set<number>>(new Set());
   const [completingIds, setCompletingIds] = useState<Set<number>>(new Set());
+  const [holdingIds, setHoldingIds] = useState<Set<number>>(new Set());
+  const [resumingIds, setResumingIds] = useState<Set<number>>(new Set());
+  const [reRecruitingIds, setReRecruitingIds] = useState<Set<number>>(new Set());
   const [reviewedIds, setReviewedIds] = useState<Set<number>>(new Set());
+  const [reasonModal, setReasonModal] = useState<{
+    type: "hold" | "cancel-shooting";
+    applicationId: number;
+    reason: string;
+    submitting: boolean;
+  } | null>(null);
   const [loadingHistoryId, setLoadingHistoryId] = useState<number | null>(null);
   const [selectedApplicant, setSelectedApplicant] = useState<ApplicantInfo | null>(null);
   const [historyItems, setHistoryItems] = useState<ContactHistory[]>([]);
@@ -109,6 +122,83 @@ export function ApplicantList({ applicants }: Props) {
     }
   }
 
+  async function handleReasonSubmit() {
+    if (!reasonModal || !reasonModal.reason.trim()) return;
+    setReasonModal((prev) => prev && { ...prev, submitting: true });
+    const { type, applicationId, reason } = reasonModal;
+    try {
+      const updated =
+        type === "hold"
+          ? await holdShooting(applicationId, reason.trim())
+          : await cancelShooting(applicationId, reason.trim());
+      setItems((prev) =>
+        prev.map((item) =>
+          item.applicationId === applicationId ? { ...item, status: updated.status } : item,
+        ),
+      );
+      showToast({
+        type: "success",
+        message: type === "hold" ? "촬영이 보류되었습니다." : "촬영이 취소되었습니다.",
+      });
+      setReasonModal(null);
+    } catch (error) {
+      showToast({
+        type: "error",
+        message: error instanceof Error ? error.message : "처리에 실패했습니다.",
+      });
+      setReasonModal((prev) => prev && { ...prev, submitting: false });
+    }
+  }
+
+  async function handleResume(applicationId: number) {
+    setResumingIds((prev) => new Set(prev).add(applicationId));
+    try {
+      const updated = await resumeShooting(applicationId);
+      setItems((prev) =>
+        prev.map((item) =>
+          item.applicationId === applicationId ? { ...item, status: updated.status } : item,
+        ),
+      );
+      showToast({ type: "success", message: "촬영이 재개되었습니다." });
+    } catch (error) {
+      showToast({
+        type: "error",
+        message: error instanceof Error ? error.message : "재개 처리에 실패했습니다.",
+      });
+    } finally {
+      setResumingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(applicationId);
+        return next;
+      });
+    }
+  }
+
+  async function handleReRecruit(applicationId: number) {
+    if (!confirm("재모집 시 현재 공고는 마감되고 동일 내용으로 새 공고가 생성됩니다. 진행하시겠습니까?")) return;
+    setReRecruitingIds((prev) => new Set(prev).add(applicationId));
+    try {
+      const updated = await reRecruit(applicationId);
+      setItems((prev) =>
+        prev.map((item) =>
+          item.applicationId === applicationId ? { ...item, status: updated.status } : item,
+        ),
+      );
+      showToast({ type: "success", message: "재모집이 시작되었습니다. 새 공고가 생성됐습니다." });
+    } catch (error) {
+      showToast({
+        type: "error",
+        message: error instanceof Error ? error.message : "재모집 처리에 실패했습니다.",
+      });
+    } finally {
+      setReRecruitingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(applicationId);
+        return next;
+      });
+    }
+  }
+
   async function handleOpenHistory(applicant: ApplicantInfo) {
     setSelectedApplicant(applicant);
     setHistoryError("");
@@ -169,6 +259,64 @@ export function ApplicantList({ applicants }: Props) {
   return (
     <>
       {toast ? <Toast toast={toast} /> : null}
+
+      {/* 보류/취소 사유 입력 모달 */}
+      {reasonModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="flex w-full max-w-md flex-col border border-hairline bg-surface shadow-xl">
+            <div className="flex items-center justify-between border-b border-hairline px-5 py-4">
+              <h2 className="text-[18px] font-bold text-ink">
+                {reasonModal.type === "hold" ? "촬영 보류" : "촬영 취소"}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setReasonModal(null)}
+                className="text-[14px] font-medium text-mute transition hover:text-ink"
+              >
+                닫기
+              </button>
+            </div>
+            <div className="px-5 py-4 flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-[14px] font-semibold text-ink">
+                  {reasonModal.type === "hold" ? "보류 사유" : "취소 사유"}
+                  <span className="ml-1 text-error">*</span>
+                </label>
+                <textarea
+                  rows={4}
+                  value={reasonModal.reason}
+                  onChange={(e) =>
+                    setReasonModal((prev) => prev && { ...prev, reason: e.target.value })
+                  }
+                  placeholder={
+                    reasonModal.type === "hold"
+                      ? "보류 사유를 입력해주세요."
+                      : "취소 사유를 입력해주세요."
+                  }
+                  className="w-full resize-none rounded-lg border border-hairline bg-canvas px-4 py-3 text-[14px] text-ink placeholder:text-mute focus:border-primary focus:outline-none"
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setReasonModal(null)}
+                  className="h-11 flex-1 rounded-lg border border-hairline bg-surface text-[14px] font-semibold text-ink transition hover:border-hairline-strong"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReasonSubmit}
+                  disabled={reasonModal.submitting || !reasonModal.reason.trim()}
+                  className="h-11 flex-1 rounded-lg bg-primary text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:opacity-50"
+                >
+                  {reasonModal.submitting ? "처리 중..." : "확인"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {/* 컨택 이력 모달 */}
       {selectedApplicant ? (
@@ -407,14 +555,62 @@ export function ApplicantList({ applicants }: Props) {
                   </button>
                 )}
                 {status === "SHOOTING" && (
-                  <button
-                    type="button"
-                    onClick={() => handleComplete(applicationId)}
-                    disabled={isCompleting}
-                    className="h-10 w-full border border-black bg-black px-3 text-[13px] font-semibold text-white transition hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {isCompleting ? "처리 중..." : "촬영 완료"}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleComplete(applicationId)}
+                      disabled={isCompleting}
+                      className="h-10 flex-1 border border-black bg-black px-3 text-[13px] font-semibold text-white transition hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isCompleting ? "처리 중..." : "촬영 완료"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setReasonModal({ type: "hold", applicationId, reason: "", submitting: false })
+                      }
+                      disabled={holdingIds.has(applicationId)}
+                      className="h-10 flex-1 border border-gray-400 px-3 text-[13px] font-semibold text-gray-700 transition hover:border-black hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      보류
+                    </button>
+                  </div>
+                )}
+                {status === "ON_HOLD" && (
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => handleResume(applicationId)}
+                      disabled={resumingIds.has(applicationId)}
+                      className="h-10 w-full border border-black bg-black px-3 text-[13px] font-semibold text-white transition hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {resumingIds.has(applicationId) ? "처리 중..." : "촬영 재개"}
+                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReasonModal({
+                            type: "cancel-shooting",
+                            applicationId,
+                            reason: "",
+                            submitting: false,
+                          })
+                        }
+                        className="h-10 flex-1 border border-gray-400 px-3 text-[13px] font-semibold text-gray-700 transition hover:border-black hover:text-black"
+                      >
+                        촬영 취소
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleReRecruit(applicationId)}
+                        disabled={reRecruitingIds.has(applicationId)}
+                        className="h-10 flex-1 border border-gray-400 px-3 text-[13px] font-semibold text-gray-700 transition hover:border-black hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {reRecruitingIds.has(applicationId) ? "처리 중..." : "재모집"}
+                      </button>
+                    </div>
+                  </div>
                 )}
                 {status === "COMPLETED" && (
                   <div className="flex gap-2">

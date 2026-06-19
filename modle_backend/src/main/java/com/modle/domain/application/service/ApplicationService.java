@@ -248,21 +248,6 @@ public class ApplicationService {
                 .toList();
     }
 
-    // MATCH-013: 촬영 보류 (SHOOTING → ON_HOLD)
-    @Transactional
-    public ApplicationResponse holdShooting(Long clientId, Long applicationId, HoldRequest request) {
-        Application application = getApplication(applicationId);
-        JobPosting jobPosting = getJobPostingAndValidateOwner(application.getJobPostingId(), clientId);
-
-        if (application.getStatus() != ApplicationStatus.SHOOTING) {
-            throw new CustomException(ErrorCode.APPLICATION_HOLD_NOT_ALLOWED);
-        }
-
-        application.hold(request.holdReason());
-        jobPosting.updateStatus(JobPostingStatus.ON_HOLD);
-        return ApplicationResponse.from(application);
-    }
-
     // MATCH-012: 촬영 취소 (ON_HOLD → SHOOTING_CANCELLED, 공고 CANCELLED 처리)
     @Transactional
     public ApplicationResponse cancelShooting(Long clientId, Long applicationId, CancelShootingRequest request) {
@@ -275,6 +260,21 @@ public class ApplicationService {
 
         application.cancelShooting(request.cancelReason());
         jobPosting.updateStatus(JobPostingStatus.CANCELLED);
+        return ApplicationResponse.from(application);
+    }
+
+    // MATCH-013: 촬영 보류 (SHOOTING → ON_HOLD)
+    @Transactional
+    public ApplicationResponse holdShooting(Long clientId, Long applicationId, HoldRequest request) {
+        Application application = getApplication(applicationId);
+        JobPosting jobPosting = getJobPostingAndValidateOwner(application.getJobPostingId(), clientId);
+
+        if (application.getStatus() != ApplicationStatus.SHOOTING) {
+            throw new CustomException(ErrorCode.APPLICATION_HOLD_NOT_ALLOWED);
+        }
+
+        application.hold(request.holdReason());
+        jobPosting.updateStatus(JobPostingStatus.ON_HOLD);
         return ApplicationResponse.from(application);
     }
 
