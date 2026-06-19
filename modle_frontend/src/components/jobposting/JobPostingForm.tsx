@@ -50,6 +50,7 @@ export type JobPostingFormState = {
   category: Category | "";
   region: Region | "";
   requiredSex: RequiredSex;
+  requiredCount: string;
   ageMin: string;
   ageMax: string;
   heightMin: string;
@@ -68,6 +69,7 @@ export const defaultFormState: JobPostingFormState = {
   category: "",
   region: "",
   requiredSex: "ANY",
+  requiredCount: "",
   ageMin: "",
   ageMax: "",
   heightMin: "",
@@ -297,6 +299,18 @@ export function JobPostingForm({
                 </button>
               ))}
             </div>
+          </Field>
+
+          <Field label="최종 섭외 인원" required>
+            <input
+              className={inputClass}
+              type="number"
+              min={1}
+              max={100}
+              value={form.requiredCount}
+              onChange={(e) => updateField("requiredCount", e.target.value)}
+              required
+            />
           </Field>
 
           <Field label="촬영 예정일" required>

@@ -2,6 +2,7 @@ package com.modle.domain.contract.controller;
 
 import com.modle.domain.contract.dto.request.ContractCreateRequest;
 import com.modle.domain.contract.dto.request.ContractPdfCreateRequest;
+import com.modle.domain.contract.dto.request.ContractRejectRequest;
 import com.modle.domain.contract.dto.response.ContractPdfResponse;
 import com.modle.domain.contract.dto.response.ContractResponse;
 import com.modle.domain.contract.dto.response.ContractTemplateResponse;
@@ -106,11 +107,12 @@ public class ContractController {
     @PreAuthorize("hasRole('MODEL')")
     public ApiResponse<ContractResponse> rejectContract(
             @AuthenticationPrincipal SecurityUser securityUser,
-            @PathVariable Long id
+            @PathVariable Long id,
+            @Valid @RequestBody ContractRejectRequest request
     ) {
         return ApiResponse.ok(
                 "계약서를 거부했습니다.",
-                contractService.rejectContract(securityUser.getId(), id)
+                contractService.rejectContract(securityUser.getId(), id, request.rejectReason())
         );
     }
 

@@ -11,7 +11,7 @@ import com.modle.domain.jobposting.entity.PostEmbedding;
 import com.modle.domain.jobposting.entity.Recommendation;
 import com.modle.domain.jobposting.entity.type.Category;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
-import com.modle.domain.jobposting.entity.type.Region;
+import com.modle.global.entity.type.Region;
 import com.modle.domain.jobposting.entity.type.RequiredSex;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.jobposting.repository.ModelEmbeddingRepository;

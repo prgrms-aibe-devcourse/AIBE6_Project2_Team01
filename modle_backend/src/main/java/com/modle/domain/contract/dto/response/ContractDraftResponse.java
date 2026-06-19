@@ -8,8 +8,8 @@ import com.modle.domain.contract.entity.type.PayType;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record ContractViewResponse(
-        Long id,
+public record ContractDraftResponse(
+        Long contractId,
         Long applicationId,
         ContractType contractType,
         LocalDateTime shootStartAt,
@@ -20,13 +20,10 @@ public record ContractViewResponse(
         String usageScope,
         String memo,
         String pdfUrl,
-        String signedPdfUrl,
-        String rejectReason,
-        ContractStatus status,
-        LocalDateTime viewedAt
+        ContractStatus status
 ) {
-    public static ContractViewResponse from(Contract contract) {
-        return new ContractViewResponse(
+    public static ContractDraftResponse from(Contract contract) {
+        return new ContractDraftResponse(
                 contract.getId(),
                 contract.getApplicationId(),
                 contract.getContractType(),
@@ -38,10 +35,7 @@ public record ContractViewResponse(
                 contract.getUsageScope(),
                 contract.getMemo(),
                 contract.getPdfUrl(),
-                contract.getSignedPdfUrl(),
-                contract.getRejectReason(),
-                contract.getStatus(),
-                contract.getViewedAt()
+                contract.getStatus()
         );
     }
 }

@@ -88,6 +88,9 @@ export default function NewJobPage() {
           | "GYEONGNAM"
           | "JEJU",
         requiredSex: formData.requiredSex,
+        requiredCount: formData.requiredCount
+          ? Number(formData.requiredCount)
+          : undefined,
         ageMin: formData.ageMin ? Number(formData.ageMin) : undefined,
         ageMax: formData.ageMax ? Number(formData.ageMax) : undefined,
         heightMin: formData.heightMin ? Number(formData.heightMin) : undefined,

@@ -289,6 +289,18 @@ public class MessageService {
             byPost.linkApplication(applicationId);
             return MessageConversationResponse.from(byPost);
         }
+
+        MessageConversation byParticipant = conversationRepository
+                .findFirstByClientIdAndModelIdOrderByCreatedDateDesc(clientUserId, modelUserId)
+                .orElse(null);
+
+        if (byParticipant != null
+                && byParticipant.getPostId() == null
+                && byParticipant.getApplicationId() == null) {
+            byParticipant.bindProposal(jobPostingId, applicationId);
+            return MessageConversationResponse.from(byParticipant);
+        }
+
         validateContractConversationPost(clientUserId, jobPostingId);
 
         MessageConversation conversation = MessageConversation.builder()

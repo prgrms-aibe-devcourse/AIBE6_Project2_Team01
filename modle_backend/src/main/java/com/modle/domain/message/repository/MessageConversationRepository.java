@@ -20,5 +20,10 @@ public interface MessageConversationRepository extends JpaRepository<MessageConv
             Long postId
     );
 
+    Optional<MessageConversation> findFirstByClientIdAndModelIdOrderByCreatedDateDesc(
+            Long clientId,
+            Long modelId
+    );
+
     Optional<MessageConversation> findByApplicationId(Long applicationId);
 }
