@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { checkApplyStatus, getApplicants } from "@/lib/api/application";
 import { addJobBookmark, getJobBookmarks, removeJobBookmark } from "@/lib/api/bookmark";
 import { API_BASE_URL, authenticatedFetch, client } from "@/lib/api/client";
-import { STATUS_CHANGE_DESCRIPTIONS, STATUS_COLORS, STATUS_LABELS, STATUS_TRANSITION_LABELS, STATUS_TRANSITIONS } from "@/lib/constants/jobPostingStatus";
+import { STATUS_CHANGE_DESCRIPTIONS, STATUS_COLORS, STATUS_LABELS, STATUS_TRANSITION_LABELS, STATUS_TRANSITIONS, eulo } from "@/lib/constants/jobPostingStatus";
 import { getRegionLabel } from "@/lib/constants/region";
 import type { Model } from "@/types/model";
 import Link from "next/link";
@@ -295,7 +295,7 @@ export default function JobDetailPage({
     }
   };
 
-  const submitStatusChange = async (status: string) => {
+  const submitStatusChange = async (status: string, reason?: string) => {
     setStatusChanging(true);
     const { data, response } = await client.PATCH("/api/v1/jobs/{id}/status", {
       params: { path: { id: postingId } },
@@ -307,6 +307,7 @@ export default function JobDetailPage({
           | "CANCELLED"
           | "ON_HOLD"
           | "CLOSED",
+        reason: reason || null,
       },
     });
     setStatusChanging(false);
@@ -336,7 +337,7 @@ export default function JobDetailPage({
       return;
     }
     setStatusReasonModalOpen(false);
-    await submitStatusChange(selectedStatus);
+    await submitStatusChange(selectedStatus, statusReason.trim() || undefined);
   };
 
   const handleDelete = async () => {
@@ -470,9 +471,12 @@ export default function JobDetailPage({
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
               <div className="w-full max-w-sm rounded-xl bg-surface p-6 shadow-xl">
                 <h3 className="text-[16px] font-semibold text-ink">
-                  {statusNeedsReason
-                    ? `${STATUS_TRANSITION_LABELS[selectedStatus] ?? STATUS_LABELS[selectedStatus] ?? selectedStatus} 사유 입력`
-                    : `${STATUS_TRANSITION_LABELS[selectedStatus] ?? STATUS_LABELS[selectedStatus] ?? selectedStatus}으로 변경`}
+                  {(() => {
+                    const label = STATUS_TRANSITION_LABELS[selectedStatus] ?? STATUS_LABELS[selectedStatus] ?? selectedStatus;
+                    return statusNeedsReason
+                      ? `${label} 사유 입력`
+                      : `${label}${eulo(label)} 변경`;
+                  })()}
                 </h3>
                 {statusNeedsReason ? (
                   <textarea
@@ -659,7 +663,10 @@ export default function JobDetailPage({
                   disabled={statusChanging || !selectedStatus}
                   className="mt-3 w-full rounded-lg bg-primary py-2.5 text-[13px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:opacity-50"
                 >
-                  {statusChanging ? "변경 중..." : `${STATUS_TRANSITION_LABELS[selectedStatus] ?? STATUS_LABELS[selectedStatus] ?? "상태 변경"}으로 변경`}
+                  {(() => {
+                    const label = STATUS_TRANSITION_LABELS[selectedStatus] ?? STATUS_LABELS[selectedStatus] ?? "상태 변경";
+                    return statusChanging ? "변경 중..." : `${label}${eulo(label)} 변경`;
+                  })()}
                 </button>
               </section>
             ) : null}

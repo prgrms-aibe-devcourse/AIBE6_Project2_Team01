@@ -276,8 +276,8 @@ public class MessageService {
         if (conversations.isEmpty()) {
             return;
         }
-        String content = "공고 상태가 변경되었습니다. [" + newStatus.getDisplayName() + "]\n사유: "
-                + (reason != null ? reason : "");
+        String content = "공고 상태가 변경되었습니다. [" + newStatus.getDisplayName() + "]"
+                + (reason != null && !reason.isBlank() ? "\n사유: " + reason : "");
         for (MessageConversation conversation : conversations) {
             Message message = Message.builder()
                     .conversationId(conversation.getId())
