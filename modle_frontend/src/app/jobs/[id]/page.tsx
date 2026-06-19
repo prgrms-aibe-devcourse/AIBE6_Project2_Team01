@@ -31,6 +31,7 @@ type ClientDetail = ClientInfo & {
   region: string;
   status: string;
   requiredSex?: string;
+  requiredCount?: number;
   ageMin?: number;
   ageMax?: number;
   heightMin?: number;
@@ -53,6 +54,7 @@ type ModelDetail = ClientInfo & {
   region: string;
   status: string;
   requiredSex?: string;
+  requiredCount?: number;
   ageMin?: number;
   ageMax?: number;
   heightMin?: number;
@@ -75,6 +77,7 @@ type OtherDetail = ClientInfo & {
   region: string;
   status: string;
   requiredSex?: string;
+  requiredCount?: number;
   payment?: number;
   payType?: string;
   shootDate?: string;
@@ -546,6 +549,10 @@ export default function JobDetailPage({
                         ? "여성"
                         : "무관"
                   }
+                />
+                <InfoRow
+                  label="섭외 인원"
+                  value={detail.requiredCount != null ? `${detail.requiredCount}명` : "-"}
                 />
                 <InfoRow
                   label="보수"
