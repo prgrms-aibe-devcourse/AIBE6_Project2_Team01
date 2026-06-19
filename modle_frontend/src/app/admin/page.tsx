@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { HandleReportModal } from "@/components/admin/HandleReportModal";
 import { RejectReasonModal } from "@/components/admin/RejectReasonModal";
@@ -9,12 +9,11 @@ import {
   approveClient,
   getAdminReports,
   getNoShowReports,
-  getWarnedUsers,
   getPendingClients,
+  getWarnedUsers,
   handleAdminReport,
   rejectClient,
   suspendUser,
-  type AdminReportStatus,
   type AdminReportTargetType,
   type NoShowReportItem,
   type PendingClient,
@@ -22,7 +21,7 @@ import {
   type WarnedUserItem,
 } from "@/lib/api/admin";
 
-// ─── 상수 ────────────────────────────────────────────────────────
+// ─── 상수 ─────────────────────────────────────────────────────────
 const CLIENT_TYPE_LABEL: Record<string, string> = {
   INDIVIDUAL: "개인",
   ORGANIZATION: "법인",
@@ -32,7 +31,6 @@ const TARGET_TYPE_LABELS: Record<string, string> = {
   JOB_POSTING: "공고 신고",
   PROFILE: "프로필 신고",
   MESSAGE: "쪽지 신고",
-  NO_SHOW: "노쇼 신고",
 };
 
 const REASON_LABELS: Record<string, string> = {
@@ -41,18 +39,6 @@ const REASON_LABELS: Record<string, string> = {
   FRAUD: "사기",
   HARASSMENT: "괴롭힘",
   OTHER: "기타",
-};
-
-const STATUS_LABELS: Record<AdminReportStatus, string> = {
-  PENDING: "대기",
-  ACTIONED: "처리완료",
-  DISMISSED: "거절",
-};
-
-const STATUS_COLORS: Record<AdminReportStatus, string> = {
-  PENDING: "bg-amber-100 text-amber-700",
-  ACTIONED: "bg-green-100 text-green-700",
-  DISMISSED: "bg-gray-100 text-gray-500",
 };
 
 const USER_STATUS_LABELS: Record<string, string> = {
@@ -74,12 +60,11 @@ function formatDate(value?: string) {
   return new Date(value).toLocaleDateString("ko-KR");
 }
 
-// ─── 루트 페이지 ─────────────────────────────────────────────────
-type Tab = "clients" | "reports" | "general-reports" | "noshow" | "warnings";
+// ─── 루트 페이지 ──────────────────────────────────────────────────
+type Tab = "clients" | "general-reports" | "noshow" | "warnings";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "clients", label: "의뢰인 승인" },
-  { key: "reports", label: "신고 관리" },
   { key: "general-reports", label: "일반 신고" },
   { key: "noshow", label: "노쇼 신고" },
   { key: "warnings", label: "경고 유저" },
@@ -99,11 +84,13 @@ export default function AdminPage() {
     <main className="max-w-[1200px] mx-auto px-6 py-12">
       <header className="mb-8">
         <h1 className="text-display-lg text-ink">관리자 대시보드</h1>
-        <p className="text-body-lg text-body mt-1">플랫폼 의뢰인 승인 및 신고 처리를 관리합니다.</p>
+        <p className="text-body-lg text-body mt-1">
+          플랫폼 의뢰인 승인 및 신고 처리를 관리합니다.
+        </p>
       </header>
 
       {/* 탭 바 */}
-      <div className="flex gap-0 border-b border-hairline mb-8 overflow-x-auto">
+      <div className="flex border-b border-hairline mb-8 overflow-x-auto">
         {TABS.map(({ key, label }) => (
           <button
             key={key}
@@ -120,18 +107,22 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {activeTab === "clients" && <ClientsTab setToast={setToast} />}
-      {activeTab === "reports" && <ReportsTab setToast={setToast} />}
-      {activeTab === "general-reports" && <GeneralReportsTab setToast={setToast} />}
-      {activeTab === "noshow" && <NoShowTab setToast={setToast} />}
-      {activeTab === "warnings" && <WarningsTab setToast={setToast} />}
+      {/* 콘텐츠 — min-h로 탭 전환 시 높이 흔들림 방지 */}
+      <div className="min-h-[480px]">
+        {activeTab === "clients" && <ClientsTab setToast={setToast} />}
+        {activeTab === "general-reports" && (
+          <GeneralReportsTab setToast={setToast} />
+        )}
+        {activeTab === "noshow" && <NoShowTab setToast={setToast} />}
+        {activeTab === "warnings" && <WarningsTab setToast={setToast} />}
+      </div>
 
       {toast && <Toast toast={toast} />}
     </main>
   );
 }
 
-// ─── 의뢰인 승인 탭 ──────────────────────────────────────────────
+// ─── 의뢰인 승인 탭 ───────────────────────────────────────────────
 function ClientsTab({ setToast }: { setToast: (t: ToastState) => void }) {
   const [clients, setClients] = useState<PendingClient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -141,16 +132,25 @@ function ClientsTab({ setToast }: { setToast: (t: ToastState) => void }) {
   useEffect(() => {
     let active = true;
     getPendingClients()
-      .then((data) => { if (active) setClients(data); })
+      .then((data) => {
+        if (active) setClients(data);
+      })
       .catch((error: unknown) => {
         if (!active) return;
         setToast({
           type: "error",
-          message: error instanceof Error ? error.message : "승인 대기 목록을 불러오는데 실패했습니다.",
+          message:
+            error instanceof Error
+              ? error.message
+              : "승인 대기 목록을 불러오는데 실패했습니다.",
         });
       })
-      .finally(() => { if (active) setIsLoading(false); });
-    return () => { active = false; };
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [setToast]);
 
   const handleApprove = async (userId: number) => {
@@ -162,7 +162,8 @@ function ClientsTab({ setToast }: { setToast: (t: ToastState) => void }) {
     } catch (error) {
       setToast({
         type: "error",
-        message: error instanceof Error ? error.message : "승인에 실패했습니다.",
+        message:
+          error instanceof Error ? error.message : "승인에 실패했습니다.",
       });
     } finally {
       setProcessingId(null);
@@ -181,19 +182,24 @@ function ClientsTab({ setToast }: { setToast: (t: ToastState) => void }) {
     } catch (error) {
       setToast({
         type: "error",
-        message: error instanceof Error ? error.message : "반려에 실패했습니다.",
+        message:
+          error instanceof Error ? error.message : "반려에 실패했습니다.",
       });
     } finally {
       setProcessingId(null);
     }
   };
 
-  if (isLoading) return <div className="py-20 text-center text-[15px] text-mute">로딩 중...</div>;
-
+  if (isLoading)
+    return (
+      <div className="py-20 text-center text-[15px] text-mute">로딩 중...</div>
+    );
   if (clients.length === 0) {
     return (
       <div className="py-20 text-center bg-canvas-soft rounded-lg border border-hairline">
-        <p className="text-body-md text-mute">승인 대기 중인 의뢰인이 없습니다.</p>
+        <p className="text-body-md text-mute">
+          승인 대기 중인 의뢰인이 없습니다.
+        </p>
       </div>
     );
   }
@@ -217,22 +223,31 @@ function ClientsTab({ setToast }: { setToast: (t: ToastState) => void }) {
             {clients.map((c) => {
               const isProcessing = processingId === c.userId;
               return (
-                <tr key={c.userId} className="border-b border-hairline last:border-b-0">
+                <tr
+                  key={c.userId}
+                  className="border-b border-hairline last:border-b-0"
+                >
                   <td className="px-4 py-3 text-ink">{c.email}</td>
                   <td className="px-4 py-3 text-ink">{c.companyName}</td>
                   <td className="px-4 py-3 text-body">{c.companyNumber}</td>
                   <td className="px-4 py-3 text-body">
-                    {c.clientType ? CLIENT_TYPE_LABEL[c.clientType] ?? c.clientType : "-"}
+                    {c.clientType
+                      ? (CLIENT_TYPE_LABEL[c.clientType] ?? c.clientType)
+                      : "-"}
                   </td>
                   <td className="px-4 py-3 text-body">{c.region}</td>
-                  <td className="px-4 py-3 text-body">{formatDate(c.createdDate)}</td>
+                  <td className="px-4 py-3 text-body">
+                    {formatDate(c.createdDate)}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={() => c.userId !== undefined && handleApprove(c.userId)}
+                        onClick={() =>
+                          c.userId !== undefined && handleApprove(c.userId)
+                        }
                         disabled={isProcessing}
-                        className="h-9 rounded-md bg-primary px-3 text-[13px] font-semibold leading-5 text-on-primary transition hover:bg-primary-hover disabled:opacity-50"
+                        className="h-9 rounded-md bg-primary px-3 text-[13px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:opacity-50"
                       >
                         승인
                       </button>
@@ -240,7 +255,7 @@ function ClientsTab({ setToast }: { setToast: (t: ToastState) => void }) {
                         type="button"
                         onClick={() => setRejectTarget(c)}
                         disabled={isProcessing}
-                        className="h-9 rounded-md border border-hairline-strong bg-surface px-3 text-[13px] font-semibold leading-5 text-ink transition hover:border-ink disabled:opacity-50"
+                        className="h-9 rounded-md border border-hairline-strong bg-surface px-3 text-[13px] font-semibold text-ink transition hover:border-ink disabled:opacity-50"
                       >
                         반려
                       </button>
@@ -252,7 +267,6 @@ function ClientsTab({ setToast }: { setToast: (t: ToastState) => void }) {
           </tbody>
         </table>
       </div>
-
       {rejectTarget && (
         <RejectReasonModal
           isSubmitting={processingId === rejectTarget.userId}
@@ -264,196 +278,47 @@ function ClientsTab({ setToast }: { setToast: (t: ToastState) => void }) {
   );
 }
 
-// ─── 신고 관리 탭 (기존) ──────────────────────────────────────────
-function ReportsTab({ setToast }: { setToast: (t: ToastState) => void }) {
+// ─── 일반 신고 탭 (노쇼 제외, PENDING) ───────────────────────────
+function GeneralReportsTab({
+  setToast,
+}: {
+  setToast: (t: ToastState) => void;
+}) {
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filterTargetType, setFilterTargetType] = useState<AdminReportTargetType | "">("");
-  const [filterStatus, setFilterStatus] = useState<AdminReportStatus | "">("");
-  const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const [processingId, setProcessingId] = useState<number | null>(null);
-  const [handleTarget, setHandleTarget] = useState<ReportItem | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  useEffect(() => {
-    let active = true;
-    setIsLoading(true);
-    getAdminReports(filterTargetType || undefined, filterStatus || undefined, page)
-      .then((result) => {
-        if (!active) return;
-        setReports(result.content);
-        setTotalPages(result.totalPages);
-      })
-      .catch((error: unknown) => {
-        if (!active) return;
-        setToast({
-          type: "error",
-          message: error instanceof Error ? error.message : "신고 목록을 불러오는데 실패했습니다.",
-        });
-      })
-      .finally(() => { if (active) setIsLoading(false); });
-    return () => { active = false; };
-  }, [filterTargetType, filterStatus, page, refreshKey, setToast]);
-
-  const handleProcess = async (accepted: boolean, dismissReason?: string) => {
-    const reportId = handleTarget?.id;
-    if (reportId === undefined) return;
-    setProcessingId(reportId);
-    try {
-      await handleAdminReport(reportId, accepted, dismissReason);
-      setToast({
-        type: "success",
-        message: accepted ? "신고를 수락했습니다." : "신고를 거절했습니다.",
-      });
-      setHandleTarget(null);
-      setRefreshKey((k) => k + 1);
-    } catch (error) {
-      setToast({
-        type: "error",
-        message: error instanceof Error ? error.message : "신고 처리에 실패했습니다.",
-      });
-    } finally {
-      setProcessingId(null);
-    }
-  };
-
-  return (
-    <>
-      <div className="flex flex-wrap gap-3 mb-5">
-        <select
-          value={filterTargetType}
-          onChange={(e) => { setFilterTargetType(e.target.value as AdminReportTargetType | ""); setPage(0); }}
-          className="rounded-md border border-hairline bg-surface px-3 py-2 text-[13px] text-ink focus:border-primary focus:outline-none"
-        >
-          <option value="">전체 유형</option>
-          <option value="JOB_POSTING">공고</option>
-          <option value="PROFILE">프로필</option>
-          <option value="MESSAGE">쪽지</option>
-        </select>
-        <select
-          value={filterStatus}
-          onChange={(e) => { setFilterStatus(e.target.value as AdminReportStatus | ""); setPage(0); }}
-          className="rounded-md border border-hairline bg-surface px-3 py-2 text-[13px] text-ink focus:border-primary focus:outline-none"
-        >
-          <option value="">전체 상태</option>
-          <option value="PENDING">대기</option>
-          <option value="ACTIONED">처리완료</option>
-          <option value="DISMISSED">거절</option>
-        </select>
-      </div>
-
-      {isLoading ? (
-        <div className="py-20 text-center text-[15px] text-mute">로딩 중...</div>
-      ) : reports.length === 0 ? (
-        <div className="py-20 text-center bg-canvas-soft rounded-lg border border-hairline">
-          <p className="text-body-md text-mute">신고 내역이 없습니다.</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto rounded-lg border border-hairline">
-          <table className="w-full min-w-[960px] text-left text-[14px] leading-5">
-            <thead>
-              <tr className="border-b border-hairline bg-canvas-soft text-mute">
-                <th className="px-4 py-3 font-semibold">유형</th>
-                <th className="px-4 py-3 font-semibold">대상 ID</th>
-                <th className="px-4 py-3 font-semibold">신고자 ID</th>
-                <th className="px-4 py-3 font-semibold">사유</th>
-                <th className="px-4 py-3 font-semibold">내용</th>
-                <th className="px-4 py-3 font-semibold">상태</th>
-                <th className="px-4 py-3 font-semibold">신고일</th>
-                <th className="px-4 py-3 font-semibold">처리</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reports.map((r) => (
-                <tr key={r.id} className="border-b border-hairline last:border-b-0 hover:bg-canvas-soft/50">
-                  <td className="px-4 py-3 font-medium text-ink whitespace-nowrap">
-                    {TARGET_TYPE_LABELS[r.targetType] ?? r.targetType}
-                  </td>
-                  <td className="px-4 py-3 text-body">{r.targetId}</td>
-                  <td className="px-4 py-3 text-body">{r.reporterId}</td>
-                  <td className="px-4 py-3 text-body whitespace-nowrap">
-                    {REASON_LABELS[r.reason] ?? r.reason}
-                  </td>
-                  <td className="px-4 py-3 text-body max-w-[200px]">
-                    <span className="block truncate" title={r.description}>{r.description || "-"}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${STATUS_COLORS[r.status] ?? "bg-canvas-soft text-body"}`}>
-                      {STATUS_LABELS[r.status] ?? r.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-body whitespace-nowrap">{formatDate(r.createdDate)}</td>
-                  <td className="px-4 py-3">
-                    {r.status === "PENDING" ? (
-                      <button
-                        type="button"
-                        onClick={() => setHandleTarget(r)}
-                        disabled={processingId === r.id}
-                        className="h-8 rounded-md bg-primary px-3 text-[13px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:opacity-50"
-                      >
-                        처리
-                      </button>
-                    ) : (
-                      <span className="text-[13px] text-mute">완료</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-center gap-4">
-          <button type="button" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}
-            className="rounded-md border border-hairline px-4 py-2 text-[13px] font-semibold text-ink disabled:opacity-40 hover:bg-canvas-soft transition">
-            이전
-          </button>
-          <span className="text-[13px] text-mute">{page + 1} / {totalPages}</span>
-          <button type="button" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
-            className="rounded-md border border-hairline px-4 py-2 text-[13px] font-semibold text-ink disabled:opacity-40 hover:bg-canvas-soft transition">
-            다음
-          </button>
-        </div>
-      )}
-
-      {handleTarget && (
-        <HandleReportModal
-          report={handleTarget}
-          isSubmitting={processingId === handleTarget.id}
-          onClose={() => setHandleTarget(null)}
-          onConfirm={handleProcess}
-        />
-      )}
-    </>
-  );
-}
-
-// ─── 일반 신고 탭 (PENDING 중심, 인라인 처리) ────────────────────
-function GeneralReportsTab({ setToast }: { setToast: (t: ToastState) => void }) {
-  const [reports, setReports] = useState<ReportItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [filterTargetType, setFilterTargetType] = useState<AdminReportTargetType | "">("");
+  const [filterTargetType, setFilterTargetType] = useState<
+    AdminReportTargetType | ""
+  >("");
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [dismissTarget, setDismissTarget] = useState<number | null>(null);
   const [dismissReason, setDismissReason] = useState("");
+  const [handleTarget, setHandleTarget] = useState<ReportItem | null>(null);
 
   const load = () => {
     setIsLoading(true);
-    getAdminReports(filterTargetType || undefined, "PENDING", 0, 50)
-      .then((result) => setReports(result.content))
+    getAdminReports(filterTargetType || undefined, "PENDING", 0, 100)
+      .then((result) => {
+        // NO_SHOW는 노쇼 탭에서만 처리
+        setReports(
+          result.content.filter((r) => r.targetType !== ("NO_SHOW" as string)),
+        );
+      })
       .catch((error: unknown) => {
         setToast({
           type: "error",
-          message: error instanceof Error ? error.message : "신고 목록을 불러오는데 실패했습니다.",
+          message:
+            error instanceof Error
+              ? error.message
+              : "신고 목록을 불러오는데 실패했습니다.",
         });
       })
       .finally(() => setIsLoading(false));
   };
 
-  useEffect(() => { load(); }, [filterTargetType]); // eslint-disable-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    load();
+  }, [filterTargetType]);
 
   const handleAccept = async (reportId: number) => {
     setProcessingId(reportId);
@@ -462,7 +327,11 @@ function GeneralReportsTab({ setToast }: { setToast: (t: ToastState) => void }) 
       setReports((prev) => prev.filter((r) => r.id !== reportId));
       setToast({ type: "success", message: "신고를 수락했습니다." });
     } catch (error) {
-      setToast({ type: "error", message: error instanceof Error ? error.message : "처리에 실패했습니다." });
+      setToast({
+        type: "error",
+        message:
+          error instanceof Error ? error.message : "처리에 실패했습니다.",
+      });
     } finally {
       setProcessingId(null);
     }
@@ -478,7 +347,11 @@ function GeneralReportsTab({ setToast }: { setToast: (t: ToastState) => void }) 
       setDismissTarget(null);
       setDismissReason("");
     } catch (error) {
-      setToast({ type: "error", message: error instanceof Error ? error.message : "처리에 실패했습니다." });
+      setToast({
+        type: "error",
+        message:
+          error instanceof Error ? error.message : "처리에 실패했습니다.",
+      });
     } finally {
       setProcessingId(null);
     }
@@ -490,7 +363,9 @@ function GeneralReportsTab({ setToast }: { setToast: (t: ToastState) => void }) 
       {dismissTarget !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-lg border border-hairline bg-surface p-6 shadow-xl">
-            <h3 className="mb-4 text-[16px] font-bold text-ink">신고 거절 사유</h3>
+            <h3 className="mb-4 text-[16px] font-bold text-ink">
+              신고 거절 사유
+            </h3>
             <textarea
               rows={4}
               value={dismissReason}
@@ -501,7 +376,10 @@ function GeneralReportsTab({ setToast }: { setToast: (t: ToastState) => void }) 
             <div className="mt-4 flex gap-2">
               <button
                 type="button"
-                onClick={() => { setDismissTarget(null); setDismissReason(""); }}
+                onClick={() => {
+                  setDismissTarget(null);
+                  setDismissReason("");
+                }}
                 className="h-10 flex-1 rounded-md border border-hairline bg-surface text-[13px] font-semibold text-ink transition hover:border-hairline-strong"
               >
                 취소
@@ -509,7 +387,9 @@ function GeneralReportsTab({ setToast }: { setToast: (t: ToastState) => void }) 
               <button
                 type="button"
                 onClick={handleDismiss}
-                disabled={!dismissReason.trim() || processingId === dismissTarget}
+                disabled={
+                  !dismissReason.trim() || processingId === dismissTarget
+                }
                 className="h-10 flex-1 rounded-md bg-error px-4 text-[13px] font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
               >
                 {processingId === dismissTarget ? "처리 중..." : "거절 확정"}
@@ -519,10 +399,30 @@ function GeneralReportsTab({ setToast }: { setToast: (t: ToastState) => void }) 
         </div>
       )}
 
+      {/* HandleReport 모달 */}
+      {handleTarget && (
+        <HandleReportModal
+          report={handleTarget}
+          isSubmitting={processingId === handleTarget.id}
+          onClose={() => setHandleTarget(null)}
+          onConfirm={async (accepted, reason) => {
+            if (accepted) {
+              await handleAccept(handleTarget.id);
+            } else {
+              setDismissTarget(handleTarget.id);
+              setDismissReason(reason ?? "");
+              setHandleTarget(null);
+            }
+          }}
+        />
+      )}
+
       <div className="mb-5">
         <select
           value={filterTargetType}
-          onChange={(e) => setFilterTargetType(e.target.value as AdminReportTargetType | "")}
+          onChange={(e) =>
+            setFilterTargetType(e.target.value as AdminReportTargetType | "")
+          }
           className="rounded-md border border-hairline bg-surface px-3 py-2 text-[13px] text-ink focus:border-primary focus:outline-none"
         >
           <option value="">전체 유형</option>
@@ -533,7 +433,9 @@ function GeneralReportsTab({ setToast }: { setToast: (t: ToastState) => void }) 
       </div>
 
       {isLoading ? (
-        <div className="py-20 text-center text-[15px] text-mute">로딩 중...</div>
+        <div className="py-20 text-center text-[15px] text-mute">
+          로딩 중...
+        </div>
       ) : reports.length === 0 ? (
         <div className="py-20 text-center bg-canvas-soft rounded-lg border border-hairline">
           <p className="text-body-md text-mute">처리할 신고가 없습니다.</p>
@@ -541,18 +443,27 @@ function GeneralReportsTab({ setToast }: { setToast: (t: ToastState) => void }) 
       ) : (
         <div className="space-y-3">
           {reports.map((r) => (
-            <div key={r.id} className="rounded-lg border border-hairline bg-surface p-4">
+            <div
+              key={r.id}
+              className="rounded-lg border border-hairline bg-surface p-4"
+            >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 space-y-1 text-[13px]">
                   <div className="flex flex-wrap gap-x-4 gap-y-1">
                     <span className="font-semibold text-ink">
                       {TARGET_TYPE_LABELS[r.targetType] ?? r.targetType}
                     </span>
-                    <span className="text-mute">사유: {REASON_LABELS[r.reason] ?? r.reason}</span>
-                    <span className="text-mute">신고일: {formatDate(r.createdDate)}</span>
+                    <span className="text-mute">
+                      사유: {REASON_LABELS[r.reason] ?? r.reason}
+                    </span>
+                    <span className="text-mute">
+                      신고일: {formatDate(r.createdDate)}
+                    </span>
                   </div>
                   {r.description && (
-                    <p className="text-body mt-1 line-clamp-2">{r.description}</p>
+                    <p className="text-body mt-1 line-clamp-2">
+                      {r.description}
+                    </p>
                   )}
                 </div>
                 <div className="flex shrink-0 gap-2">
@@ -566,7 +477,10 @@ function GeneralReportsTab({ setToast }: { setToast: (t: ToastState) => void }) 
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setDismissTarget(r.id); setDismissReason(""); }}
+                    onClick={() => {
+                      setDismissTarget(r.id);
+                      setDismissReason("");
+                    }}
                     disabled={processingId === r.id}
                     className="h-8 rounded-md border border-hairline-strong bg-surface px-3 text-[13px] font-semibold text-ink transition hover:border-ink disabled:opacity-50"
                   >
@@ -587,18 +501,32 @@ function NoShowTab({ setToast }: { setToast: (t: ToastState) => void }) {
   const [reports, setReports] = useState<NoShowReportItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [processingId, setProcessingId] = useState<number | null>(null);
-  const [confirmTarget, setConfirmTarget] = useState<NoShowReportItem | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<NoShowReportItem | null>(
+    null,
+  );
 
   useEffect(() => {
     let active = true;
     getNoShowReports()
-      .then((data) => { if (active) setReports(data); })
+      .then((data) => {
+        if (active) setReports(data);
+      })
       .catch((error: unknown) => {
         if (!active) return;
-        setToast({ type: "error", message: error instanceof Error ? error.message : "노쇼 신고 목록을 불러오는데 실패했습니다." });
+        setToast({
+          type: "error",
+          message:
+            error instanceof Error
+              ? error.message
+              : "노쇼 신고 목록을 불러오는데 실패했습니다.",
+        });
       })
-      .finally(() => { if (active) setIsLoading(false); });
-    return () => { active = false; };
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [setToast]);
 
   const handleSuspend = async () => {
@@ -606,11 +534,22 @@ function NoShowTab({ setToast }: { setToast: (t: ToastState) => void }) {
     setProcessingId(confirmTarget.modelUserId);
     try {
       await suspendUser(confirmTarget.modelUserId);
-      setReports((prev) => prev.filter((r) => r.reportId !== confirmTarget.reportId));
-      setToast({ type: "success", message: `${confirmTarget.modelName} 계정이 정지되었습니다.` });
+      // 신고 자체도 ACTIONED 처리 → 재조회 시 PENDING 목록에서 제외됨
+      await handleAdminReport(confirmTarget.reportId, true);
+      setReports((prev) =>
+        prev.filter((r) => r.reportId !== confirmTarget.reportId),
+      );
+      setToast({
+        type: "success",
+        message: `${confirmTarget.modelName} 계정이 정지되었습니다.`,
+      });
       setConfirmTarget(null);
     } catch (error) {
-      setToast({ type: "error", message: error instanceof Error ? error.message : "계정 정지에 실패했습니다." });
+      setToast({
+        type: "error",
+        message:
+          error instanceof Error ? error.message : "계정 정지에 실패했습니다.",
+      });
     } finally {
       setProcessingId(null);
     }
@@ -618,24 +557,38 @@ function NoShowTab({ setToast }: { setToast: (t: ToastState) => void }) {
 
   return (
     <>
-      {/* 정지 확인 모달 */}
       {confirmTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm rounded-lg border border-hairline bg-surface p-6 shadow-xl">
-            <h3 className="mb-2 text-[16px] font-bold text-ink">계정 정지 확인</h3>
+            <h3 className="mb-2 text-[16px] font-bold text-ink">
+              계정 정지 확인
+            </h3>
             <p className="mb-1 text-[14px] text-body">
-              <span className="font-semibold text-ink">{confirmTarget.modelName}</span> 모델의 계정을 정지하시겠습니까?
+              <span className="font-semibold text-ink">
+                {confirmTarget.modelName}
+              </span>{" "}
+              모델의 계정을 정지하시겠습니까?
             </p>
-            <p className="mb-5 text-[13px] text-mute">현재 경고 횟수: {confirmTarget.warningCount}회</p>
+            <p className="mb-5 text-[13px] text-mute">
+              현재 경고 횟수: {confirmTarget.warningCount}회
+            </p>
             <div className="flex gap-2">
-              <button type="button" onClick={() => setConfirmTarget(null)}
-                className="h-10 flex-1 rounded-md border border-hairline bg-surface text-[13px] font-semibold text-ink transition hover:border-hairline-strong">
+              <button
+                type="button"
+                onClick={() => setConfirmTarget(null)}
+                className="h-10 flex-1 rounded-md border border-hairline bg-surface text-[13px] font-semibold text-ink transition hover:border-hairline-strong"
+              >
                 취소
               </button>
-              <button type="button" onClick={handleSuspend}
+              <button
+                type="button"
+                onClick={handleSuspend}
                 disabled={processingId === confirmTarget.modelUserId}
-                className="h-10 flex-1 rounded-md bg-error px-4 text-[13px] font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
-                {processingId === confirmTarget.modelUserId ? "처리 중..." : "정지 확인"}
+                className="h-10 flex-1 rounded-md bg-error px-4 text-[13px] font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+              >
+                {processingId === confirmTarget.modelUserId
+                  ? "처리 중..."
+                  : "정지 확인"}
               </button>
             </div>
           </div>
@@ -643,7 +596,9 @@ function NoShowTab({ setToast }: { setToast: (t: ToastState) => void }) {
       )}
 
       {isLoading ? (
-        <div className="py-20 text-center text-[15px] text-mute">로딩 중...</div>
+        <div className="py-20 text-center text-[15px] text-mute">
+          로딩 중...
+        </div>
       ) : reports.length === 0 ? (
         <div className="py-20 text-center bg-canvas-soft rounded-lg border border-hairline">
           <p className="text-body-md text-mute">노쇼 신고가 없습니다.</p>
@@ -661,14 +616,21 @@ function NoShowTab({ setToast }: { setToast: (t: ToastState) => void }) {
             </thead>
             <tbody>
               {reports.map((r) => (
-                <tr key={r.reportId} className="border-b border-hairline last:border-b-0 hover:bg-canvas-soft/50">
-                  <td className="px-4 py-3 font-medium text-ink">{r.modelName}</td>
+                <tr
+                  key={r.reportId}
+                  className="border-b border-hairline last:border-b-0 hover:bg-canvas-soft/50"
+                >
+                  <td className="px-4 py-3 font-medium text-ink">
+                    {r.modelName}
+                  </td>
                   <td className="px-4 py-3">
                     <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-[12px] font-semibold text-amber-700">
                       {r.warningCount}회
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-body whitespace-nowrap">{formatDate(r.reportedAt)}</td>
+                  <td className="px-4 py-3 text-body whitespace-nowrap">
+                    {formatDate(r.reportedAt)}
+                  </td>
                   <td className="px-4 py-3">
                     <button
                       type="button"
@@ -697,19 +659,33 @@ function WarningsTab({ setToast }: { setToast: (t: ToastState) => void }) {
   const [inputCount, setInputCount] = useState("3");
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [suspendedIds, setSuspendedIds] = useState<Set<number>>(new Set());
-  const [confirmTarget, setConfirmTarget] = useState<WarnedUserItem | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<WarnedUserItem | null>(
+    null,
+  );
 
   useEffect(() => {
     let active = true;
     setIsLoading(true);
     getWarnedUsers(minCount)
-      .then((data) => { if (active) setUsers(data); })
+      .then((data) => {
+        if (active) setUsers(data);
+      })
       .catch((error: unknown) => {
         if (!active) return;
-        setToast({ type: "error", message: error instanceof Error ? error.message : "경고 유저 목록을 불러오는데 실패했습니다." });
+        setToast({
+          type: "error",
+          message:
+            error instanceof Error
+              ? error.message
+              : "경고 유저 목록을 불러오는데 실패했습니다.",
+        });
       })
-      .finally(() => { if (active) setIsLoading(false); });
-    return () => { active = false; };
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [minCount, setToast]);
 
   const handleSuspend = async () => {
@@ -721,7 +697,11 @@ function WarningsTab({ setToast }: { setToast: (t: ToastState) => void }) {
       setToast({ type: "success", message: "계정이 정지되었습니다." });
       setConfirmTarget(null);
     } catch (error) {
-      setToast({ type: "error", message: error instanceof Error ? error.message : "계정 정지에 실패했습니다." });
+      setToast({
+        type: "error",
+        message:
+          error instanceof Error ? error.message : "계정 정지에 실패했습니다.",
+      });
     } finally {
       setProcessingId(null);
     }
@@ -734,22 +714,33 @@ function WarningsTab({ setToast }: { setToast: (t: ToastState) => void }) {
 
   return (
     <>
-      {/* 정지 확인 모달 */}
       {confirmTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm rounded-lg border border-hairline bg-surface p-6 shadow-xl">
-            <h3 className="mb-2 text-[16px] font-bold text-ink">계정 정지 확인</h3>
+            <h3 className="mb-2 text-[16px] font-bold text-ink">
+              계정 정지 확인
+            </h3>
             <p className="mb-5 text-[14px] text-body">
-              유저 ID <span className="font-semibold text-ink">#{confirmTarget.id}</span>의 계정을 정지하시겠습니까?
+              유저 ID{" "}
+              <span className="font-semibold text-ink">
+                #{confirmTarget.id}
+              </span>
+              의 계정을 정지하시겠습니까?
             </p>
             <div className="flex gap-2">
-              <button type="button" onClick={() => setConfirmTarget(null)}
-                className="h-10 flex-1 rounded-md border border-hairline bg-surface text-[13px] font-semibold text-ink transition hover:border-hairline-strong">
+              <button
+                type="button"
+                onClick={() => setConfirmTarget(null)}
+                className="h-10 flex-1 rounded-md border border-hairline bg-surface text-[13px] font-semibold text-ink transition hover:border-hairline-strong"
+              >
                 취소
               </button>
-              <button type="button" onClick={handleSuspend}
+              <button
+                type="button"
+                onClick={handleSuspend}
                 disabled={processingId === confirmTarget.id}
-                className="h-10 flex-1 rounded-md bg-error px-4 text-[13px] font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
+                className="h-10 flex-1 rounded-md bg-error px-4 text-[13px] font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+              >
                 {processingId === confirmTarget.id ? "처리 중..." : "정지 확인"}
               </button>
             </div>
@@ -757,9 +748,10 @@ function WarningsTab({ setToast }: { setToast: (t: ToastState) => void }) {
         </div>
       )}
 
-      {/* 필터 */}
       <div className="mb-5 flex items-center gap-3">
-        <label className="text-[13px] font-semibold text-ink">경고 횟수 기준:</label>
+        <label className="text-[13px] font-semibold text-ink">
+          경고 횟수 기준:
+        </label>
         <input
           type="number"
           min={0}
@@ -778,13 +770,10 @@ function WarningsTab({ setToast }: { setToast: (t: ToastState) => void }) {
         </button>
       </div>
 
-      {/* 백엔드 제약 안내 */}
-      <p className="mb-4 rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-[12px] text-amber-700">
-        ※ 현재 백엔드 응답에 이름·이메일·경고 횟수가 포함되지 않습니다. 백엔드 수정 후 상세 정보 표시 가능합니다.
-      </p>
-
       {isLoading ? (
-        <div className="py-20 text-center text-[15px] text-mute">로딩 중...</div>
+        <div className="py-20 text-center text-[15px] text-mute">
+          로딩 중...
+        </div>
       ) : users.length === 0 ? (
         <div className="py-20 text-center bg-canvas-soft rounded-lg border border-hairline">
           <p className="text-body-md text-mute">해당 조건의 유저가 없습니다.</p>
@@ -803,19 +792,33 @@ function WarningsTab({ setToast }: { setToast: (t: ToastState) => void }) {
             </thead>
             <tbody>
               {users.map((u) => {
-                const isSuspended = u.status === "SUSPENDED" || suspendedIds.has(u.id);
+                const isSuspended =
+                  u.status === "SUSPENDED" || suspendedIds.has(u.id);
                 return (
-                  <tr key={u.id} className="border-b border-hairline last:border-b-0 hover:bg-canvas-soft/50">
-                    <td className="px-4 py-3 text-ink font-medium">#{u.id}</td>
-                    <td className="px-4 py-3 text-body">{ROLE_LABELS[u.role] ?? u.role}</td>
+                  <tr
+                    key={u.id}
+                    className="border-b border-hairline last:border-b-0 hover:bg-canvas-soft/50"
+                  >
+                    <td className="px-4 py-3 font-medium text-ink">#{u.id}</td>
+                    <td className="px-4 py-3 text-body">
+                      {ROLE_LABELS[u.role] ?? u.role}
+                    </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${
-                        isSuspended ? "bg-red-100 text-red-600" : "bg-green-100 text-green-700"
-                      }`}>
-                        {isSuspended ? "정지" : (USER_STATUS_LABELS[u.status] ?? u.status)}
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${
+                          isSuspended
+                            ? "bg-red-100 text-red-600"
+                            : "bg-green-100 text-green-700"
+                        }`}
+                      >
+                        {isSuspended
+                          ? "정지"
+                          : (USER_STATUS_LABELS[u.status] ?? u.status)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-body whitespace-nowrap">{formatDate(u.createDate)}</td>
+                    <td className="px-4 py-3 text-body whitespace-nowrap">
+                      {formatDate(u.createDate)}
+                    </td>
                     <td className="px-4 py-3">
                       <button
                         type="button"
