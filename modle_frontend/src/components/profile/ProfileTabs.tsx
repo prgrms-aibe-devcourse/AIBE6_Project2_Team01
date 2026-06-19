@@ -14,6 +14,8 @@ const DEFAULT_TABS: TabItem[] = [
   { id: 'portfolio', label: '포트폴리오' },
   { id: 'applications', label: '지원한 공고' },
   { id: 'favorites', label: '즐겨찾기' },
+  { id: 'career', label: '경력' },
+  { id: 'reviews', label: '리뷰' },
   { id: 'contracts', label: '계약 내역' },
 ];
 

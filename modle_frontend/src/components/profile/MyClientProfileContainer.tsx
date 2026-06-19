@@ -4,9 +4,11 @@ import { ClientProfileInfo } from '@/components/profile/ClientProfileInfo';
 import { ClientProfileHeader } from '@/components/profile/ClientProfileHeader';
 import { BookmarkedModels } from '@/components/profile/BookmarkedModels';
 import { MyJobPostings } from '@/components/profile/MyJobPostings';
+import { ReviewList } from '@/components/review/ReviewList';
 import { ProfileTabs } from '@/components/profile/ProfileTabs';
 import { Client } from '@/types/client';
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Props {
   initialData: Client;
@@ -14,11 +16,13 @@ interface Props {
 
 export function MyClientProfileContainer({ initialData }: Props) {
   const [activeTab, setActiveTab] = useState('profile');
+  const { user } = useAuth();
 
   const CLIENT_TABS = [
     { id: 'profile', label: '의뢰인 정보' },
     { id: 'jobs', label: '등록한 공고' },
     { id: 'favorites', label: '관심 모델' },
+    { id: 'reviews', label: '리뷰' },
     { id: 'contracts', label: '계약 내역' },
   ];
 
@@ -44,6 +48,9 @@ export function MyClientProfileContainer({ initialData }: Props) {
         {activeTab === 'favorites' && <BookmarkedModels />}
 
         {activeTab === 'jobs' && <MyJobPostings />}
+        {activeTab === 'reviews' && user?.id && (
+          <ReviewList targetUserId={user.id} totalCount={initialData.reviewCount} />
+        )}
 
         {/* 임시 처리 (나머지 탭) */}
         {['contracts'].includes(activeTab) && (

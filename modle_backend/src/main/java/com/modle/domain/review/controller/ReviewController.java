@@ -12,6 +12,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/reviews")
@@ -31,5 +33,14 @@ public class ReviewController {
                 "리뷰가 작성되었습니다.",
                 reviewService.createReview(securityUser.getId(), request)
         );
+    }
+
+    // 특정 유저가 받은 리뷰 목록
+    @GetMapping("/users/{userId}/reviews")
+    public ApiResponse<List<ReviewResponse>> getReviews(
+            @PathVariable Long userId
+    ) {
+        return new ApiResponse<>("200-1", "리뷰 목록 조회 성공",
+                reviewService.getReviews(userId));
     }
 }

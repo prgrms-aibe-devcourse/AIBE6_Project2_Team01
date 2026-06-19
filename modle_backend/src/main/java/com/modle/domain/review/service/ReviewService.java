@@ -20,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -76,6 +78,14 @@ public class ReviewService {
         updateRating(reviewerRole, application, jobPosting, request.rating());
 
         return ReviewResponse.from(review);
+    }
+
+    // 받은 리뷰 목록 조회
+    public List<ReviewResponse> getReviews(Long targetUserId) {
+        return reviewRepository.findByTargetIdOrderByCreatedDateDesc(targetUserId)
+                .stream()
+                .map(ReviewResponse::from)
+                .toList();
     }
 
     private ReviewerRole determineReviewerRole(Long userId, Application application,

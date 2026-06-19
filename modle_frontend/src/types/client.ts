@@ -1,5 +1,6 @@
 export interface Client {
   id: number;
+  userId?: number;
   createdDate?: string;
   modifiedDate?: string;
   clientType: string;
