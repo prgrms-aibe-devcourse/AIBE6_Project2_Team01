@@ -6,15 +6,17 @@ import com.modle.domain.jobposting.dto.request.JobPostingCreateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingStatusUpdateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
 import com.modle.domain.jobposting.dto.response.*;
-import com.modle.domain.jobposting.entity.type.Category;
 import com.modle.domain.jobposting.entity.JobPosting;
+import com.modle.domain.jobposting.entity.type.Category;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
-import com.modle.global.entity.type.Region;
 import com.modle.domain.jobposting.entity.type.ViewerType;
-import com.modle.global.exception.CustomException;
-import com.modle.global.exception.ErrorCode;
 import com.modle.domain.jobposting.event.JobPostingCreatedEvent;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
+import com.modle.domain.user.entity.Client;
+import com.modle.domain.user.repository.ClientRepository;
+import com.modle.global.entity.type.Region;
+import com.modle.global.exception.CustomException;
+import com.modle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +35,7 @@ public class JobPostingService {
     private final JobPostingRepository jobPostingRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final ApplicationRepository applicationRepository;
+    private final ClientRepository clientRepository;
 
 
     // JOB-002: 공고를 저장하고(상태=모집 중) AI 모델 추천을 비동기로 트리거한다.
@@ -139,9 +143,55 @@ public class JobPostingService {
             throw new CustomException(ErrorCode.JOB_POSTING_INVALID_STATUS_TRANSITION);
         }
 
+        // SHOOTING 상태에서 직접 종료 시 활성 지원(SHOOTING/ON_HOLD)이 있으면 차단
+        Set<JobPostingStatus> directTerminalFromShooting = Set.of(JobPostingStatus.CANCELLED, JobPostingStatus.COMPLETED);
+        if (jobPosting.getStatus() == JobPostingStatus.SHOOTING
+                && directTerminalFromShooting.contains(request.status())) {
+            boolean hasActive = applicationRepository.existsByJobPostingIdAndStatusIn(
+                    jobPostingId,
+                    List.of(ApplicationStatus.SHOOTING, ApplicationStatus.ON_HOLD)
+            );
+            if (hasActive) {
+                throw new CustomException(ErrorCode.JOB_POSTING_HAS_ACTIVE_APPLICATION);
+            }
+        }
+
         jobPosting.updateStatus(request.status());
-        // TODO(지원 도메인): SHOOTING 전환 시 해당 공고의 지원 비활성화 처리
         return JobPostingResponse.from(jobPosting);
+    }
+
+    // 재모집: 기존 공고를 마감하고 동일 내용으로 새 공고(RECRUITING)를 생성한다.
+    @Transactional
+    public JobPosting cloneForReRecruit(Long jobPostingId) {
+        JobPosting original = jobPostingRepository.findById(jobPostingId)
+                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
+
+        original.updateStatus(JobPostingStatus.CLOSED);
+
+        JobPosting clone = JobPosting.builder()
+                .clientId(original.getClientId())
+                .title(original.getTitle())
+                .content(original.getContent())
+                .category(original.getCategory())
+                .region(original.getRegion())
+                .status(JobPostingStatus.RECRUITING)
+                .requiredSex(original.getRequiredSex())
+                .requiredCount(original.getRequiredCount())
+                .ageMin(original.getAgeMin())
+                .ageMax(original.getAgeMax())
+                .heightMin(original.getHeightMin())
+                .heightMax(original.getHeightMax())
+                .weightMin(original.getWeightMin())
+                .weightMax(original.getWeightMax())
+                .minCareerMonths(original.getMinCareerMonths())
+                .payment(original.getPayment())
+                .payType(original.getPayType())
+                .shootDate(original.getShootDate())
+                .build();
+
+        JobPosting saved = jobPostingRepository.save(clone);
+        eventPublisher.publishEvent(new JobPostingCreatedEvent(saved.getId()));
+        return saved;
     }
 
     public List<JobPostingListResponse> getMyRecruitingJobPostings(Long clientId) {
@@ -166,10 +216,12 @@ public class JobPostingService {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
+        Client client = clientRepository.findByUserId(jobPosting.getClientId()).orElse(null);
+
         return switch (viewerType) {
-            case MODEL -> JobPostingModelDetailResponse.from(jobPosting);
-            case CLIENT -> JobPostingClientDetailResponse.from(jobPosting);
-            case OTHER -> JobPostingOtherDetailResponse.from(jobPosting);
+            case MODEL -> JobPostingModelDetailResponse.from(jobPosting, client);
+            case CLIENT -> JobPostingClientDetailResponse.from(jobPosting, client);
+            case OTHER -> JobPostingOtherDetailResponse.from(jobPosting, client);
         };
     }
 

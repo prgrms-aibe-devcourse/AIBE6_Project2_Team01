@@ -7,14 +7,22 @@ import { useAuth } from "@/hooks/useAuth";
 import { checkApplyStatus, getApplicants } from "@/lib/api/application";
 import { addJobBookmark, getJobBookmarks, removeJobBookmark } from "@/lib/api/bookmark";
 import { API_BASE_URL, authenticatedFetch, client } from "@/lib/api/client";
-import { STATUS_COLORS, STATUS_LABELS, STATUS_TRANSITIONS } from "@/lib/constants/jobPostingStatus";
+import { STATUS_CHANGE_DESCRIPTIONS, STATUS_COLORS, STATUS_LABELS, STATUS_TRANSITION_LABELS, STATUS_TRANSITIONS } from "@/lib/constants/jobPostingStatus";
 import { getRegionLabel } from "@/lib/constants/region";
 import type { Model } from "@/types/model";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
 
-type ClientDetail = {
+type ClientInfo = {
+  clientProfileId?: number | null;
+  clientCompanyName?: string | null;
+  clientRegion?: string | null;
+  clientAvgRating?: number;
+  clientReviewCount?: number;
+};
+
+type ClientDetail = ClientInfo & {
   id: number;
   clientId: number;
   title: string;
@@ -37,7 +45,7 @@ type ClientDetail = {
   recommendedModelIds: number[];
 };
 
-type ModelDetail = {
+type ModelDetail = ClientInfo & {
   id: number;
   title: string;
   content: string;
@@ -59,7 +67,7 @@ type ModelDetail = {
   favorited: boolean;
 };
 
-type OtherDetail = {
+type OtherDetail = ClientInfo & {
   id: number;
   title: string;
   content: string;
@@ -144,6 +152,8 @@ export default function JobDetailPage({
   const [unlockingRecommendations, setUnlockingRecommendations] =
     useState(false);
   const [applicantCount, setApplicantCount] = useState<number | null>(null);
+  const [statusReasonModalOpen, setStatusReasonModalOpen] = useState(false);
+  const [statusReason, setStatusReason] = useState("");
 
   const isOwner = Boolean(
     detail && isClientDetail(detail) && user?.id === detail.clientId,
@@ -253,7 +263,7 @@ export default function JobDetailPage({
   useEffect(() => {
     if (authLoading) return;
     if (!user || user.role !== "MODEL") {
-      setHasApplied(false);
+      Promise.resolve().then(() => setHasApplied(false));
       return;
     }
     checkApplyStatus(postingId)
@@ -285,19 +295,12 @@ export default function JobDetailPage({
     }
   };
 
-  const handleStatusChange = async () => {
-    if (!selectedStatus) return;
-    if (
-      !window.confirm(
-        `상태를 "${STATUS_LABELS[selectedStatus]}"(으)로 변경하시겠습니까?`,
-      )
-    )
-      return;
+  const submitStatusChange = async (status: string) => {
     setStatusChanging(true);
     const { data, response } = await client.PATCH("/api/v1/jobs/{id}/status", {
       params: { path: { id: postingId } },
       body: {
-        status: selectedStatus as
+        status: status as
           | "RECRUITING"
           | "SHOOTING"
           | "COMPLETED"
@@ -317,6 +320,23 @@ export default function JobDetailPage({
       const transitions = STATUS_TRANSITIONS[newStatus] ?? [];
       setSelectedStatus(transitions[0] ?? "");
     }
+  };
+
+  const handleStatusChange = () => {
+    if (!selectedStatus) return;
+    setStatusReason("");
+    setStatusReasonModalOpen(true);
+  };
+
+  const statusNeedsReason = selectedStatus !== "SHOOTING";
+
+  const handleStatusReasonConfirm = async () => {
+    if (statusNeedsReason && !statusReason.trim()) {
+      alert("사유를 입력해 주세요.");
+      return;
+    }
+    setStatusReasonModalOpen(false);
+    await submitStatusChange(selectedStatus);
   };
 
   const handleDelete = async () => {
@@ -446,6 +466,51 @@ export default function JobDetailPage({
               onClose={() => setReportOpen(false)}
             />
           )}
+          {statusReasonModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+              <div className="w-full max-w-sm rounded-xl bg-surface p-6 shadow-xl">
+                <h3 className="text-[16px] font-semibold text-ink">
+                  {statusNeedsReason
+                    ? `${STATUS_TRANSITION_LABELS[selectedStatus] ?? STATUS_LABELS[selectedStatus] ?? selectedStatus} 사유 입력`
+                    : `${STATUS_TRANSITION_LABELS[selectedStatus] ?? STATUS_LABELS[selectedStatus] ?? selectedStatus}으로 변경`}
+                </h3>
+                {statusNeedsReason ? (
+                  <textarea
+                    className="mt-3 w-full resize-none rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13px] text-ink placeholder:text-mute focus:border-primary focus:outline-none"
+                    rows={4}
+                    placeholder={`${STATUS_TRANSITION_LABELS[selectedStatus] ?? STATUS_LABELS[selectedStatus] ?? selectedStatus} 사유를 입력해 주세요.`}
+                    value={statusReason}
+                    onChange={(e) => setStatusReason(e.target.value)}
+                  />
+                ) : (
+                  <p className="mt-3 text-[13px] leading-6 text-body">
+                    공고 상태를{" "}
+                    <span className="font-semibold text-ink">
+                      {STATUS_LABELS[selectedStatus] ?? selectedStatus}
+                    </span>
+                    으로 변경하시겠습니까?
+                  </p>
+                )}
+                <div className="mt-4 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setStatusReasonModalOpen(false)}
+                    className="flex-1 rounded-lg border border-hairline bg-surface py-2 text-[13px] font-semibold text-body transition hover:border-hairline-strong"
+                  >
+                    취소
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleStatusReasonConfirm}
+                    disabled={statusChanging}
+                    className="flex-1 rounded-lg bg-primary py-2 text-[13px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:opacity-50"
+                  >
+                    {statusChanging ? "처리 중..." : "확인"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </header>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
@@ -467,7 +532,7 @@ export default function JobDetailPage({
               </h2>
               <dl className="mt-4 space-y-3 text-[13px] leading-5">
                 <InfoRow label="카테고리" value={detail.category} />
-                <InfoRow label="지역" value={getRegionLabel(detail.region)} />
+                <InfoRow label="촬영 지역" value={getRegionLabel(detail.region)} />
                 <InfoRow
                   label="성별 조건"
                   value={
@@ -530,33 +595,72 @@ export default function JobDetailPage({
               </dl>
             </section>
 
+            {/* 의뢰인 정보 카드 */}
+            {detail.clientProfileId ? (
+              <section className="rounded-xl border border-hairline bg-surface p-6">
+                <h2 className="text-[15px] font-semibold leading-6 text-ink">
+                  의뢰인 정보
+                </h2>
+                <Link
+                  href={`/clients/${detail.clientProfileId}`}
+                  className="mt-4 flex items-center justify-between rounded-lg border border-hairline bg-canvas px-4 py-3 transition hover:border-hairline-strong hover:bg-canvas-soft"
+                >
+                  <div>
+                    <p className="text-[14px] font-semibold text-ink">
+                      {detail.clientCompanyName ?? "-"}
+                    </p>
+                    {detail.clientRegion ? (
+                      <p className="mt-0.5 text-[12px] text-mute">
+                        {getRegionLabel(detail.clientRegion)}
+                      </p>
+                    ) : null}
+                    <p className="mt-1 text-[12px] text-mute">
+                      {(detail.clientReviewCount ?? 0) > 0
+                        ? `★ ${(detail.clientAvgRating ?? 0).toFixed(1)} (${detail.clientReviewCount}건)`
+                        : "리뷰 없음"}
+                    </p>
+                  </div>
+                  <span className="text-[13px] text-mute">→</span>
+                </Link>
+              </section>
+            ) : null}
+
             {/* CLIENT 뷰 본인 공고: 상태 변경 */}
             {isOwner && nextStatuses.length > 0 ? (
               <section className="rounded-xl border border-hairline bg-surface p-6">
                 <h2 className="text-[15px] font-semibold leading-6 text-ink">
                   상태 변경
                 </h2>
-                <div className="mt-4 flex gap-2">
-                  <select
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="flex-1 rounded-lg border border-hairline bg-canvas px-3 py-2 text-[13px] text-ink focus:border-primary focus:outline-none"
-                  >
-                    {nextStatuses.map((s) => (
-                      <option key={s} value={s}>
-                        {STATUS_LABELS[s]}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={handleStatusChange}
-                    disabled={statusChanging}
-                    className="rounded-lg bg-primary px-4 py-2 text-[13px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:opacity-50"
-                  >
-                    {statusChanging ? "변경 중..." : "변경"}
-                  </button>
-                </div>
+                <ul className="mt-3 space-y-2">
+                  {nextStatuses.map((s) => (
+                    <li key={s}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedStatus(s)}
+                        className={`w-full rounded-lg border px-4 py-3 text-left transition ${
+                          selectedStatus === s
+                            ? "border-primary bg-primary/5"
+                            : "border-hairline bg-canvas hover:border-hairline-strong"
+                        }`}
+                      >
+                        <p className={`text-[13px] font-semibold ${selectedStatus === s ? "text-primary" : "text-ink"}`}>
+                          {STATUS_TRANSITION_LABELS[s] ?? STATUS_LABELS[s] ?? s}
+                        </p>
+                        <p className="mt-0.5 text-[11px] leading-4 text-mute">
+                          {STATUS_CHANGE_DESCRIPTIONS[s] ?? ""}
+                        </p>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  onClick={handleStatusChange}
+                  disabled={statusChanging || !selectedStatus}
+                  className="mt-3 w-full rounded-lg bg-primary py-2.5 text-[13px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:opacity-50"
+                >
+                  {statusChanging ? "변경 중..." : `${STATUS_TRANSITION_LABELS[selectedStatus] ?? STATUS_LABELS[selectedStatus] ?? "상태 변경"}으로 변경`}
+                </button>
               </section>
             ) : null}
           </aside>

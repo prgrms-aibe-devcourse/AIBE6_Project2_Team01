@@ -101,6 +101,93 @@ export async function getApplicationContacts(
   return body.data as ContactHistory[];
 }
 
+export async function completeApplication(
+  applicationId: number,
+): Promise<ApplicationResponse> {
+  const res = await authenticatedFetch(
+    `${API_BASE_URL}/api/v1/applications/${applicationId}/complete`,
+    { method: "PATCH", credentials: "include" },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(getErrorMessage(body, "촬영 완료 처리에 실패했습니다."));
+  }
+  const body = await res.json();
+  return body.data as ApplicationResponse;
+}
+
+export async function holdShooting(
+  applicationId: number,
+  holdReason: string,
+): Promise<ApplicationResponse> {
+  const res = await authenticatedFetch(
+    `${API_BASE_URL}/api/v1/applications/${applicationId}/hold`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ holdReason }),
+    },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(getErrorMessage(body, "촬영 보류 처리에 실패했습니다."));
+  }
+  const body = await res.json();
+  return body.data as ApplicationResponse;
+}
+
+export async function cancelShooting(
+  applicationId: number,
+  cancelReason: string,
+): Promise<ApplicationResponse> {
+  const res = await authenticatedFetch(
+    `${API_BASE_URL}/api/v1/applications/${applicationId}/cancel-shooting`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ cancelReason }),
+    },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(getErrorMessage(body, "촬영 취소 처리에 실패했습니다."));
+  }
+  const body = await res.json();
+  return body.data as ApplicationResponse;
+}
+
+export async function resumeShooting(
+  applicationId: number,
+): Promise<ApplicationResponse> {
+  const res = await authenticatedFetch(
+    `${API_BASE_URL}/api/v1/applications/${applicationId}/resume`,
+    { method: "PATCH", credentials: "include" },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(getErrorMessage(body, "촬영 재개 처리에 실패했습니다."));
+  }
+  const body = await res.json();
+  return body.data as ApplicationResponse;
+}
+
+export async function reRecruit(
+  applicationId: number,
+): Promise<ApplicationResponse> {
+  const res = await authenticatedFetch(
+    `${API_BASE_URL}/api/v1/applications/${applicationId}/re-recruit`,
+    { method: "POST", credentials: "include" },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(getErrorMessage(body, "재모집 처리에 실패했습니다."));
+  }
+  const body = await res.json();
+  return body.data as ApplicationResponse;
+}
+
 // ── 공유 상수 ───────────────────────────────────────────────
 export const APPLICATION_STATUS_LABELS: Record<string, string> = {
   APPLIED: "지원 완료",

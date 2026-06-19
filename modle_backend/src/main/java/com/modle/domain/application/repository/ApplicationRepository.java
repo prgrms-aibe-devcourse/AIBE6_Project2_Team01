@@ -44,4 +44,7 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     long countByJobPostingIdAndStatusNot(Long jobPostingId, ApplicationStatus status);
     long countByJobPostingIdAndStatus(Long jobPostingId, ApplicationStatus status);
     long countByJobPostingIdAndStatusIn(Long jobPostingId, List<ApplicationStatus> statuses);
+
+    // 공고에 촬영 진행 중 또는 보류 중인 지원 존재 여부 (JobPosting 상태 변경 가드)
+    boolean existsByJobPostingIdAndStatusIn(Long jobPostingId, List<ApplicationStatus> statuses);
 }

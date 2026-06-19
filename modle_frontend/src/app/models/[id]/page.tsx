@@ -1,5 +1,5 @@
 import { ClientProposalButton } from "@/components/message/ClientProposalButton";
-import { DetailLookbook } from "@/components/model/detail/DetailLookbook";
+import { ModelDetailTabsSection } from "@/components/model/detail/ModelDetailTabsSection";
 import { ProfileGallery } from "@/components/model/detail/ProfileGallery";
 import { ModelBookmarkButton } from "@/components/ui/ModelBookmarkButton";
 import { ReportButton } from "@/components/ui/ReportButton";
@@ -127,23 +127,12 @@ export default async function ModelDetailPage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="mt-20 md:mt-24">
-          <div className="flex border-b border-gray-200 sticky top-0 bg-white z-10">
-            <div className="flex-1 text-center py-4 border-b-[3px] border-black font-bold text-black cursor-pointer">
-              상세정보
-            </div>
-            <div className="flex-1 text-center py-4 font-medium text-gray-400 hover:text-black cursor-pointer transition-colors">
-              리뷰 ({modelData.reviewCount || 0})
-            </div>
-            <div className="flex-1 text-center py-4 font-medium text-gray-400 hover:text-black cursor-pointer transition-colors">
-              경력 사항
-            </div>
-          </div>
-
-          <div className="w-full mt-8 md:mt-12 flex flex-col gap-4 md:gap-8 pb-20">
-            <DetailLookbook portfolios={modelData.portfolios || []} />
-          </div>
-        </div>
+        <ModelDetailTabsSection
+          portfolios={modelData.portfolios || []}
+          modelId={modelData.id}
+          modelUserId={modelData.userId}
+          reviewCount={modelData.reviewCount || 0}
+        />
       </div>
     </main>
   );

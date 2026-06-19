@@ -7,7 +7,6 @@ import com.modle.domain.message.entity.Message;
 import com.modle.domain.message.entity.MessageConversation;
 import com.modle.domain.message.repository.MessageConversationRepository;
 import com.modle.domain.message.repository.MessageRepository;
-import com.modle.domain.application.service.ApplicationService;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
@@ -52,9 +51,6 @@ class MessageServiceTest {
     @Mock
     private JobPostingRepository jobPostingRepository;
 
-    @Mock
-    private ApplicationService applicationService;
-
     private MessageService messageService;
 
     @BeforeEach
@@ -63,8 +59,7 @@ class MessageServiceTest {
                 messageRepository,
                 conversationRepository,
                 userService,
-                jobPostingRepository,
-                applicationService
+                jobPostingRepository
         );
     }
 
@@ -234,6 +229,31 @@ class MessageServiceTest {
         assertThat(count).isEqualTo(2);
         assertThat(first.isRead()).isTrue();
         assertThat(second.isRead()).isTrue();
+    }
+
+    @Test
+    void deleteConversation_참여자가대화방과쪽지삭제() {
+        MessageConversation conversation = conversation(100L, 1L, 2L);
+        given(conversationRepository.findById(100L)).willReturn(Optional.of(conversation));
+
+        messageService.deleteConversation(1L, 100L);
+
+        verify(messageRepository).deleteByConversationId(100L);
+        verify(conversationRepository).delete(conversation);
+    }
+
+    @Test
+    void deleteConversation_대화방비참여자_예외발생() {
+        given(conversationRepository.findById(100L))
+                .willReturn(Optional.of(conversation(100L, 1L, 2L)));
+
+        assertThatThrownBy(() -> messageService.deleteConversation(3L, 100L))
+                .isInstanceOf(CustomException.class)
+                .extracting(exception -> ((CustomException) exception).getErrorCode())
+                .isEqualTo(ErrorCode.MESSAGE_ACCESS_DENIED);
+
+        verify(messageRepository, never()).deleteByConversationId(100L);
+        verify(conversationRepository, never()).delete(any(MessageConversation.class));
     }
 
     private User user(Long id, Role role) {

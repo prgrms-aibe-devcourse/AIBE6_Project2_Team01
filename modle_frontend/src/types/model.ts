@@ -2,6 +2,7 @@
 export interface Portfolio {
   id: number;
   imgUrl: string;
+  category?: string;
 }
 export interface Model {
   id: number;

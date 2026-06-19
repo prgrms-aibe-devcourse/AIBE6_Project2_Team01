@@ -68,7 +68,8 @@ public class SecurityConfig {
                                                                 "/api/v1/clients",
                                                                 "/api/v1/clients/{id}",
                                                                 "/api/v1/jobs",
-                                                                "/api/v1/jobs/{id}"
+                                                                "/api/v1/jobs/{id}",
+                                                                "/api/v1/users/{userId}/reviews"
                                                 ).permitAll()
                                                 // 관리자만
                                                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")

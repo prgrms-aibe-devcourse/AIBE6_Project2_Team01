@@ -8,9 +8,8 @@ interface Props {
 }
 
 export function ProfileHeader({ data }: Props) {
-  // Use dummy reviews since it's missing from backend Model
-  const reviewScore = data.rating || 4.8;
-  const reviewCount = data.reviewCount || 124;
+  const reviewScore = data.rating ?? 0;
+  const reviewCount = data.reviewCount ?? 0;
 
   return (
     <div className="flex flex-col md:flex-row items-center md:items-start gap-8 pb-8 mb-8 text-black">
@@ -39,13 +38,13 @@ export function ProfileHeader({ data }: Props) {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
-            {reviewScore} ({reviewCount} reviews)
+            {reviewScore.toFixed(1)} ({reviewCount}개)
           </div>
         </div>
 
         {/* Tags */}
         <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-6">
-          {(data.tags && data.tags.length > 0 ? data.tags : ['패션', '피팅', '광고']).map((tag, idx) => (
+          {(data.tags ?? []).map((tag, idx) => (
             <span key={idx} className="px-4 py-1 bg-white border border-gray-300 text-black font-bold text-xs uppercase tracking-widest cursor-default hover:border-black transition-colors">
               {tag.startsWith('#') ? tag : `#${tag.trim()}`}
             </span>

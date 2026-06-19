@@ -11,6 +11,8 @@ public record ApplicationResponse(
         Long modelId,
         String coverLetter,
         ApplicationStatus status,
+        String holdReason,
+        String cancelReason,
         LocalDateTime createdDate
 ) {
     public static ApplicationResponse from(Application application) {
@@ -20,6 +22,8 @@ public record ApplicationResponse(
                 application.getModelId(),
                 application.getCoverLetter(),
                 application.getStatus(),
+                application.getHoldReason(),
+                application.getCancelReason(),
                 application.getCreatedDate()
         );
     }
