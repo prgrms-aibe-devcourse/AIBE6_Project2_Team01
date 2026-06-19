@@ -1,12 +1,21 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  type FormEvent,
+  type PointerEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ReportModal } from "@/components/ui/ReportModal";
 import { useAuth } from "@/hooks/useAuth";
 import {
   createConversation,
+  deleteConversation,
   getConversationMessages,
   getInbox,
   getMyRecruitingJobs,
@@ -23,6 +32,22 @@ import type {
 
 const POLLING_INTERVAL_MS = 30_000;
 const MAX_MESSAGE_LENGTH = 2_000;
+const SWIPE_DELETE_ACTION_WIDTH = 76;
+const SWIPE_DELETE_REVEAL_THRESHOLD = 42;
+const SWIPE_DELETE_COMMIT_THRESHOLD = 128;
+const SWIPE_DELETE_MAX_OFFSET = 132;
+
+type ThreadSwipeState = {
+  threadId: string;
+  startX: number;
+  startY: number;
+  initialOffset: number;
+  offsetX: number;
+};
+
+function clampSwipeOffset(value: number): number {
+  return Math.min(Math.max(value, 0), SWIPE_DELETE_MAX_OFFSET);
+}
 
 function roleLabel(role: MessageParticipant["role"]): string {
   return { MODEL: "모델", CLIENT: "의뢰인", ADMIN: "관리자" }[role];
@@ -104,7 +129,11 @@ export function MessageWorkspace() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [deletingConversationId, setDeletingConversationId] = useState<number | null>(null);
   const [reportingMessageId, setReportingMessageId] = useState<number | null>(null);
+  const [swipedThreadId, setSwipedThreadId] = useState<string | null>(null);
+  const [swipeState, setSwipeState] = useState<ThreadSwipeState | null>(null);
+  const suppressThreadClickRef = useRef<string | null>(null);
 
   const selectedThread = useMemo(
     () => threads.find((thread) => thread.id === selectedId) ?? threads[0] ?? null,
@@ -306,6 +335,98 @@ export function MessageWorkspace() {
     }
   }
 
+  async function deleteThread(thread: MessageThread) {
+    if (!thread.conversationId || deletingConversationId) return;
+    if (!window.confirm("이 대화방과 모든 쪽지를 삭제하시겠습니까?")) return;
+
+    const conversationId = thread.conversationId;
+    const threadId = thread.id;
+    setDeletingConversationId(conversationId);
+
+    try {
+      await deleteConversation(conversationId);
+      const nextThreads = threads.filter((thread) => thread.id !== threadId);
+      setThreads(nextThreads);
+      setSelectedId((currentSelectedId) =>
+        currentSelectedId === threadId ? nextThreads[0]?.id ?? null : currentSelectedId,
+      );
+      setError(null);
+      setSwipedThreadId((current) => (current === threadId ? null : current));
+    } catch (requestError) {
+      setError((requestError as Error).message);
+    } finally {
+      setDeletingConversationId(null);
+    }
+  }
+
+  function handleDeleteConversation() {
+    if (!selectedThread) return;
+    void deleteThread(selectedThread);
+  }
+
+  function startThreadSwipe(
+    thread: MessageThread,
+    event: PointerEvent<HTMLButtonElement>,
+  ) {
+    if (!thread.conversationId || deletingConversationId) return;
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setSwipedThreadId((current) => (current === thread.id ? current : null));
+    setSwipeState({
+      threadId: thread.id,
+      startX: event.clientX,
+      startY: event.clientY,
+      initialOffset:
+        swipedThreadId === thread.id ? SWIPE_DELETE_ACTION_WIDTH : 0,
+      offsetX: swipedThreadId === thread.id ? SWIPE_DELETE_ACTION_WIDTH : 0,
+    });
+  }
+
+  function moveThreadSwipe(event: PointerEvent<HTMLButtonElement>) {
+    if (!swipeState) return;
+
+    const deltaX = event.clientX - swipeState.startX;
+    const deltaY = event.clientY - swipeState.startY;
+
+    if (Math.abs(deltaY) > Math.abs(deltaX) && swipeState.offsetX === 0) {
+      return;
+    }
+
+    if (Math.abs(deltaX) > 6) {
+      event.preventDefault();
+    }
+
+    setSwipeState({
+      ...swipeState,
+      offsetX: clampSwipeOffset(swipeState.initialOffset + deltaX),
+    });
+  }
+
+  function finishThreadSwipe(thread: MessageThread) {
+    if (swipeState?.threadId !== thread.id) return;
+
+    const moved = Math.abs(swipeState.offsetX - swipeState.initialOffset) > 6;
+    if (moved) {
+      suppressThreadClickRef.current = thread.id;
+    }
+
+    if (swipeState.offsetX >= SWIPE_DELETE_COMMIT_THRESHOLD) {
+      setSwipeState(null);
+      setSwipedThreadId(null);
+      void deleteThread(thread);
+      return;
+    }
+
+    setSwipedThreadId(
+      swipeState.offsetX >= SWIPE_DELETE_REVEAL_THRESHOLD ? thread.id : null,
+    );
+    setSwipeState(null);
+  }
+
+  function cancelThreadSwipe() {
+    setSwipeState(null);
+  }
+
   if (isAuthLoading || !user || loading) {
     return (
       <main className="grid h-[calc(100dvh-64px)] place-items-center bg-canvas-soft">
@@ -374,64 +495,109 @@ export function MessageWorkspace() {
             {visibleThreads.length === 0 ? (
               <p className="px-4 py-10 text-center text-sm text-mute">검색 결과가 없습니다.</p>
             ) : (
-              visibleThreads.map((thread) => (
-                <button
-                  key={thread.id}
-                  className={`mb-0.5 flex w-full gap-2.5 rounded-lg px-2.5 py-2.5 text-left transition ${
-                    selectedThread.id === thread.id
-                      ? "bg-ink text-white"
-                      : "hover:bg-canvas-soft"
-                  }`}
-                  onClick={() => selectThread(thread.id)}
-                  type="button"
-                >
-                  <div className="relative shrink-0">
-                    {thread.participantProfileImageUrl ? (
-                      <Image
-                        alt=""
-                        className="size-9 rounded-full object-cover"
-                        height={36}
-                        src={thread.participantProfileImageUrl}
-                        unoptimized
-                        width={36}
-                      />
-                    ) : (
-                      <div
-                        className={`grid size-9 place-items-center rounded-full text-xs font-bold ${
-                          selectedThread.id === thread.id
-                            ? "bg-white/15"
-                            : "bg-canvas-soft text-body"
-                        }`}
-                      >
-                        {participantInitial(thread.participantName)}
-                      </div>
-                    )}
-                    {thread.unreadCount > 0 && (
-                      <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full border-2 border-white bg-error" />
-                    )}
-                  </div>
+              visibleThreads.map((thread) => {
+                const isSwiping = swipeState?.threadId === thread.id;
+                const swipeOffset = isSwiping
+                  ? swipeState.offsetX
+                  : swipedThreadId === thread.id
+                    ? SWIPE_DELETE_ACTION_WIDTH
+                    : 0;
+                const isDeleting = deletingConversationId === thread.conversationId;
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <strong className="truncate text-sm">{thread.participantName}</strong>
-                      <span
-                        className={`shrink-0 text-[11px] ${
-                          selectedThread.id === thread.id ? "text-white/55" : "text-mute"
-                        }`}
+                return (
+                  <div
+                    key={thread.id}
+                    className="relative mb-0.5 overflow-hidden rounded-lg"
+                  >
+                    {thread.conversationId && (
+                      <button
+                        type="button"
+                        onClick={() => void deleteThread(thread)}
+                        disabled={isDeleting}
+                        className="absolute left-0 top-0 flex h-full w-[76px] items-center justify-center rounded-lg bg-error text-xs font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        {thread.time}
-                      </span>
-                    </div>
-                    <p
-                      className={`mt-1 truncate text-xs ${
-                        selectedThread.id === thread.id ? "text-white/65" : "text-mute"
+                        {isDeleting ? "삭제 중" : "삭제"}
+                      </button>
+                    )}
+
+                    <button
+                      className={`relative z-10 flex w-full gap-2.5 rounded-lg px-2.5 py-2.5 text-left ${
+                        selectedThread.id === thread.id
+                          ? "bg-ink text-white"
+                          : "bg-canvas hover:bg-canvas-soft"
                       }`}
+                      onClick={() => {
+                        if (suppressThreadClickRef.current === thread.id) {
+                          suppressThreadClickRef.current = null;
+                          return;
+                        }
+                        if (swipedThreadId === thread.id) {
+                          setSwipedThreadId(null);
+                          return;
+                        }
+                        setSwipedThreadId(null);
+                        selectThread(thread.id);
+                      }}
+                      onPointerCancel={cancelThreadSwipe}
+                      onPointerDown={(event) => startThreadSwipe(thread, event)}
+                      onPointerMove={moveThreadSwipe}
+                      onPointerUp={() => finishThreadSwipe(thread)}
+                      style={{
+                        transform: `translateX(${swipeOffset}px)`,
+                        transition: isSwiping ? "none" : "transform 180ms ease",
+                        touchAction: "pan-y",
+                      }}
+                      type="button"
                     >
-                      {thread.preview}
-                    </p>
+                      <div className="relative shrink-0">
+                        {thread.participantProfileImageUrl ? (
+                          <Image
+                            alt=""
+                            className="size-9 rounded-full object-cover"
+                            height={36}
+                            src={thread.participantProfileImageUrl}
+                            unoptimized
+                            width={36}
+                          />
+                        ) : (
+                          <div
+                            className={`grid size-9 place-items-center rounded-full text-xs font-bold ${
+                              selectedThread.id === thread.id
+                                ? "bg-white/15"
+                                : "bg-canvas-soft text-body"
+                            }`}
+                          >
+                            {participantInitial(thread.participantName)}
+                          </div>
+                        )}
+                        {thread.unreadCount > 0 && (
+                          <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full border-2 border-white bg-error" />
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <strong className="truncate text-sm">{thread.participantName}</strong>
+                          <span
+                            className={`shrink-0 text-[11px] ${
+                              selectedThread.id === thread.id ? "text-white/55" : "text-mute"
+                            }`}
+                          >
+                            {thread.time}
+                          </span>
+                        </div>
+                        <p
+                          className={`mt-1 truncate text-xs ${
+                            selectedThread.id === thread.id ? "text-white/65" : "text-mute"
+                          }`}
+                        >
+                          {thread.preview}
+                        </p>
+                      </div>
+                    </button>
                   </div>
-                </button>
-              ))
+                );
+              })
             )}
           </div>
         </aside>
@@ -465,23 +631,37 @@ export function MessageWorkspace() {
               </div>
             </div>
 
-            {!selectedThread.conversationId && (
-              <label className="hidden items-center gap-2 text-xs md:flex">
-                <span className="font-semibold text-body">연결 공고</span>
-                <select
-                  className="h-8 max-w-48 rounded-md border border-hairline bg-white px-2 text-xs outline-none focus:border-ink"
-                  onChange={(event) => changeDraftPost(event.target.value)}
-                  value={selectedThread.postId ?? ""}
+            <div className="flex shrink-0 items-center gap-2">
+              {!selectedThread.conversationId && (
+                <label className="hidden items-center gap-2 text-xs md:flex">
+                  <span className="font-semibold text-body">연결 공고</span>
+                  <select
+                    className="h-8 max-w-48 rounded-md border border-hairline bg-white px-2 text-xs outline-none focus:border-ink"
+                    onChange={(event) => changeDraftPost(event.target.value)}
+                    value={selectedThread.postId ?? ""}
+                  >
+                    <option value="">공고 없이 일반 메시지</option>
+                    {jobs.map((job) => (
+                      <option key={job.id} value={job.id}>
+                        {job.title}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              {selectedThread.conversationId && (
+                <button
+                  type="button"
+                  onClick={handleDeleteConversation}
+                  disabled={deletingConversationId === selectedThread.conversationId}
+                  className="h-8 rounded-md border border-error/25 bg-white px-3 text-xs font-semibold text-error transition hover:bg-error-soft disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <option value="">공고 없이 일반 메시지</option>
-                  {jobs.map((job) => (
-                    <option key={job.id} value={job.id}>
-                      {job.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
+                  {deletingConversationId === selectedThread.conversationId
+                    ? "삭제 중"
+                    : "대화 삭제"}
+                </button>
+              )}
+            </div>
           </div>
 
           {!selectedThread.conversationId && (
