@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -86,5 +87,14 @@ public class MessageController {
                 "읽음 처리되었습니다.",
                 messageService.markConversationAsRead(user.getId(), request.conversationId())
         );
+    }
+
+    @DeleteMapping("/conversations/{conversationId}")
+    public ApiResponse<Void> deleteConversation(
+            @AuthenticationPrincipal SecurityUser user,
+            @PathVariable Long conversationId
+    ) {
+        messageService.deleteConversation(user.getId(), conversationId);
+        return ApiResponse.ok("대화방이 삭제되었습니다.");
     }
 }

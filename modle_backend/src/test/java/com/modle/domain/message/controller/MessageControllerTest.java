@@ -22,6 +22,7 @@ import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -91,6 +92,29 @@ class MessageControllerTest {
                 org.mockito.ArgumentMatchers.eq(100L),
                 org.mockito.ArgumentMatchers.any()
         );
+    }
+
+    @Test
+    void deleteConversation_인증사용자와대화방ID전달() throws Exception {
+        SecurityUser user = new SecurityUser(1L, "client@example.com", "CLIENT");
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(messageController)
+                .setCustomArgumentResolvers(
+                        authenticationPrincipalResolver(user),
+                        new PageableHandlerMethodArgumentResolver()
+                )
+                .build();
+
+        mockMvc.perform(delete("/api/v1/messages/conversations/100"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("""
+                        {
+                          "resultCode": "200-1",
+                          "msg": "대화방이 삭제되었습니다.",
+                          "data": null
+                        }
+                        """));
+
+        verify(messageService).deleteConversation(1L, 100L);
     }
 
     private HandlerMethodArgumentResolver authenticationPrincipalResolver(SecurityUser user) {
