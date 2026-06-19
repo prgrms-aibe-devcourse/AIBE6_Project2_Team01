@@ -31,6 +31,12 @@ public class Application extends BaseEntity {
     @Column(nullable = false)
     private ApplicationStatus status;
 
+    @Column(length = 500)
+    private String holdReason;
+
+    @Column(length = 500)
+    private String cancelReason;
+
     @Builder
     private Application(Long jobPostingId, Long modelId, String coverLetter, ApplicationStatus status) {
         this.jobPostingId = jobPostingId;
@@ -57,5 +63,27 @@ public class Application extends BaseEntity {
 
     public void shoot() {
         this.status = ApplicationStatus.SHOOTING;
+    }
+
+    public void complete() {
+        this.status = ApplicationStatus.COMPLETED;
+    }
+
+    public void hold(String reason) {
+        this.status = ApplicationStatus.ON_HOLD;
+        this.holdReason = reason;
+    }
+
+    public void cancelShooting(String reason) {
+        this.status = ApplicationStatus.SHOOTING_CANCELLED;
+        this.cancelReason = reason;
+    }
+
+    public void resume() {
+        this.status = ApplicationStatus.SHOOTING;
+    }
+
+    public void closeForReRecruit() {
+        this.status = ApplicationStatus.SHOOTING_CANCELLED;
     }
 }

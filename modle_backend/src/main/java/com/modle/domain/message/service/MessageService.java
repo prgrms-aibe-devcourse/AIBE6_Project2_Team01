@@ -198,6 +198,15 @@ public class MessageService {
         return unreadMessages.size();
     }
 
+    @Transactional
+    public void deleteConversation(Long userId, Long conversationId) {
+        MessageConversation conversation = findConversation(conversationId);
+        validateParticipant(conversation, userId);
+
+        messageRepository.deleteByConversationId(conversationId);
+        conversationRepository.delete(conversation);
+    }
+
     public MessageConversation findConversationByApplicationId(Long applicationId) {
         return conversationRepository.findByApplicationId(applicationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MESSAGE_CONVERSATION_NOT_FOUND));

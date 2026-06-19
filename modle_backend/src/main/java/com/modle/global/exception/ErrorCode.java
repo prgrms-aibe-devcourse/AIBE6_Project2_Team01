@@ -58,6 +58,7 @@ public enum ErrorCode {
     JOB_POSTING_FORBIDDEN(HttpStatus.FORBIDDEN, "403-5", "공고에 대한 권한이 없습니다."),
     JOB_POSTING_INVALID_FILTER_VALUE(HttpStatus.BAD_REQUEST, "400-8", "유효하지 않은 필터 값입니다."),
     JOB_POSTING_INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "400-9", "유효하지 않은 상태 전환입니다."),
+    JOB_POSTING_HAS_ACTIVE_APPLICATION(HttpStatus.CONFLICT, "409-9", "촬영 진행 중인 지원이 있어 공고 상태를 변경할 수 없습니다. 지원 플로우를 통해 처리해주세요."),
 
     // 쪽지
     MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG-001", "쪽지를 찾을 수 없습니다."),
@@ -85,6 +86,14 @@ public enum ErrorCode {
     APPLICATION_ALREADY_CONTACTED(HttpStatus.CONFLICT, "409-7", "이미 컨택된 지원입니다."),
     APPLICATION_CONTACT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-14", "지원 완료(APPLIED) 상태에서만 컨택할 수 있습니다."),
     APPLICATION_EXCEED_REQUIRED_COUNT(HttpStatus.BAD_REQUEST, "400-15", "모집 인원을 초과했습니다."),
+    APPLICATION_HOLD_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-17", "촬영 진행(SHOOTING) 상태에서만 보류할 수 있습니다."),
+    APPLICATION_CANCEL_SHOOTING_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-18", "보류(ON_HOLD) 상태에서만 촬영을 취소할 수 있습니다."),
+    APPLICATION_RESUME_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-19", "보류(ON_HOLD) 상태에서만 촬영을 재개할 수 있습니다."),
+    APPLICATION_RE_RECRUIT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-21", "보류(ON_HOLD) 상태에서만 재모집할 수 있습니다."),
+
+    // 리뷰
+    REVIEW_ALREADY_EXISTS(HttpStatus.CONFLICT, "409-8", "이미 리뷰를 작성했습니다."),
+    REVIEW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-20", "촬영 완료 후에만 리뷰를 작성할 수 있습니다."),
 
     // 잘못된 접근
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "403-6", "권한이 없습니다."),

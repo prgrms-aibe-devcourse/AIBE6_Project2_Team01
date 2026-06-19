@@ -55,4 +55,11 @@ public class Client extends BaseEntity {
         if (introduction != null) this.introduction = introduction;
         if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
     }
+
+    public void updateRating(int newRating) {
+        this.avgRating = Math.round(
+                ((this.avgRating * this.reviewCount) + newRating) / (this.reviewCount + 1.0) * 10
+        ) / 10.0;
+        this.reviewCount++;
+    }
 }

@@ -6,6 +6,7 @@ import com.modle.domain.jobposting.entity.type.JobPostingStatus;
 import com.modle.domain.jobposting.entity.type.PayType;
 import com.modle.global.entity.type.Region;
 import com.modle.domain.jobposting.entity.type.RequiredSex;
+import com.modle.domain.user.entity.Client;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,9 +23,14 @@ public record JobPostingOtherDetailResponse(
         BigDecimal payment,
         PayType payType,
         LocalDateTime shootDate,
-        LocalDateTime createdDate
+        LocalDateTime createdDate,
+        Long clientProfileId,
+        String clientCompanyName,
+        String clientRegion,
+        double clientAvgRating,
+        int clientReviewCount
 ) implements JobPostingDetailResponse {
-    public static JobPostingOtherDetailResponse from(JobPosting jobPosting) {
+    public static JobPostingOtherDetailResponse from(JobPosting jobPosting, Client client) {
         return new JobPostingOtherDetailResponse(
                 jobPosting.getId(),
                 jobPosting.getTitle(),
@@ -36,7 +42,12 @@ public record JobPostingOtherDetailResponse(
                 jobPosting.getPayment(),
                 jobPosting.getPayType(),
                 jobPosting.getShootDate(),
-                jobPosting.getCreatedDate()
+                jobPosting.getCreatedDate(),
+                client != null ? client.getId() : null,
+                client != null ? client.getCompanyName() : null,
+                client != null ? client.getUser().getRegion() : null,
+                client != null ? client.getAvgRating() : 0.0,
+                client != null ? client.getReviewCount() : 0
         );
     }
 }

@@ -20,6 +20,7 @@ export async function getClientProfile(id: string | number): Promise<Client> {
   
   return {
     id: item.id,
+    userId: (item as Client & { userId?: number }).userId,
     createdDate: item.createdDate,
     modifiedDate: item.modifiedDate,
     clientType: item.clientType || 'UNKNOWN',
@@ -48,6 +49,7 @@ export async function getMyClient(customHeaders?: HeadersInit): Promise<Client> 
   
   return {
     id: item.id,
+    userId: (item as Client & { userId?: number }).userId,
     createdDate: item.createdDate,
     modifiedDate: item.modifiedDate,
     clientType: item.clientType || 'UNKNOWN',

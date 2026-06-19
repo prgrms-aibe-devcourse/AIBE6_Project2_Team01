@@ -5,9 +5,15 @@ import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 
 import { Toast, type ToastState } from "@/components/ui/Toast";
+import { ReviewModal } from "@/components/review/ReviewModal";
 import {
   APPLICATION_STATUS_LABELS,
   contactApplication,
+  completeApplication,
+  holdShooting,
+  cancelShooting,
+  resumeShooting,
+  reRecruit,
   getApplicationContacts,
   type ApplicantInfo,
   type ContactHistory,
@@ -32,45 +38,47 @@ type ContractStatusModalState = {
 export function ApplicantList({ applicants }: Props) {
   const [items, setItems] = useState(applicants);
   const [submittingIds, setSubmittingIds] = useState<Set<number>>(new Set());
+  const [completingIds, setCompletingIds] = useState<Set<number>>(new Set());
+  const [holdingIds, setHoldingIds] = useState<Set<number>>(new Set());
+  const [resumingIds, setResumingIds] = useState<Set<number>>(new Set());
+  const [reRecruitingIds, setReRecruitingIds] = useState<Set<number>>(new Set());
+  const [reviewedIds, setReviewedIds] = useState<Set<number>>(new Set());
+  const [reasonModal, setReasonModal] = useState<{
+    type: "hold" | "cancel-shooting";
+    applicationId: number;
+    reason: string;
+    submitting: boolean;
+  } | null>(null);
   const [loadingHistoryId, setLoadingHistoryId] = useState<number | null>(null);
-  const [selectedApplicant, setSelectedApplicant] =
-    useState<ApplicantInfo | null>(null);
+  const [selectedApplicant, setSelectedApplicant] = useState<ApplicantInfo | null>(null);
   const [historyItems, setHistoryItems] = useState<ContactHistory[]>([]);
   const [historyError, setHistoryError] = useState("");
-  const [toast, setToast] = useState<ToastState | null>(null);
+  const [reviewTarget, setReviewTarget] = useState<ApplicantInfo | null>(null);
   const [contractStatusModal, setContractStatusModal] =
     useState<ContractStatusModalState | null>(null);
+  const [reRecruitConfirmId, setReRecruitConfirmId] = useState<number | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedStatusLabel = useMemo(() => {
     if (!selectedApplicant) return "";
-    return (
-      APPLICATION_STATUS_LABELS[selectedApplicant.status] ??
-      selectedApplicant.status
-    );
+    return APPLICATION_STATUS_LABELS[selectedApplicant.status] ?? selectedApplicant.status;
   }, [selectedApplicant]);
 
   function showToast(next: ToastState) {
-    if (toastTimer.current) {
-      clearTimeout(toastTimer.current);
-    }
+    if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast(next);
     toastTimer.current = setTimeout(() => setToast(null), 3000);
   }
 
   async function handleContact(applicationId: number) {
     setSubmittingIds((prev) => new Set(prev).add(applicationId));
-
     try {
       const updated = await contactApplication(applicationId);
       setItems((prev) =>
         prev.map((item) =>
           item.applicationId === applicationId
-            ? {
-                ...item,
-                status: updated.status,
-                contacted: true,
-              }
+            ? { ...item, status: updated.status, contacted: true }
             : item,
         ),
       );
@@ -78,13 +86,112 @@ export function ApplicantList({ applicants }: Props) {
     } catch (error) {
       showToast({
         type: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "지원자 컨택에 실패했습니다.",
+        message: error instanceof Error ? error.message : "컨택에 실패했습니다.",
       });
     } finally {
       setSubmittingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(applicationId);
+        return next;
+      });
+    }
+  }
+
+  async function handleComplete(applicationId: number) {
+    setCompletingIds((prev) => new Set(prev).add(applicationId));
+    try {
+      const updated = await completeApplication(applicationId);
+      setItems((prev) =>
+        prev.map((item) =>
+          item.applicationId === applicationId
+            ? { ...item, status: updated.status }
+            : item,
+        ),
+      );
+      showToast({ type: "success", message: "촬영 완료 처리됐습니다." });
+    } catch (error) {
+      showToast({
+        type: "error",
+        message: error instanceof Error ? error.message : "촬영 완료 처리에 실패했습니다.",
+      });
+    } finally {
+      setCompletingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(applicationId);
+        return next;
+      });
+    }
+  }
+
+  async function handleReasonSubmit() {
+    if (!reasonModal || !reasonModal.reason.trim()) return;
+    setReasonModal((prev) => prev && { ...prev, submitting: true });
+    const { type, applicationId, reason } = reasonModal;
+    try {
+      const updated =
+        type === "hold"
+          ? await holdShooting(applicationId, reason.trim())
+          : await cancelShooting(applicationId, reason.trim());
+      setItems((prev) =>
+        prev.map((item) =>
+          item.applicationId === applicationId ? { ...item, status: updated.status } : item,
+        ),
+      );
+      showToast({
+        type: "success",
+        message: type === "hold" ? "촬영이 보류되었습니다." : "촬영이 취소되었습니다.",
+      });
+      setReasonModal(null);
+    } catch (error) {
+      showToast({
+        type: "error",
+        message: error instanceof Error ? error.message : "처리에 실패했습니다.",
+      });
+      setReasonModal((prev) => prev && { ...prev, submitting: false });
+    }
+  }
+
+  async function handleResume(applicationId: number) {
+    setResumingIds((prev) => new Set(prev).add(applicationId));
+    try {
+      const updated = await resumeShooting(applicationId);
+      setItems((prev) =>
+        prev.map((item) =>
+          item.applicationId === applicationId ? { ...item, status: updated.status } : item,
+        ),
+      );
+      showToast({ type: "success", message: "촬영이 재개되었습니다." });
+    } catch (error) {
+      showToast({
+        type: "error",
+        message: error instanceof Error ? error.message : "재개 처리에 실패했습니다.",
+      });
+    } finally {
+      setResumingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(applicationId);
+        return next;
+      });
+    }
+  }
+
+  async function handleReRecruit(applicationId: number) {
+    setReRecruitingIds((prev) => new Set(prev).add(applicationId));
+    try {
+      const updated = await reRecruit(applicationId);
+      setItems((prev) =>
+        prev.map((item) =>
+          item.applicationId === applicationId ? { ...item, status: updated.status } : item,
+        ),
+      );
+      showToast({ type: "success", message: "재모집이 시작되었습니다. 새 공고가 생성됐습니다." });
+    } catch (error) {
+      showToast({
+        type: "error",
+        message: error instanceof Error ? error.message : "재모집 처리에 실패했습니다.",
+      });
+    } finally {
+      setReRecruitingIds((prev) => {
         const next = new Set(prev);
         next.delete(applicationId);
         return next;
@@ -97,15 +204,12 @@ export function ApplicantList({ applicants }: Props) {
     setHistoryError("");
     setHistoryItems([]);
     setLoadingHistoryId(applicant.applicationId);
-
     try {
       const histories = await getApplicationContacts(applicant.applicationId);
       setHistoryItems(histories);
     } catch (error) {
       setHistoryError(
-        error instanceof Error
-          ? error.message
-          : "컨택 이력을 불러오지 못했습니다.",
+        error instanceof Error ? error.message : "컨택 이력을 불러오지 못했습니다.",
       );
     } finally {
       setLoadingHistoryId(null);
@@ -113,29 +217,15 @@ export function ApplicantList({ applicants }: Props) {
   }
 
   async function handleOpenContractStatus(applicant: ApplicantInfo) {
-    setContractStatusModal({
-      applicant,
-      data: null,
-      error: "",
-      loading: true,
-    });
-
+    setContractStatusModal({ applicant, data: null, error: "", loading: true });
     try {
       const status = await getContractStatus(applicant.applicationId);
-      setContractStatusModal({
-        applicant,
-        data: status,
-        error: "",
-        loading: false,
-      });
+      setContractStatusModal({ applicant, data: status, error: "", loading: false });
     } catch (error) {
       setContractStatusModal({
         applicant,
         data: null,
-        error:
-          error instanceof Error
-            ? error.message
-            : "계약 상태를 불러오지 못했습니다.",
+        error: error instanceof Error ? error.message : "계약 상태를 불러오지 못했습니다.",
         loading: false,
       });
     }
@@ -148,8 +238,12 @@ export function ApplicantList({ applicants }: Props) {
     setLoadingHistoryId(null);
   }
 
-  function closeContractStatus() {
-    setContractStatusModal(null);
+  function handleReviewSuccess() {
+    if (reviewTarget) {
+      setReviewedIds((prev) => new Set(prev).add(reviewTarget.applicationId));
+      showToast({ type: "success", message: "리뷰가 작성됐습니다." });
+    }
+    setReviewTarget(null);
   }
 
   if (items.length === 0) {
@@ -166,6 +260,118 @@ export function ApplicantList({ applicants }: Props) {
     <>
       {toast ? <Toast toast={toast} /> : null}
 
+      {/* 보류/취소 사유 입력 모달 */}
+      {reasonModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="flex w-full max-w-md flex-col border border-hairline bg-surface shadow-xl">
+            <div className="flex items-center justify-between border-b border-hairline px-5 py-4">
+              <h2 className="text-[18px] font-bold text-ink">
+                {reasonModal.type === "hold" ? "촬영 보류" : "촬영 취소"}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setReasonModal(null)}
+                className="text-[14px] font-medium text-mute transition hover:text-ink"
+              >
+                닫기
+              </button>
+            </div>
+            <div className="px-5 py-4 flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-[14px] font-semibold text-ink">
+                  {reasonModal.type === "hold" ? "보류 사유" : "취소 사유"}
+                  <span className="ml-1 text-error">*</span>
+                </label>
+                <textarea
+                  rows={4}
+                  value={reasonModal.reason}
+                  onChange={(e) =>
+                    setReasonModal((prev) => prev && { ...prev, reason: e.target.value })
+                  }
+                  placeholder={
+                    reasonModal.type === "hold"
+                      ? "보류 사유를 입력해주세요."
+                      : "취소 사유를 입력해주세요."
+                  }
+                  className="w-full resize-none rounded-lg border border-hairline bg-canvas px-4 py-3 text-[14px] text-ink placeholder:text-mute focus:border-primary focus:outline-none"
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setReasonModal(null)}
+                  className="h-11 flex-1 rounded-lg border border-hairline bg-surface text-[14px] font-semibold text-ink transition hover:border-hairline-strong"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReasonSubmit}
+                  disabled={reasonModal.submitting || !reasonModal.reason.trim()}
+                  className="h-11 flex-1 rounded-lg bg-primary text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:opacity-50"
+                >
+                  {reasonModal.submitting ? "처리 중..." : "확인"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* 재모집 확인 모달 */}
+      {reRecruitConfirmId !== null ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="flex w-full max-w-md flex-col border border-hairline bg-surface shadow-xl">
+            <div className="flex items-center justify-between border-b border-hairline px-5 py-4">
+              <h2 className="text-[18px] font-bold text-ink">재모집 안내</h2>
+              <button
+                type="button"
+                onClick={() => setReRecruitConfirmId(null)}
+                className="text-[14px] font-medium text-mute transition hover:text-ink"
+              >
+                닫기
+              </button>
+            </div>
+            <div className="px-5 py-5 flex flex-col gap-5">
+              <div className="rounded-lg bg-canvas-soft border border-hairline px-4 py-4 text-[13px] leading-6 text-body space-y-1">
+                <p>
+                  현재 공고는{" "}
+                  <span className="font-semibold text-ink">마감(CLOSED)</span> 처리됩니다.
+                </p>
+                <p>
+                  동일한 내용으로{" "}
+                  <span className="font-semibold text-ink">새 공고가 모집 중</span> 상태로 생성됩니다.
+                </p>
+                <p className="text-mute text-[12px] pt-1">
+                  ※ 취소(CANCELLED)가 아닌 마감 처리이며, 새 공고에서 지원을 다시 받을 수 있습니다.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setReRecruitConfirmId(null)}
+                  className="h-11 flex-1 border border-hairline bg-surface text-[14px] font-semibold text-ink transition hover:border-hairline-strong"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const id = reRecruitConfirmId;
+                    setReRecruitConfirmId(null);
+                    void handleReRecruit(id);
+                  }}
+                  className="h-11 flex-1 bg-primary text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover"
+                >
+                  재모집 시작
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* 컨택 이력 모달 */}
       {selectedApplicant ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="flex max-h-[80vh] w-full max-w-2xl flex-col border border-hairline bg-surface shadow-xl">
@@ -174,9 +380,7 @@ export function ApplicantList({ applicants }: Props) {
                 <h2 className="text-[18px] font-bold text-ink">
                   {selectedApplicant.modelName} 컨택 이력
                 </h2>
-                <p className="mt-1 text-[13px] text-mute">
-                  상태: {selectedStatusLabel}
-                </p>
+                <p className="mt-1 text-[13px] text-mute">상태: {selectedStatusLabel}</p>
               </div>
               <button
                 type="button"
@@ -188,28 +392,17 @@ export function ApplicantList({ applicants }: Props) {
             </div>
             <div className="overflow-y-auto px-5 py-4">
               {loadingHistoryId === selectedApplicant.applicationId ? (
-                <p className="py-10 text-center text-[14px] text-mute">
-                  불러오는 중입니다.
-                </p>
+                <p className="py-10 text-center text-[14px] text-mute">불러오는 중입니다.</p>
               ) : historyError ? (
-                <p className="py-10 text-center text-[14px] text-error">
-                  {historyError}
-                </p>
+                <p className="py-10 text-center text-[14px] text-error">{historyError}</p>
               ) : historyItems.length === 0 ? (
-                <p className="py-10 text-center text-[14px] text-mute">
-                  컨택 이력이 없습니다.
-                </p>
+                <p className="py-10 text-center text-[14px] text-mute">컨택 이력이 없습니다.</p>
               ) : (
                 <ul className="space-y-3">
                   {historyItems.map((history) => (
-                    <li
-                      key={history.id}
-                      className="border border-hairline bg-canvas px-4 py-3"
-                    >
+                    <li key={history.id} className="border border-hairline bg-canvas px-4 py-3">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-[13px] font-semibold text-ink">
-                          메시지
-                        </span>
+                        <span className="text-[13px] font-semibold text-ink">메시지</span>
                         <span className="text-[12px] text-mute">
                           {new Date(history.sentAt).toLocaleString("ko-KR")}
                         </span>
@@ -226,6 +419,17 @@ export function ApplicantList({ applicants }: Props) {
         </div>
       ) : null}
 
+      {/* 리뷰 작성 모달 */}
+      {reviewTarget ? (
+        <ReviewModal
+          applicationId={reviewTarget.applicationId}
+          targetName={reviewTarget.modelName}
+          onSuccess={handleReviewSuccess}
+          onClose={() => setReviewTarget(null)}
+        />
+      ) : null}
+
+      {/* 계약 상태 모달 */}
       {contractStatusModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="flex max-h-[80vh] w-full max-w-2xl flex-col border border-hairline bg-surface shadow-xl">
@@ -240,13 +444,12 @@ export function ApplicantList({ applicants }: Props) {
               </div>
               <button
                 type="button"
-                onClick={closeContractStatus}
+                onClick={() => setContractStatusModal(null)}
                 className="text-[14px] font-medium text-mute transition hover:text-ink"
               >
                 닫기
               </button>
             </div>
-
             <div className="overflow-y-auto px-5 py-4">
               {contractStatusModal.loading ? (
                 <p className="py-10 text-center text-[14px] text-mute">
@@ -263,11 +466,11 @@ export function ApplicantList({ applicants }: Props) {
                     value={`#${contractStatusModal.data.contractId}`}
                   />
                   <ModalStatusRow
-                    label="계약 발송"
+                    label="계약서 발송"
                     value={contractStatusModal.data.contractSent ? "완료" : "미발송"}
                   />
                   <ModalStatusRow
-                    label="클라이언트 동의"
+                    label="의뢰인 동의"
                     value={contractStatusModal.data.clientAgreed ? "완료" : "대기"}
                   />
                   <ModalStatusRow
@@ -285,7 +488,9 @@ export function ApplicantList({ applicants }: Props) {
                   <ModalStatusRow
                     label="PDF"
                     value={
-                      contractStatusModal.data.pdfUrl ? "생성 완료" : "아직 생성되지 않았습니다."
+                      contractStatusModal.data.pdfUrl
+                        ? "생성 완료"
+                        : "아직 생성되지 않았습니다."
                     }
                   />
                   {contractStatusModal.data.pdfUrl ? (
@@ -301,10 +506,7 @@ export function ApplicantList({ applicants }: Props) {
                   {contractStatusModal.data.status === "REJECTED" ? (
                     <ModalStatusRow
                       label="거절 사유"
-                      value={
-                        contractStatusModal.data.rejectReason ??
-                        "거절 사유가 없습니다."
-                      }
+                      value={contractStatusModal.data.rejectReason ?? "거절 사유가 없습니다."}
                       breakWords
                     />
                   ) : null}
@@ -317,18 +519,14 @@ export function ApplicantList({ applicants }: Props) {
 
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((applicant) => {
-          const isSubmitting = submittingIds.has(applicant.applicationId);
-          const canContact = applicant.status === "APPLIED";
-          const canCreateContract =
-            applicant.status === "CONTACTED" ||
-            applicant.status === "CONTRACT_SENT";
-          const canCheckContractStatus = applicant.status !== "APPLIED";
+          const { applicationId, status } = applicant;
+          const isSubmitting = submittingIds.has(applicationId);
+          const isCompleting = completingIds.has(applicationId);
+          const isReviewed = reviewedIds.has(applicationId);
+          const canCheckContractStatus = status !== "APPLIED";
 
           return (
-            <li
-              key={applicant.applicationId}
-              className="border border-gray-200 bg-white p-5"
-            >
+            <li key={applicationId} className="border border-gray-200 bg-white p-5">
               <Link
                 href={`/models/${applicant.modelId}`}
                 className="mb-4 flex items-center gap-3 transition-opacity hover:opacity-80"
@@ -356,20 +554,16 @@ export function ApplicantList({ applicants }: Props) {
                 <div className="flex gap-2">
                   <dt className="w-16 shrink-0 text-gray-400">지원 상태</dt>
                   <dd className="font-medium text-black">
-                    {APPLICATION_STATUS_LABELS[applicant.status] ?? applicant.status}
+                    {APPLICATION_STATUS_LABELS[status] ?? status}
                   </dd>
                 </div>
                 <div className="flex gap-2">
                   <dt className="w-16 shrink-0 text-gray-400">컨택 여부</dt>
-                  <dd className="font-medium text-black">
-                    {applicant.contacted ? "완료" : "-"}
-                  </dd>
+                  <dd className="font-medium text-black">{applicant.contacted ? "완료" : "-"}</dd>
                 </div>
                 <div className="flex gap-2">
                   <dt className="w-16 shrink-0 text-gray-400">촬영 여부</dt>
-                  <dd className="font-medium text-black">
-                    {applicant.shooting ? "진행" : "-"}
-                  </dd>
+                  <dd className="font-medium text-black">{applicant.shooting ? "진행" : "-"}</dd>
                 </div>
                 <div className="flex gap-2">
                   <dt className="w-16 shrink-0 text-gray-400">지원일</dt>
@@ -379,56 +573,135 @@ export function ApplicantList({ applicants }: Props) {
                 </div>
                 {applicant.coverLetter ? (
                   <div className="mt-2 border-t border-gray-100 pt-2">
-                    <p className="line-clamp-3 text-[12px] text-gray-500">
-                      {applicant.coverLetter}
-                    </p>
+                    <p className="line-clamp-3 text-[12px] text-gray-500">{applicant.coverLetter}</p>
                   </div>
                 ) : null}
               </dl>
 
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleContact(applicant.applicationId)}
-                  disabled={!canContact || isSubmitting}
-                  className="h-10 border border-black px-3 text-[13px] font-semibold text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
-                >
-                  {isSubmitting
-                    ? "처리 중..."
-                    : canContact
-                      ? "컨택하기"
-                      : "컨택 완료"}
-                </button>
+              {/* 상태별 액션 버튼 */}
+              <div className="mt-4 space-y-2">
+                {status === "APPLIED" && (
+                  <button
+                    type="button"
+                    onClick={() => handleContact(applicationId)}
+                    disabled={isSubmitting}
+                    className="h-10 w-full border border-black px-3 text-[13px] font-semibold text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isSubmitting ? "처리 중..." : "컨택하기"}
+                  </button>
+                )}
+                {status === "CONTACTED" && (
+                  <Link
+                    href={`/contracts/new?applicationId=${applicationId}`}
+                    className="flex h-10 items-center justify-center border border-black bg-black px-3 text-[13px] font-semibold text-white transition hover:opacity-85"
+                  >
+                    계약서 발송
+                  </Link>
+                )}
+                {status === "CONTRACT_SENT" && (
+                  <button
+                    type="button"
+                    disabled
+                    className="h-10 w-full cursor-not-allowed border border-gray-200 bg-gray-100 px-3 text-[13px] font-semibold text-gray-400"
+                  >
+                    계약 검토 중
+                  </button>
+                )}
+                {status === "SHOOTING" && (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleComplete(applicationId)}
+                      disabled={isCompleting}
+                      className="h-10 flex-1 border border-black bg-black px-3 text-[13px] font-semibold text-white transition hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isCompleting ? "처리 중..." : "촬영 완료"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setReasonModal({ type: "hold", applicationId, reason: "", submitting: false })
+                      }
+                      disabled={holdingIds.has(applicationId)}
+                      className="h-10 flex-1 border border-gray-400 px-3 text-[13px] font-semibold text-gray-700 transition hover:border-black hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      보류
+                    </button>
+                  </div>
+                )}
+                {status === "ON_HOLD" && (
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => handleResume(applicationId)}
+                      disabled={resumingIds.has(applicationId)}
+                      className="h-10 w-full border border-black bg-black px-3 text-[13px] font-semibold text-white transition hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {resumingIds.has(applicationId) ? "처리 중..." : "촬영 재개"}
+                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReasonModal({
+                            type: "cancel-shooting",
+                            applicationId,
+                            reason: "",
+                            submitting: false,
+                          })
+                        }
+                        className="h-10 flex-1 border border-gray-400 px-3 text-[13px] font-semibold text-gray-700 transition hover:border-black hover:text-black"
+                      >
+                        촬영 취소
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setReRecruitConfirmId(applicationId)}
+                        disabled={reRecruitingIds.has(applicationId)}
+                        className="h-10 flex-1 border border-gray-400 px-3 text-[13px] font-semibold text-gray-700 transition hover:border-black hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {reRecruitingIds.has(applicationId) ? "처리 중..." : "재모집"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {status === "COMPLETED" && (
+                  <div className="flex gap-2">
+                    <span className="flex h-10 flex-1 items-center justify-center border border-gray-200 bg-gray-50 text-[13px] font-semibold text-gray-500">
+                      완료
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setReviewTarget(applicant)}
+                      disabled={isReviewed}
+                      className="flex h-10 flex-1 items-center justify-center border border-black px-3 text-[13px] font-semibold text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
+                    >
+                      {isReviewed ? "리뷰 완료" : "리뷰 작성"}
+                    </button>
+                  </div>
+                )}
+
+                {/* 이력 보기 (항상 노출) */}
                 <button
                   type="button"
                   onClick={() => handleOpenHistory(applicant)}
-                  disabled={loadingHistoryId === applicant.applicationId}
-                  className="h-10 border border-gray-300 px-3 text-[13px] font-semibold text-gray-700 transition hover:border-black hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={loadingHistoryId === applicationId}
+                  className="h-9 w-full border border-gray-300 px-3 text-[13px] font-semibold text-gray-700 transition hover:border-black hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {loadingHistoryId === applicant.applicationId
-                    ? "불러오는 중..."
-                    : "이력 보기"}
+                  {loadingHistoryId === applicationId ? "불러오는 중..." : "이력 보기"}
                 </button>
+
+                {/* 계약 상태 보기 (APPLIED 제외) */}
+                {canCheckContractStatus ? (
+                  <button
+                    type="button"
+                    onClick={() => handleOpenContractStatus(applicant)}
+                    className="h-9 w-full border border-gray-300 px-3 text-[13px] font-semibold text-gray-700 transition hover:border-black hover:text-black"
+                  >
+                    계약 상태 보기
+                  </button>
+                ) : null}
               </div>
-
-              {canCheckContractStatus ? (
-                <button
-                  type="button"
-                  onClick={() => handleOpenContractStatus(applicant)}
-                  className="mt-2 flex h-10 w-full items-center justify-center border border-gray-300 px-3 text-[13px] font-semibold text-gray-700 transition hover:border-black hover:text-black"
-                >
-                  계약 상태 보기
-                </button>
-              ) : null}
-
-              {canCreateContract ? (
-                <Link
-                  href={`/contracts/new?applicationId=${applicant.applicationId}`}
-                  className="mt-2 flex h-10 items-center justify-center border border-black bg-black px-3 text-[13px] font-semibold text-white transition hover:opacity-85"
-                >
-                  계약서 작성
-                </Link>
-              ) : null}
             </li>
           );
         })}
