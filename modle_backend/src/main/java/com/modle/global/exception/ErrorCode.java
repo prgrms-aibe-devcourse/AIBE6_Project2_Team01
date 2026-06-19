@@ -76,6 +76,7 @@ public enum ErrorCode {
     REPORT_SELF_NOT_ALLOWED(HttpStatus.FORBIDDEN, "403-8", "자신을 신고할 수 없습니다."),
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "404-5", "신고 내역을 찾을 수 없습니다."),
     REPORT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "403-9", "해당 콘텐츠에 대한 신고 권한이 없습니다."),
+    REPORT_NO_SHOW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "400-21", "촬영 진행 중 상태에서만 노쇼 신고가 가능합니다."),
 
     // 지원
     APPLICATION_JOB_NOT_RECRUITING(HttpStatus.BAD_REQUEST, "400-11", "모집 중인 공고에만 지원할 수 있습니다."),

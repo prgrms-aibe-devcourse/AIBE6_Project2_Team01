@@ -1,5 +1,6 @@
 package com.modle.domain.review.service;
 
+import com.modle.domain.application.repository.ApplicationRepository;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.message.repository.MessageRepository;
 import com.modle.domain.review.dto.request.CreateReportRequest;
@@ -11,6 +12,7 @@ import com.modle.domain.review.entity.type.ReportTargetType;
 import com.modle.domain.review.repository.ReportRepository;
 import com.modle.domain.review.service.reportValidator.ReportTargetValidator;
 import com.modle.domain.user.entity.User;
+import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.UserRepository;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
@@ -37,6 +39,8 @@ public class ReportService {
     private final MessageRepository messageRepository;
     private final MailService mailService;
     private final List<ReportTargetValidator> validators;
+    private final ApplicationRepository applicationRepository;
+    private final ModelRepository modelRepository;
 
     private Map<ReportTargetType, ReportTargetValidator> validatorMap;
 
@@ -130,6 +134,15 @@ public class ReportService {
                 var message = messageRepository.findById(report.getTargetId())
                         .orElseThrow(() -> new CustomException(ErrorCode.REPORT_TARGET_NOT_FOUND));
                 yield message.getSenderId();
+            }
+
+            case NO_SHOW -> {
+                // targetId = applicationId → 지원한 모델의 userId
+                var application = applicationRepository.findById(report.getTargetId())
+                        .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
+                var model = modelRepository.findById(application.getModelId())
+                        .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
+                yield model.getUser().getId();
             }
         };
 
