@@ -12,6 +12,7 @@ import java.util.Optional;
 
 @Repository
 public interface ModelRepository extends JpaRepository<Model,Long>, JpaSpecificationExecutor<Model> {
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"user"})
     Optional<Model> findByUserId(Long userId);
 
     @Query(value = """
