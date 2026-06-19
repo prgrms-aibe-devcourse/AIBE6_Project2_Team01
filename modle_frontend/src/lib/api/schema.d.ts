@@ -1043,6 +1043,8 @@ export interface components {
             status?: "RECRUITING" | "SHOOTING" | "COMPLETED" | "CANCELLED" | "ON_HOLD" | "CLOSED";
             /** @enum {string} */
             requiredSex?: "M" | "F" | "ANY";
+            /** Format: int32 */
+            requiredCount?: number;
             payment?: number;
             /** @enum {string} */
             payType?: "CASH" | "SERVICE" | "FREE";
