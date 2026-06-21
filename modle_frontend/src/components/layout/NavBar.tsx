@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
 import { useAuth } from "@/hooks/useAuth";
 import { NotificationPanel } from "@/components/ui/NotificationPanel";
 import { Toast, type ToastState } from "@/components/ui/Toast";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ROLE_LABEL: Record<string, string> = {
   MODEL: "모델",
@@ -15,7 +14,7 @@ const ROLE_LABEL: Record<string, string> = {
   ADMIN: "관리자",
 };
 
-const NAV_LINK_CLASS = "text-[13px] font-semibold leading-5 text-ink hover:underline";
+const NAV_LINK_CLASS = "text-[14px] font-medium leading-5 text-gray-300 hover:text-white transition-colors relative group";
 
 function BellIcon() {
   return (
@@ -70,91 +69,115 @@ export function NavBar() {
   const isModelOrClient = user?.role === "MODEL" || user?.role === "CLIENT";
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-hairline bg-canvas px-6">
-      <Link href="/" className="text-[15px] font-bold leading-6 text-ink">
+    <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-white/10 bg-black/90 backdrop-blur-lg px-6 shadow-sm transition-all duration-300">
+      <Link href="/" className="text-[18px] font-extrabold tracking-tight leading-6 text-white hover:text-gray-200 transition-colors">
         Modle
       </Link>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-1 bg-white/10 px-4 py-1.5 rounded-full border border-white/10 mr-2">
+          <Link href="/jobs" className={NAV_LINK_CLASS}>
+            공고 목록
+          </Link>
+          <span className="w-px h-3 bg-white/20 mx-2"></span>
+          <Link href="/models" className={NAV_LINK_CLASS}>
+            모델 목록
+          </Link>
+        </div>
+
         {isLoading ? null : user ? (
-          <>
+          <div className="flex items-center gap-2 bg-white/10 px-2 py-1.5 rounded-full border border-white/10 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)]">
             {user.role === "ADMIN" ? (
-              <Link href="/admin" className={NAV_LINK_CLASS}>
-                관리자 페이지
-              </Link>
+              <div className="flex items-center px-3">
+                <Link href="/admin" className={NAV_LINK_CLASS}>
+                  관리자 페이지
+                </Link>
+              </div>
             ) : (
-              <>
+              <div className="flex items-center px-2">
                 <Link href="/my/profile" className={NAV_LINK_CLASS}>
                   마이페이지
                 </Link>
-                <Link href="/jobs" className={NAV_LINK_CLASS}>
-                  공고 목록
-                </Link>
-                <Link href="/models" className={NAV_LINK_CLASS}>
-                  모델 목록
-                </Link>
                 {user.role === "CLIENT" && (
-                  <Link href="/jobs/new" className={NAV_LINK_CLASS}>
-                    공고 등록
-                  </Link>
+                  <>
+                    <span className="w-1 h-1 rounded-full bg-white/30 mx-3"></span>
+                    <Link href="/jobs/new" className={NAV_LINK_CLASS}>
+                      공고 등록
+                    </Link>
+                  </>
                 )}
+                <span className="w-1 h-1 rounded-full bg-white/30 mx-3"></span>
                 <Link href="/messages" className={NAV_LINK_CLASS}>
                   쪽지
                 </Link>
 
                 {/* 알림 버튼 */}
                 {isModelOrClient && (
-                  <div ref={notifRef} className="relative">
-                    <button
+                  <div ref={notifRef} className="relative ml-2">
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
                       type="button"
                       onClick={() => setNotifOpen((o) => !o)}
                       aria-label="알림"
                       aria-expanded={notifOpen}
-                      className={`flex h-9 w-9 items-center justify-center rounded-md border transition ${
+                      className={`flex h-8 w-8 items-center justify-center rounded-full border transition-all ${
                         notifOpen
-                          ? "border-primary text-primary bg-primary-soft"
-                          : "border-hairline text-body hover:border-hairline-strong hover:text-ink"
+                          ? "border-primary text-primary bg-primary/10"
+                          : "border-white/20 text-gray-300 hover:border-white/50 hover:text-white hover:bg-white/10"
                       }`}
                     >
                       <BellIcon />
-                    </button>
-                    {notifOpen && (
-                      <NotificationPanel
-                        role={user.role as "MODEL" | "CLIENT"}
-                        onClose={() => setNotifOpen(false)}
-                      />
-                    )}
+                    </motion.button>
+                    <AnimatePresence>
+                      {notifOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          className="absolute right-0 top-12"
+                        >
+                          <NotificationPanel
+                            role={user.role as "MODEL" | "CLIENT"}
+                            onClose={() => setNotifOpen(false)}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 )}
-              </>
+              </div>
             )}
 
-            <span className="text-[13px] leading-5 text-body">
-              {ROLE_LABEL[user.role] ?? user.role} 계정
-            </span>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="h-11 rounded-md border border-hairline-strong bg-surface px-4 text-[15px] font-semibold leading-6 text-ink transition hover:border-ink"
-            >
-              로그아웃
-            </button>
-          </>
+            <div className="flex items-center gap-3 pl-2 pr-1 border-l border-white/20 ml-1">
+              <span className="text-[13px] font-bold tracking-wide text-white">
+                {ROLE_LABEL[user.role] ?? user.role}님
+              </span>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                type="button"
+                onClick={handleLogout}
+                className="h-8 rounded-full border border-white/20 bg-white/5 px-3 text-[12px] font-medium text-gray-300 transition-colors hover:border-white hover:bg-white hover:text-ink"
+              >
+                로그아웃
+              </motion.button>
+            </div>
+          </div>
         ) : (
-          <>
+          <div className="flex items-center gap-3 ml-2">
             <Link
               href="/login"
-              className="inline-flex h-11 items-center rounded-md border border-hairline-strong bg-surface px-4 text-[15px] font-semibold leading-6 text-ink transition hover:border-ink"
+              className="inline-flex h-9 items-center rounded-full border border-white/20 bg-transparent px-5 text-[13px] font-medium leading-6 text-gray-300 transition-colors hover:border-white hover:text-white"
             >
               로그인
             </Link>
             <Link
               href="/signup"
-              className="inline-flex h-11 items-center rounded-md bg-primary px-4 text-[15px] font-semibold leading-6 text-on-primary transition hover:bg-primary-hover"
+              className="inline-flex h-9 items-center rounded-full bg-white px-5 text-[13px] font-bold leading-6 text-black transition-transform hover:scale-105"
             >
               회원가입
             </Link>
-          </>
+          </div>
         )}
       </div>
 

@@ -2,6 +2,7 @@
 
 import { MouseEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { Model } from '@/types/model';
 import { ModelCard } from './ModelCard';
 import { useAuth } from '@/hooks/useAuth';
@@ -84,20 +85,41 @@ export function ModelGrid({
 
   return (
     <div className="flex flex-col gap-10 pb-10">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <motion.div 
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.08
+            }
+          }
+        }}
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"
+      >
         {models.map((model) => (
-          <Link key={model.id} href={`/models/${model.id}`}>
-            <ModelCard
-              model={model}
-              bookmarked={bookmarkedIds.has(model.id)}
-              showBookmark={isClient}
-              onBookmarkToggle={
-                isClient ? (e) => handleBookmarkToggle(e, model.id) : undefined
-              }
-            />
-          </Link>
+          <motion.div 
+            key={model.id}
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0, transition: { type: "spring", bounce: 0.4 } }
+            }}
+          >
+            <Link href={`/models/${model.id}`} className="block h-full">
+              <ModelCard
+                model={model}
+                bookmarked={bookmarkedIds.has(model.id)}
+                showBookmark={isClient}
+                onBookmarkToggle={
+                  isClient ? (e) => handleBookmarkToggle(e, model.id) : undefined
+                }
+              />
+            </Link>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2 mt-6">
