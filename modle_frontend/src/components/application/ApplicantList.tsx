@@ -18,6 +18,7 @@ import {
   type ApplicantInfo,
   type ContactHistory,
 } from "@/lib/api/application";
+import { createReport } from "@/lib/api/report";
 import {
   formatContractStatus,
   getContractStatus,
@@ -57,6 +58,10 @@ export function ApplicantList({ applicants }: Props) {
   const [contractStatusModal, setContractStatusModal] =
     useState<ContractStatusModalState | null>(null);
   const [reRecruitConfirmId, setReRecruitConfirmId] = useState<number | null>(null);
+  const [noShowTarget, setNoShowTarget] = useState<ApplicantInfo | null>(null);
+  const [noShowDesc, setNoShowDesc] = useState("");
+  const [reportingIds, setReportingIds] = useState<Set<number>>(new Set());
+  const [reportedIds, setReportedIds] = useState<Set<number>>(new Set());
   const [toast, setToast] = useState<ToastState | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -246,6 +251,28 @@ export function ApplicantList({ applicants }: Props) {
     setReviewTarget(null);
   }
 
+  async function handleNoShowReport() {
+    if (!noShowTarget) return;
+    const { applicationId } = noShowTarget;
+    setReportingIds((prev) => new Set(prev).add(applicationId));
+    try {
+      await createReport({
+        targetType: "NO_SHOW",
+        targetId: applicationId,
+        reason: "OTHER",
+        description: noShowDesc.trim() || undefined,
+      });
+      setReportedIds((prev) => new Set(prev).add(applicationId));
+      showToast({ type: "success", message: "노쇼 신고가 접수되었습니다." });
+      setNoShowTarget(null);
+      setNoShowDesc("");
+    } catch (error) {
+      showToast({ type: "error", message: error instanceof Error ? error.message : "신고 접수에 실패했습니다." });
+    } finally {
+      setReportingIds((prev) => { const next = new Set(prev); next.delete(applicationId); return next; });
+    }
+  }
+
   if (items.length === 0) {
     return (
       <div className="py-20 text-center">
@@ -429,6 +456,59 @@ export function ApplicantList({ applicants }: Props) {
         />
       ) : null}
 
+      {/* 노쇼 신고 모달 */}
+      {noShowTarget ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md border border-hairline bg-surface shadow-xl">
+            <div className="flex items-center justify-between border-b border-hairline px-5 py-4">
+              <h2 className="text-[18px] font-bold text-ink">노쇼 신고</h2>
+              <button
+                type="button"
+                onClick={() => { setNoShowTarget(null); setNoShowDesc(""); }}
+                className="text-[14px] font-medium text-mute transition hover:text-ink"
+              >
+                닫기
+              </button>
+            </div>
+            <div className="px-5 py-5 space-y-4">
+              <p className="text-[14px] text-body">
+                <span className="font-semibold text-ink">{noShowTarget.modelName}</span> 모델이 촬영에 나타나지 않았나요?
+              </p>
+              <div>
+                <label className="mb-2 block text-[13px] font-semibold text-ink">
+                  추가 설명 <span className="font-normal text-mute">(선택)</span>
+                </label>
+                <textarea
+                  rows={3}
+                  value={noShowDesc}
+                  onChange={(e) => setNoShowDesc(e.target.value)}
+                  placeholder="상황을 간단히 설명해주세요."
+                  maxLength={500}
+                  className="w-full resize-none border border-hairline bg-canvas px-3 py-2 text-[14px] text-ink placeholder:text-mute focus:border-ink focus:outline-none"
+                />
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => { setNoShowTarget(null); setNoShowDesc(""); }}
+                  className="h-10 flex-1 border border-hairline text-[13px] font-semibold text-mute transition hover:border-ink hover:text-ink"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNoShowReport}
+                  disabled={reportingIds.has(noShowTarget.applicationId)}
+                  className="h-10 flex-1 bg-black text-[13px] font-semibold text-white transition hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {reportingIds.has(noShowTarget.applicationId) ? "접수 중..." : "신고 접수"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {/* 계약 상태 모달 */}
       {contractStatusModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -523,6 +603,7 @@ export function ApplicantList({ applicants }: Props) {
           const isSubmitting = submittingIds.has(applicationId);
           const isCompleting = completingIds.has(applicationId);
           const isReviewed = reviewedIds.has(applicationId);
+          const isReported = reportedIds.has(applicationId);
           const canCheckContractStatus = status !== "APPLIED";
 
           return (
@@ -608,24 +689,34 @@ export function ApplicantList({ applicants }: Props) {
                   </button>
                 )}
                 {status === "SHOOTING" && (
-                  <div className="flex gap-2">
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleComplete(applicationId)}
+                        disabled={isCompleting}
+                        className="h-10 flex-1 border border-black bg-black px-3 text-[13px] font-semibold text-white transition hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {isCompleting ? "처리 중..." : "촬영 완료"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReasonModal({ type: "hold", applicationId, reason: "", submitting: false })
+                        }
+                        disabled={holdingIds.has(applicationId)}
+                        className="h-10 flex-1 border border-gray-400 px-3 text-[13px] font-semibold text-gray-700 transition hover:border-black hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        보류
+                      </button>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => handleComplete(applicationId)}
-                      disabled={isCompleting}
-                      className="h-10 flex-1 border border-black bg-black px-3 text-[13px] font-semibold text-white transition hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
+                      onClick={() => { setNoShowTarget(applicant); setNoShowDesc(""); }}
+                      disabled={isReported}
+                      className="h-9 w-full border border-red-300 px-3 text-[13px] font-semibold text-red-500 transition hover:border-red-500 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {isCompleting ? "처리 중..." : "촬영 완료"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setReasonModal({ type: "hold", applicationId, reason: "", submitting: false })
-                      }
-                      disabled={holdingIds.has(applicationId)}
-                      className="h-10 flex-1 border border-gray-400 px-3 text-[13px] font-semibold text-gray-700 transition hover:border-black hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      보류
+                      {isReported ? "노쇼 신고 완료" : "노쇼 신고"}
                     </button>
                   </div>
                 )}

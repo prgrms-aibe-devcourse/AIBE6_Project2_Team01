@@ -8,6 +8,8 @@ import com.modle.domain.contract.dto.response.ContractResponse;
 import com.modle.domain.contract.dto.response.ContractTemplateResponse;
 import com.modle.domain.contract.dto.response.ContractViewResponse;
 import com.modle.domain.contract.service.ContractService;
+import com.modle.domain.contract.entity.type.ContractListStatus;
+import com.modle.domain.contract.dto.response.ContractListItemResponse;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -56,11 +58,16 @@ public class ContractController {
     @PreAuthorize("hasRole('CLIENT')")
     public ApiResponse<ContractPdfResponse> createContractPdf(
             @AuthenticationPrincipal SecurityUser securityUser,
-            @Valid @RequestBody ContractPdfCreateRequest request
+            @Valid @RequestBody ContractPdfCreateRequest request,
+            HttpServletRequest httpServletRequest
     ) {
         return ApiResponse.ok(
                 "계약서 PDF 생성 성공",
-                contractService.generatePdf(securityUser.getId(), request)
+                contractService.generatePdf(
+                        securityUser.getId(),
+                        request,
+                        httpServletRequest.getRemoteAddr()
+                )
         );
     }
 
@@ -113,6 +120,18 @@ public class ContractController {
         return ApiResponse.ok(
                 "계약서를 거부했습니다.",
                 contractService.rejectContract(securityUser.getId(), id, request.rejectReason())
+        );
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('CLIENT', 'MODEL')")
+    public ApiResponse<List<ContractListItemResponse>> getContracts(
+            @AuthenticationPrincipal SecurityUser securityUser,
+            @RequestParam ContractListStatus status
+    ) {
+        return ApiResponse.ok(
+                "계약 내역 조회 성공",
+                contractService.getContracts(securityUser.getId(), securityUser.getRole(), status)
         );
     }
 

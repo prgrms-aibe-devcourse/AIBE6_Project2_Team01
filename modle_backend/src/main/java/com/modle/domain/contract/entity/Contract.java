@@ -161,6 +161,10 @@ public class Contract extends BaseEntity {
         if (this.viewedAt == null) {
             this.viewedAt = viewedAt;
         }
+
+        if (this.status == ContractStatus.NOTIFIED) {
+            this.status = ContractStatus.VIEWED;
+        }
     }
 
     public void clientAgree(LocalDateTime agreedAt, String ip) {
@@ -175,8 +179,9 @@ public class Contract extends BaseEntity {
         this.modelIp = ip;
     }
 
-    public void confirm(LocalDateTime confirmedAt) {
+    public void confirm(String signedPdfUrl, LocalDateTime confirmedAt) {
         this.status = ContractStatus.CONFIRMED;
+        this.signedPdfUrl = signedPdfUrl;
         this.confirmedAt = confirmedAt;
     }
 

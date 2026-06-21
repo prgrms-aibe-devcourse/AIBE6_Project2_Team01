@@ -268,7 +268,11 @@ function NewContractPageContent() {
   }
 
   function handleContractTypeChange(contractType: ContractType) {
-    setForm((current) => ({ ...current, contractType }));
+    setForm((current) => ({
+      ...current,
+      contractType,
+      pdfUrl: contractType === "TEMPLATE" ? "" : current.pdfUrl,
+    }));
 
     if (contractType === "FILE") {
       setSelectedTemplateId("");
@@ -618,13 +622,14 @@ function NewContractPageContent() {
 
               <Field label="PDF URL" required={isFileContract} className="md:col-span-2">
                 <input
-                  className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
+                  className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink disabled:bg-canvas-soft disabled:text-mute"
                   placeholder={
                     isFileContract
                       ? "FILE 계약은 PDF URL을 입력해야 합니다."
-                      : "FILE 계약일 때만 사용합니다."
+                      : "템플릿 계약은 URL을 입력할 수 없습니다."
                   }
-                  value={form.pdfUrl}
+                  value={isTemplateContract ? "" : form.pdfUrl}
+                  disabled={isTemplateContract}
                   onChange={(event) => updateField("pdfUrl", event.target.value)}
                 />
               </Field>

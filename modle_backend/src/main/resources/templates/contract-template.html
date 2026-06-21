@@ -78,17 +78,23 @@
 
         .article {
             margin-top: 13px;
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
 
         .article-title {
             margin-bottom: 5px;
             font-size: 13px;
             font-weight: 700;
+            page-break-after: avoid;
+            break-after: avoid;
         }
 
         .note {
             color: #4b5563;
             font-size: 10px;
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
 
         .page-break {
@@ -99,6 +105,16 @@
         .signature-table td {
             height: 56px;
             vertical-align: middle;
+        }
+
+        .signature-table,
+        .agreement-box,
+        table,
+        tr,
+        td,
+        th {
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
 
         .signature-line {
@@ -322,7 +338,8 @@
         <td>
             성명 또는 회사명: {{client_company_name}}<br />
             이메일: {{client_email}}<br />
-            서명: <span class="signature-line"></span>
+            서명: <span class="signature-line">{{client_signature_text}}</span><br />
+            서명 시각: {{client_signed_at}}
         </td>
     </tr>
     <tr>
@@ -330,7 +347,8 @@
         <td>
             성명: {{model_name}}<br />
             이메일: {{model_email}}<br />
-            서명: <span class="signature-line"></span>
+            서명: <span class="signature-line">{{model_signature_text}}</span><br />
+            서명 시각: {{model_signed_at}}
         </td>
     </tr>
 </table>

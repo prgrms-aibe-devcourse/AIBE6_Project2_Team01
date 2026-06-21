@@ -30,6 +30,14 @@ export const STATUS_CHANGE_DESCRIPTIONS: Record<string, string> = {
   RECRUITING: "다시 모델 지원을 받습니다.",
 };
 
+/** 마지막 글자의 받침 여부에 따라 "으로" 또는 "로"를 반환한다. */
+export const eulo = (text: string): string => {
+  const code = text.charCodeAt(text.length - 1);
+  if (code < 0xac00 || code > 0xd7a3) return "으로";
+  const jongseong = (code - 0xac00) % 28;
+  return jongseong === 0 || jongseong === 8 ? "로" : "으로";
+};
+
 export const STATUS_TRANSITIONS: Record<string, string[]> = {
   RECRUITING: ["SHOOTING", "CANCELLED", "ON_HOLD", "CLOSED"],
   SHOOTING: ["COMPLETED", "CANCELLED", "ON_HOLD"],

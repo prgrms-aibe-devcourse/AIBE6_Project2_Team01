@@ -13,6 +13,8 @@ export type ContractStatus =
   | "CONFIRMED"
   | "CANCELLED";
 
+export type ContractListStatus = "ONGOING" | "DONE" | "CANCELLED";
+
 export const CONTRACT_STATUS_LABELS: Record<ContractStatus, string> = {
   DRAFT: "초안",
   NOTIFIED: "발송 완료",
@@ -74,7 +76,7 @@ export type ContractViewResponse = {
   location: string;
   payment: number;
   payType: "CASH" | "SERVICE" | "FREE";
-  usageScope: string;
+  usageScope: string | null;
   memo: string | null;
   status: ContractStatus;
   pdfUrl: string | null;
@@ -93,6 +95,22 @@ export type ContractStatusResponse = {
   pdfUrl: string | null;
   rejectReason: string | null;
   shootingAvailable: boolean;
+};
+
+export type ContractListItem = {
+  contractId: number;
+  applicationId: number;
+  partnerName: string;
+  contractType: "TEMPLATE" | "FILE";
+  contractStatus: ContractStatus;
+  shootStartAt: string;
+  shootEndAt: string;
+  location: string;
+  payment: number;
+  payType: "CASH" | "SERVICE" | "FREE";
+  documentUrl: string | null;
+  confirmedAt: string | null;
+  createdDate: string;
 };
 
 export async function createContractPdf(
@@ -217,8 +235,25 @@ export async function getContractDraft(
   );
 
   if (!response.ok) {
-    throw new Error("계약 임시저장 정보를 조회하지 못했습니다.");
+    throw new Error("임시 저장된 계약 정보를 조회하지 못했습니다.");
   }
 
   return ((await response.json()) as ApiResponse<ContractDraftResponse>).data;
+}
+
+export async function getContracts(
+  status: ContractListStatus,
+): Promise<ContractListItem[]> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/api/v1/contracts?status=${status}`,
+    {
+      method: "GET",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("계약 내역을 조회하지 못했습니다.");
+  }
+
+  return ((await response.json()) as ApiResponse<ContractListItem[]>).data;
 }

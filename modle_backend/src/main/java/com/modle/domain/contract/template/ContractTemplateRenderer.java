@@ -1,13 +1,8 @@
 package com.modle.domain.contract.template;
 
-import com.modle.domain.contract.entity.Contract;
-import com.modle.domain.contract.entity.type.PayType;
 import org.springframework.stereotype.Component;
 
-import java.text.NumberFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,12 +10,10 @@ import java.util.regex.Pattern;
 @Component
 public class ContractTemplateRenderer {
 
-    private static final DateTimeFormatter CONTRACT_DATE_TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final Pattern TEMPLATE_PATTERN = Pattern.compile("\\{\\{(\\w+)}}");
 
-    public String render(String content, Contract contract) {
-        Map<String, String> values = buildTemplateValues(contract);
+    public String render(String content, ContractTemplateContext context) {
+        Map<String, String> values = buildTemplateValues(context);
 
         Matcher matcher = TEMPLATE_PATTERN.matcher(content);
         StringBuffer result = new StringBuffer();
@@ -34,43 +27,45 @@ public class ContractTemplateRenderer {
         return result.toString();
     }
 
-    private Map<String, String> buildTemplateValues(Contract contract) {
+    private Map<String, String> buildTemplateValues(ContractTemplateContext context) {
         Map<String, String> values = new HashMap<>();
 
-        values.put("shoot_start_at", contract.getShootStartAt().format(CONTRACT_DATE_TIME_FORMATTER));
-        values.put("shootStartAt", contract.getShootStartAt().format(CONTRACT_DATE_TIME_FORMATTER));
+        values.put("client_company_name", defaultValue(context.clientCompanyName()));
+        values.put("client_email", defaultValue(context.clientEmail()));
+        values.put("model_name", defaultValue(context.modelName()));
+        values.put("model_email", defaultValue(context.modelEmail()));
+        values.put("post_content", defaultValue(context.postContent()));
+        values.put("post_category", defaultValue(context.postCategory()));
 
-        values.put("shoot_end_at", contract.getShootEndAt().format(CONTRACT_DATE_TIME_FORMATTER));
-        values.put("shootEndAt", contract.getShootEndAt().format(CONTRACT_DATE_TIME_FORMATTER));
+        values.put("shoot_start_at", defaultValue(context.shootStartAt()));
+        values.put("shootStartAt", defaultValue(context.shootStartAt()));
+        values.put("shoot_end_at", defaultValue(context.shootEndAt()));
+        values.put("shootEndAt", defaultValue(context.shootEndAt()));
 
-        values.put("location", contract.getLocation());
-        values.put("payment", formatPayment(contract));
+        values.put("location", defaultValue(context.location()));
+        values.put("payment", defaultValue(context.payment()));
 
-        values.put("pay_type", getPayTypeLabel(contract.getPayType()));
-        values.put("payType", getPayTypeLabel(contract.getPayType()));
+        values.put("pay_type", defaultValue(context.payType()));
+        values.put("payType", defaultValue(context.payType()));
 
-        values.put("usage_scope", contract.getUsageScope());
-        values.put("usageScope", contract.getUsageScope());
+        values.put("usage_scope", defaultValue(context.usageScope()));
+        values.put("usageScope", defaultValue(context.usageScope()));
 
-        values.put("memo", contract.getMemo() == null || contract.getMemo().isBlank()
-                ? "없음"
-                : contract.getMemo());
+        values.put("memo", defaultMemo(context.memo()));
+
+        values.put("client_signature_text", defaultValue(context.clientSignatureText()));
+        values.put("client_signed_at", defaultValue(context.clientSignedAt()));
+        values.put("model_signature_text", defaultValue(context.modelSignatureText()));
+        values.put("model_signed_at", defaultValue(context.modelSignedAt()));
 
         return values;
     }
 
-    private String formatPayment(Contract contract) {
-        if (contract.getPayType() == PayType.FREE) {
-            return "0원";
-        }
-        return NumberFormat.getNumberInstance(Locale.KOREA).format(contract.getPayment()) + "원";
+    private String defaultValue(String value) {
+        return value == null ? "" : value;
     }
 
-    private String getPayTypeLabel(PayType payType) {
-        return switch (payType) {
-            case CASH -> "현금";
-            case SERVICE -> "서비스";
-            case FREE -> "무료";
-        };
+    private String defaultMemo(String value) {
+        return value == null || value.isBlank() ? "없음" : value;
     }
 }

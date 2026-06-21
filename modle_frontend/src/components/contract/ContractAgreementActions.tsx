@@ -6,85 +6,47 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   agreeContract,
   formatContractStatus,
-  getContractStatus,
   rejectContract,
-  viewContract,
   type ContractStatus,
 } from "@/lib/api/contract";
 
 type ContractAgreementActionsProps = {
   contractId: number;
   initialStatus: ContractStatus;
-  applicationId?: number;
+  hasViewedContract: boolean;
+  onStatusChange?: (next: {
+    status: ContractStatus;
+    rejectReason: string;
+    signedPdfUrl: string;
+  }) => void;
 };
 
 export function ContractAgreementActions({
   contractId,
   initialStatus,
-  applicationId,
+  hasViewedContract,
+  onStatusChange,
 }: ContractAgreementActionsProps) {
   const { user, isLoading } = useAuth();
   const [status, setStatus] = useState<ContractStatus>(initialStatus);
   const [rejectReason, setRejectReason] = useState("");
   const [requestStatus, setRequestStatus] = useState<
-    "idle" | "loading" | "agree" | "reject" | "success" | "error"
+    "idle" | "agree" | "reject" | "success" | "error"
   >("idle");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    if (isLoading || user?.role !== "MODEL") {
-      return;
-    }
-
-    const currentApplicationId = applicationId;
-    let ignore = false;
-
-    async function loadContractStatus() {
-      setRequestStatus("loading");
-      setMessage("");
-
-      try {
-        const contract = currentApplicationId
-          ? await getContractStatus(currentApplicationId)
-          : await viewContract(contractId);
-
-        if (ignore) {
-          return;
-        }
-
-        setStatus(contract.status);
-        setRequestStatus("idle");
-      } catch (error) {
-        if (ignore) {
-          return;
-        }
-
-        setRequestStatus("error");
-        setMessage(
-          error instanceof Error
-            ? error.message
-            : "계약 정보를 조회하지 못했습니다.",
-        );
-      }
-    }
-
-    void loadContractStatus();
-
-    return () => {
-      ignore = true;
-    };
-  }, [applicationId, contractId, isLoading, user?.role]);
+    setStatus(initialStatus);
+  }, [initialStatus]);
 
   if (isLoading || user?.role !== "MODEL") {
     return null;
   }
 
   const canRespond =
-    status === "NOTIFIED" || status === "VIEWED" || status === "AGREED";
+    hasViewedContract && (status === "VIEWED" || status === "AGREED");
   const isSubmitting =
-    requestStatus === "loading" ||
-    requestStatus === "agree" ||
-    requestStatus === "reject";
+    requestStatus === "agree" || requestStatus === "reject";
 
   const handleAgree = async () => {
     setRequestStatus("agree");
@@ -99,6 +61,11 @@ export function ContractAgreementActions({
           ? "계약이 확정되었습니다."
           : "계약 동의가 완료되었습니다.",
       );
+      onStatusChange?.({
+        status: contract.status,
+        rejectReason: contract.rejectReason ?? "",
+        signedPdfUrl: contract.signedPdfUrl ?? "",
+      });
     } catch (error) {
       setRequestStatus("error");
       setMessage(
@@ -123,6 +90,11 @@ export function ContractAgreementActions({
       setRejectReason("");
       setRequestStatus("success");
       setMessage("계약을 거절했습니다.");
+      onStatusChange?.({
+        status: contract.status,
+        rejectReason: contract.rejectReason ?? rejectReason.trim(),
+        signedPdfUrl: contract.signedPdfUrl ?? "",
+      });
     } catch (error) {
       setRequestStatus("error");
       setMessage(
@@ -160,11 +132,7 @@ export function ContractAgreementActions({
           onClick={handleAgree}
           className="h-11 rounded-md bg-primary px-4 text-[15px] font-semibold leading-6 text-on-primary transition hover:bg-primary-hover disabled:bg-canvas-soft disabled:text-mute"
         >
-          {requestStatus === "loading"
-            ? "확인 중"
-            : requestStatus === "agree"
-              ? "동의 중"
-              : "동의"}
+          {requestStatus === "agree" ? "동의 중" : "동의"}
         </button>
         <button
           type="button"
@@ -172,17 +140,15 @@ export function ContractAgreementActions({
           onClick={handleReject}
           className="h-11 rounded-md border border-hairline bg-canvas-soft px-4 text-[15px] font-semibold leading-6 text-ink transition hover:border-hairline-strong disabled:text-mute"
         >
-          {requestStatus === "loading"
-            ? "확인 중"
-            : requestStatus === "reject"
-              ? "거절 중"
-              : "거절"}
+          {requestStatus === "reject" ? "거절 중" : "거절"}
         </button>
       </div>
 
       {!canRespond ? (
         <p className="rounded-md bg-canvas-soft px-3 py-2 text-[13px] leading-5 text-body">
-          현재 상태: {formatContractStatus(status)}
+          {hasViewedContract
+            ? `현재 상태: ${formatContractStatus(status)}`
+            : "계약서를 확인한 뒤 동의 또는 거절하실 수 있습니다."}
         </p>
       ) : null}
 

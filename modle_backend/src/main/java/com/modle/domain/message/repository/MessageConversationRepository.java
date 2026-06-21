@@ -26,4 +26,6 @@ public interface MessageConversationRepository extends JpaRepository<MessageConv
     );
 
     Optional<MessageConversation> findByApplicationId(Long applicationId);
+
+    List<MessageConversation> findByPostIdAndApplicationIdIsNotNull(Long postId);
 }

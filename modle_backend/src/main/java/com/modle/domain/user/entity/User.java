@@ -109,4 +109,8 @@ public class User extends BaseEntity {
     public void increaseWarningCount() {
         this.warningCount++;
     }
+
+    public void suspend() {
+        this.status = UserStatus.SUSPENDED;
+    }
 }

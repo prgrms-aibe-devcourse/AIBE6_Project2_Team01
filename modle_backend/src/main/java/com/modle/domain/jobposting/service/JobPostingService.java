@@ -12,6 +12,7 @@ import com.modle.domain.jobposting.entity.type.JobPostingStatus;
 import com.modle.domain.jobposting.entity.type.ViewerType;
 import com.modle.domain.jobposting.event.JobPostingCreatedEvent;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
+import com.modle.domain.message.service.MessageService;
 import com.modle.domain.user.entity.Client;
 import com.modle.domain.user.repository.ClientRepository;
 import com.modle.global.entity.type.Region;
@@ -36,6 +37,7 @@ public class JobPostingService {
     private final ApplicationEventPublisher eventPublisher;
     private final ApplicationRepository applicationRepository;
     private final ClientRepository clientRepository;
+    private final MessageService messageService;
 
 
     // JOB-002: 공고를 저장하고(상태=모집 중) AI 모델 추천을 비동기로 트리거한다.
@@ -157,6 +159,8 @@ public class JobPostingService {
         }
 
         jobPosting.updateStatus(request.status());
+
+        messageService.sendStatusChangeNotifications(jobPostingId, clientId, request.status(), request.reason());
         return JobPostingResponse.from(jobPosting);
     }
 

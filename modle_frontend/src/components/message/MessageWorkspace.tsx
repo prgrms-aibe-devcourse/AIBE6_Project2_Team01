@@ -50,6 +50,26 @@ function clampSwipeOffset(value: number): number {
   return Math.min(Math.max(value, 0), SWIPE_DELETE_MAX_OFFSET);
 }
 
+const URL_PATTERN = /(https?:\/\/[^\s]+)/g;
+
+function renderMessageContent(content: string) {
+  return content.split(URL_PATTERN).map((part, index) =>
+    /^https?:\/\//.test(part) ? (
+      <a
+        key={index}
+        href={part}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline underline-offset-2 break-all"
+      >
+        {part}
+      </a>
+    ) : (
+      part
+    ),
+  );
+}
+
 function roleLabel(role: MessageParticipant["role"]): string {
   return { MODEL: "모델", CLIENT: "의뢰인", ADMIN: "관리자" }[role];
 }
@@ -791,7 +811,7 @@ export function MessageWorkspace() {
                             : "rounded-bl-sm border border-hairline bg-white text-ink"
                         }`}
                       >
-                        {message.content}
+                        {renderMessageContent(message.content)}
                       </div>
 
                       <div

@@ -114,4 +114,33 @@ public class MailService {
 
         send(to, subject, text);
     }
+
+    @Async
+    public void sendSuspendEmail(String to) {
+        String subject = "[모들] 계정 정지 안내";
+        String text = """
+            안녕하세요. 모들입니다.
+            
+            서비스 이용 정책 위반으로 인해 계정이 정지되었습니다.
+            
+            경고 횟수 누적으로 인한 조치이며,
+            추가 문의는 고객센터로 연락해주세요.
+            """;
+        send(to, subject, text);
+    }
+
+    @Async
+    public void sendContractConfirmedEmail(String to, String contractLink) {
+        String subject = "[모들] 계약 확정 안내";
+        String text = """
+        안녕하세요, 모들입니다.
+
+        계약이 최종 확정되었습니다.
+        아래 링크에서 계약 내용을 확인해 주세요.
+
+        %s
+        """.formatted(contractLink);
+
+        send(to, subject, text);
+    }
 }
