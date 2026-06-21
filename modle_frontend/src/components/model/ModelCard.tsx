@@ -26,7 +26,7 @@ export function ModelCard({
       || '/placeholder.png';
 
   return (
-    <div className="group cursor-pointer flex flex-col bg-white rounded-2xl overflow-hidden border border-hairline/50 transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1">
+    <div className="group cursor-pointer flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-hairline transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 hover:border-hairline-strong">
       {/* 상단 메인 이미지 */}
       <div className="relative aspect-[3/4] bg-gray-100 overflow-hidden">
         <Image
@@ -65,8 +65,8 @@ export function ModelCard({
       </div>
 
       {/* 하단 텍스트 */}
-      <div className="flex flex-col gap-1 p-4 bg-white/80 backdrop-blur-sm">
-        <div className="flex justify-between items-center">
+      <div className="flex flex-col p-4 bg-white/80 backdrop-blur-sm relative flex-1">
+        <div className="flex justify-between items-center pr-1 mb-1">
           <h3 className="text-[15px] text-ink font-extrabold tracking-wide">
             {model.name}
           </h3>
@@ -75,25 +75,42 @@ export function ModelCard({
           </span>
         </div>
 
-        <p className="text-[13px] text-body font-medium mt-1">
-          {model.region}
-          {(model.height || model.weight) ? <span className="mx-1.5 text-gray-300">|</span> : ''}
-          {model.height ? `${model.height}cm ` : ''}
-          {model.weight ? `${model.weight}kg` : ''}
-        </p>
+        <div className="flex justify-between items-end flex-1 mt-1">
+          <div className="flex flex-col gap-1 h-full justify-start">
+            <p className="text-[13px] text-body font-medium">
+              {model.region}
+              {(model.height || model.weight) ? <span className="mx-1.5 text-gray-300">|</span> : ''}
+              {model.height ? `${model.height}cm ` : ''}
+              {model.weight ? `${model.weight}kg` : ''}
+            </p>
 
-        {model.categories && model.categories.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {model.categories.map((cat) => (
-              <span
-                key={cat}
-                className="text-[11px] text-ink font-semibold tracking-wide border border-hairline px-2 py-1 bg-canvas rounded-md shadow-sm"
-              >
-                {cat}
-              </span>
-            ))}
+            {model.categories && model.categories.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2 max-w-[180px]">
+                {model.categories.map((cat) => (
+                  <span
+                    key={cat}
+                    className="text-[11px] text-ink font-semibold tracking-wide border border-hairline px-2 py-1 bg-canvas rounded-md shadow-sm"
+                  >
+                    {cat}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+
+          {/* 우측 하단 원형 프로필 이미지 (별점 아래) */}
+          <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden border border-gray-200 shadow-sm bg-gray-50 relative ml-2 mb-1">
+            <Image
+              src={model.profileImageUrl || '/placeholder.png'}
+              alt={`${model.name} profile`}
+              fill
+              className="object-cover"
+              onError={(e) => {
+                e.currentTarget.srcset = '/placeholder.png';
+              }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
