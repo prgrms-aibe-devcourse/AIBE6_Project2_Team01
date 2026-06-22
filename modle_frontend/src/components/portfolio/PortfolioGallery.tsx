@@ -5,11 +5,12 @@ import { deletePortfolioImage, reorderPortfolioImages, updatePortfolioCategory }
 import { Portfolio } from '@/types/model';
 import { closestCenter, DndContext, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Toast, type ToastState } from '@/components/ui/Toast';
 import { PortfolioUploadModal } from './PortfolioUploadModal';
 import { SortablePortfolioItem } from './SortablePortfolioItem';
+import { CATEGORY_OPTIONS, getCategoryLabel } from '@/lib/constants/category';
 
 interface Props {
   modelId: number;
@@ -36,9 +37,20 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
     return () => clearTimeout(timer);
   }, [toast]);
   
-  const categories = ['HAIR', 'MAKEUP', 'HAND', 'FITTING', 'CLOTHING', 'FOOD', 'PRODUCT', 'ETC'];
+  const categories = CATEGORY_OPTIONS.map(opt => opt.value);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategories(prev => 
@@ -49,6 +61,10 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
   const filteredPortfolios = portfolios.filter(p => 
     selectedCategories.length === 0 || (p.category && selectedCategories.includes(p.category))
   );
+
+  const getCategoryCount = (category: string) => {
+    return portfolios.filter(p => p.category === category).length;
+  };
   
   const INITIAL_COUNT = 6;
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
@@ -99,8 +115,9 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
         </div>
         
         <div className="flex gap-3 items-center">
+          <div className="text-sm font-bold text-gray-700 mr-1">총 {filteredPortfolios.length}개</div>
           {/* 필터 영역 */}
-          <div className="relative">
+          <div className="relative" ref={filterRef}>
             <button 
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm font-medium transition-colors"
@@ -121,7 +138,7 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
                       onChange={() => handleCategoryChange(cat)}
                       className="rounded border-gray-300 accent-black w-4 h-4"
                     />
-                    <span className="text-sm text-gray-700">{cat}</span>
+                    <span className="text-sm text-gray-700">{getCategoryLabel(cat)} ({getCategoryCount(cat)})</span>
                   </label>
                 ))}
               </div>
@@ -200,7 +217,7 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
             >
               <option value="" disabled>카테고리를 선택하세요</option>
               {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
               ))}
             </select>
             <div className="flex justify-end gap-2">
