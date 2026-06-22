@@ -142,12 +142,12 @@ export default function EditJobPage({
         shootDate: formData.shootDate
           ? `${formData.shootDate}T00:00:00`
           : undefined,
+        imageUrls: formData.imageUrls,
     };
 
-    // imageUrls는 백엔드에 추가됐으나 schema.d.ts 재생성 보류 중이라 캐스팅으로 전달
     const { response } = await client.PATCH("/api/v1/jobs/{id}", {
       params: { path: { id: postingId } },
-      body: { ...requestBody, imageUrls: formData.imageUrls } as typeof requestBody,
+      body: requestBody,
     });
 
     if (!response.ok) {

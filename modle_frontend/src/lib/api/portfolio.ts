@@ -7,11 +7,18 @@ export const uploadPortfolioImages = async (files: File[], category: string): Pr
   
   // 선택된 여러 개의 파일을 'files'라는 이름으로 모두 담기
   files.forEach((file) => {
-    formData.append('files', file); 
+    formData.append('files', file);
   });
-  formData.append('category', category); // 카테고리 추가
 
+  // category는 OpenAPI 명세상 query 파라미터(@RequestParam)로 전달
   const { data, error } = await client.POST('/api/v1/portfolios', {
+    params: {
+      query: {
+        category: category as
+          | 'HAIR' | 'MAKEUP' | 'CLOTHING' | 'FITTING'
+          | 'HAND' | 'FOOD' | 'PRODUCT' | 'ETC',
+      },
+    },
     body: formData as never,
   });
   
