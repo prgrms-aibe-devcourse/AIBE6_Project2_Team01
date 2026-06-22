@@ -88,7 +88,7 @@ export default function Home() {
     // Fetch top 3 latest/popular jobs
     client
       .GET("/api/v1/jobs", {
-        params: { query: { page: 0, size: 3 } },
+        params: { query: { pageable: { page: 0, size: 3 } } },
       })
       .then(({ data }) => {
         if (data?.data?.content) {
