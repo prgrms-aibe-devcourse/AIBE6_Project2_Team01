@@ -5,6 +5,7 @@ import { ModelBookmarkButton } from "@/components/ui/ModelBookmarkButton";
 import { ReportButton } from "@/components/ui/ReportButton";
 import { getModel } from "@/lib/api/model";
 import { getRegionLabel } from "@/lib/constants/region";
+import { getCategoryLabel } from "@/lib/constants/category";
 import { notFound } from "next/navigation";
 
 export const metadata = {
@@ -39,7 +40,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
           <div className="w-full md:w-[55%] lg:w-[60%] flex flex-col">
             <div className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-widest cursor-default w-fit">
               {modelData.categories && modelData.categories.length > 0
-                ? modelData.categories.join(" / ")
+                ? modelData.categories.map(c => getCategoryLabel(c)).join(" / ")
                 : "KOREAN MODEL"}
             </div>
 
