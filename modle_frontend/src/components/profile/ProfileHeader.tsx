@@ -1,6 +1,6 @@
+import { getRegionLabel } from '@/lib/constants/region';
 import { Model } from '@/types/model';
 import Image from 'next/image';
-import { getRegionLabel } from '@/lib/constants/region';
 import Link from 'next/link';
 
 interface Props {

@@ -2,8 +2,8 @@
 
 import { uploadImage } from '@/lib/api/image';
 import { updateMyModel } from '@/lib/api/model';
-import { Model } from '@/types/model';
 import { REGION_OPTIONS } from '@/lib/constants/region';
+import { Model } from '@/types/model';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
