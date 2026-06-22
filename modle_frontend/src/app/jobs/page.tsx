@@ -151,6 +151,7 @@ export default function JobsPage() {
   const items = pageData?.content ?? [];
   const totalPages = pageData?.totalPages ?? 1;
   const currentPage = pageData?.number ?? 0;
+  const totalCount = pageData?.totalElements ?? 0;
 
   return (
     <main className="min-h-screen bg-canvas text-ink">
@@ -234,6 +235,12 @@ export default function JobsPage() {
             </select>
           </div>
         </section>
+
+        {!loading ? (
+          <p className="text-[14px] text-gray-500">
+            총 <span className="font-bold text-ink">{totalCount.toLocaleString()}</span>개의 공고
+          </p>
+        ) : null}
 
         {/* 목록 */}
         {loading ? (
