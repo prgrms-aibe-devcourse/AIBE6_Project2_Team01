@@ -37,66 +37,62 @@ export default async function ModelDetailPage({ params }: PageProps) {
           </div>
 
           <div className="w-full md:w-[55%] lg:w-[60%] flex flex-col">
-            <div className="text-sm font-bold text-gray-500 mb-1 underline underline-offset-4 cursor-pointer hover:text-black transition-colors w-fit">
+            <div className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-widest cursor-pointer hover:text-ink transition-colors w-fit">
               {modelData.categories && modelData.categories.length > 0
                 ? modelData.categories.join(" / ")
                 : "KOREAN MODEL"}
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-extrabold text-black mt-3 mb-4 tracking-tight">
-              {modelData.name}{" "}
-              <span className="font-normal text-gray-400 text-lg ml-1">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-ink mt-2 mb-4 tracking-tight">
+              {modelData.name}
+              <span className="font-medium text-gray-400 text-xl ml-3 align-middle">
                 ({modelData.sex === "M" ? "남성" : "여성"})
               </span>
             </h1>
 
-            <div className="flex items-center gap-4 text-sm font-medium border-b border-gray-100 pb-6 mb-6">
-              <div className="flex items-center gap-1">
+            <div className="flex items-center gap-4 text-sm font-medium border-b border-hairline/50 pb-6 mb-8">
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-gray-50 rounded-full">
                 <span className="text-yellow-400 text-lg">★</span>
-                <span className="text-black font-bold">
+                <span className="text-ink font-bold">
                   {modelData.rating?.toFixed(1) || "0.0"}
                 </span>
               </div>
-              <div className="w-px h-3 bg-gray-300"></div>
-              <span className="text-blue-600 underline cursor-pointer hover:text-blue-800">
-                후기 {modelData.reviewCount || 0}개
+              <div className="w-px h-4 bg-hairline-strong"></div>
+              <span className="text-body hover:text-ink transition-colors cursor-pointer">
+                후기 <span className="font-bold">{modelData.reviewCount || 0}</span>개
               </span>
-              <div className="w-px h-3 bg-gray-300"></div>
-              <span className="text-gray-400">모델 번호: {modelData.id}</span>
+              <div className="w-px h-4 bg-hairline-strong"></div>
+              <span className="text-gray-400 font-mono text-xs">ID: {modelData.id}</span>
             </div>
 
-            <div className="flex flex-col gap-3 text-sm tracking-wide">
-              <div className="flex">
-                <span className="w-24 text-gray-500">활동 지역</span>
-                <span className="text-black font-semibold">
+            <div className="flex flex-col gap-4 text-[15px] tracking-wide bg-gray-50/50 p-6 rounded-2xl border border-hairline/50">
+              <div className="flex items-center">
+                <span className="w-28 text-gray-500 font-medium">활동 지역</span>
+                <span className="text-ink font-bold">
                   {getRegionLabel(modelData.region)}
                 </span>
               </div>
-              <div className="flex">
-                <span className="w-24 text-gray-500">나이</span>
-                <span className="text-black font-semibold">
+              <div className="flex items-center">
+                <span className="w-28 text-gray-500 font-medium">나이</span>
+                <span className="text-ink font-bold">
                   {modelData.age ? `${modelData.age}세` : "미상"}
                 </span>
               </div>
-              <div className="flex">
-                <span className="w-24 text-gray-500">키 (HEIGHT)</span>
-                <span className="text-black font-semibold">
-                  {modelData.height ? `${modelData.height}cm` : "미상"}
+              <div className="flex items-center">
+                <span className="w-28 text-gray-500 font-medium">신체 사이즈</span>
+                <span className="text-ink font-bold flex gap-3">
+                  <span>{modelData.height ? `${modelData.height} cm` : "미상"}</span>
+                  <span className="text-gray-300">|</span>
+                  <span>{modelData.weight ? `${modelData.weight} kg` : "미상"}</span>
                 </span>
               </div>
-              <div className="flex">
-                <span className="w-24 text-gray-500">몸무게 (WEIGHT)</span>
-                <span className="text-black font-semibold">
-                  {modelData.weight ? `${modelData.weight}kg` : "미상"}
-                </span>
-              </div>
-              <div className="flex items-start mt-1">
-                <span className="w-24 text-gray-500 mt-1">관련 태그</span>
-                <div className="flex flex-wrap gap-1.5 flex-1">
+              <div className="flex items-start mt-2 pt-4 border-t border-hairline/50">
+                <span className="w-28 text-gray-500 font-medium mt-1.5">관련 태그</span>
+                <div className="flex flex-wrap gap-2 flex-1">
                   {modelData.tags?.map((tag, idx) => (
                     <span
                       key={idx}
-                      className="bg-gray-100 text-gray-600 px-2 py-0.5 text-xs rounded hover:bg-gray-200 cursor-pointer"
+                      className="bg-white border border-hairline text-ink px-3 py-1 text-xs font-semibold rounded-full shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer"
                     >
                       #{tag.trim()}
                     </span>
@@ -105,23 +101,23 @@ export default async function ModelDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-gray-100 text-gray-800 leading-relaxed whitespace-pre-wrap text-sm md:text-base">
+            <div className="mt-8 pt-8 border-t border-hairline text-body leading-relaxed whitespace-pre-wrap text-[15px]">
               {modelData.introduction || "작성된 모델 소개글이 없습니다."}
             </div>
 
-            <div className="mt-8 md:mt-auto pt-8 flex gap-2">
+            <div className="mt-10 md:mt-auto pt-8 flex gap-3">
               <ModelBookmarkButton
                 modelId={modelData.id}
-                className="flex-[1] bg-white border border-gray-300 hover:border-black text-black font-bold py-4 text-center transition-colors disabled:opacity-50"
+                className="flex-[1] bg-white border border-hairline-strong hover:border-ink hover:shadow-md text-ink font-bold py-4 rounded-xl text-center transition-all hover:-translate-y-1 disabled:opacity-50"
               />
               <ClientProposalButton
                 recipientUserId={modelData.userId}
-                className="flex-[2] bg-black hover:bg-gray-800 text-white font-bold py-4 text-center transition-colors"
+                className="flex-[2] bg-ink hover:bg-ink/90 text-white font-bold py-4 rounded-xl text-center shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
               />
               <ReportButton
                 targetType="PROFILE"
                 targetId={modelData.userId}
-                className="px-4 bg-white border border-gray-300 hover:border-red-400 hover:text-red-500 text-gray-400 text-sm font-bold py-4 text-center transition-colors"
+                className="px-4 bg-white border border-hairline hover:border-red-400 hover:text-red-500 hover:shadow-sm text-gray-400 text-sm font-bold py-4 rounded-xl text-center transition-all"
               />
             </div>
           </div>

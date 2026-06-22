@@ -78,8 +78,8 @@ export function ClientEditForm({ initialData }: Props) {
   };
 
   return (
-    <div className="bg-white border-2 border-black p-8 text-black shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
-      <h2 className="text-3xl font-black mb-8 uppercase tracking-tighter border-b-2 border-black pb-4">
+    <div className="bg-white border border-hairline p-8 md:p-12 text-black shadow-xl rounded-[2.5rem] max-w-3xl mx-auto">
+      <h2 className="text-3xl font-black mb-8 uppercase tracking-tighter border-b-2 border-black pb-4 text-center">
         의뢰인 프로필 수정
       </h2>
 
@@ -92,7 +92,7 @@ export function ClientEditForm({ initialData }: Props) {
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Profile Image Section */}
         <div className="flex flex-col items-center gap-4">
-          <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0 cursor-pointer overflow-hidden group border-2 border-black bg-gray-50">
+          <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0 cursor-pointer overflow-hidden group border border-hairline bg-gray-50 rounded-full shadow-md">
             {previewUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -117,7 +117,7 @@ export function ClientEditForm({ initialData }: Props) {
               name="companyName"
               value={formData.companyName || ''}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-black bg-white focus:outline-none focus:ring-2 focus:ring-black text-black font-medium"
+              className="w-full px-5 py-3 border border-gray-300 rounded-2xl bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-black font-medium transition-all shadow-sm"
               required
             />
           </div>
@@ -128,7 +128,7 @@ export function ClientEditForm({ initialData }: Props) {
               name="companyNumber"
               value={formData.companyNumber || ''}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-black bg-white focus:outline-none focus:ring-2 focus:ring-black text-black font-medium"
+              className="w-full px-5 py-3 border border-gray-300 rounded-2xl bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-black font-medium transition-all shadow-sm"
             />
           </div>
           
@@ -138,7 +138,7 @@ export function ClientEditForm({ initialData }: Props) {
               name="clientType"
               value={formData.clientType || 'INDIVIDUAL'}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-black bg-white focus:outline-none focus:ring-2 focus:ring-black text-black font-medium"
+              className="w-full px-5 py-3 border border-gray-300 rounded-2xl bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-black font-medium transition-all shadow-sm"
             >
               <option value="INDIVIDUAL">개인</option>
               <option value="ORGANIZATION">기업</option>
@@ -151,7 +151,7 @@ export function ClientEditForm({ initialData }: Props) {
               name="region"
               value={formData.region || ''}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-black bg-white focus:outline-none focus:ring-2 focus:ring-black text-black font-medium"
+              className="w-full px-5 py-3 border border-gray-300 rounded-2xl bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-black font-medium transition-all shadow-sm"
             >
               <option value="" disabled>지역을 선택하세요</option>
               {REGION_OPTIONS.map((option) => (
@@ -170,23 +170,23 @@ export function ClientEditForm({ initialData }: Props) {
             value={formData.introduction || ''}
             onChange={handleChange}
             rows={5}
-            className="w-full px-4 py-3 border border-black bg-white focus:outline-none focus:ring-2 focus:ring-black text-black font-medium resize-none"
+            className="w-full px-5 py-4 border border-gray-300 rounded-2xl bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-black font-medium resize-none transition-all shadow-sm"
             placeholder="자신이나 회사를 소개해주세요."
           />
         </div>
 
-        <div className="flex gap-4 pt-6 border-t-2 border-black">
+        <div className="flex gap-4 pt-8 border-t border-hairline mt-8">
           <button
             type="button"
             onClick={() => router.back()}
-            className="px-8 py-4 border-2 border-black bg-white text-black font-black text-sm uppercase tracking-widest hover:bg-gray-100 transition-colors"
+            className="px-8 py-4 border border-gray-300 rounded-full bg-white text-black font-black text-sm uppercase tracking-widest hover:bg-gray-50 transition-all shadow-sm"
             disabled={isLoading}
           >
             취소
           </button>
           <button
             type="submit"
-            className="flex-1 px-8 py-4 bg-black text-white font-black text-sm uppercase tracking-widest hover:bg-gray-900 transition-colors shadow-[4px_4px_0_0_rgba(156,163,175,1)] hover:shadow-[2px_2px_0_0_rgba(156,163,175,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
+            className="flex-1 px-8 py-4 bg-black text-white rounded-full font-black text-sm uppercase tracking-widest hover:bg-gray-900 transition-all shadow-md hover:-translate-y-0.5"
             disabled={isLoading}
           >
             {isLoading ? '저장 중...' : '저장하기'}

@@ -10,12 +10,12 @@ export function MyProfileView({ data }: Props) {
     <div className="bg-white border-t-2 border-black pt-10 text-black">
       {/* 상단 프로필 기본 정보 */}
       <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10">
-        <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0">
+        <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0 rounded-full overflow-hidden shadow-lg border-4 border-white">
           <Image
             src={data.profileImageUrl || "/placeholder.png"}
             alt="프로필 이미지"
             fill
-            className="object-cover border border-gray-200 bg-gray-50"
+            className="object-cover bg-gray-50"
             sizes="(max-width: 768px) 128px, 160px"
             onError={(e) => {
               e.currentTarget.srcset = "/placeholder.png";
@@ -29,16 +29,16 @@ export function MyProfileView({ data }: Props) {
           </h2>
 
           <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-6">
-            <span className="px-4 py-1 border border-black bg-white text-black text-xs font-bold uppercase tracking-widest">
+            <span className="px-4 py-1.5 border border-hairline shadow-sm bg-white text-ink text-xs font-bold uppercase tracking-widest rounded-full">
               {data.sex === "M" ? "남성" : "여성"}
             </span>
-            <span className="px-4 py-1 border border-black bg-white text-black text-xs font-bold uppercase tracking-widest">
+            <span className="px-4 py-1.5 border border-hairline shadow-sm bg-white text-ink text-xs font-bold uppercase tracking-widest rounded-full">
               {data.age ? `${data.age}세` : "나이 미상"}
             </span>
-            <span className="px-4 py-1 border border-black bg-white text-black text-xs font-bold uppercase tracking-widest">
+            <span className="px-4 py-1.5 border border-hairline shadow-sm bg-white text-ink text-xs font-bold uppercase tracking-widest rounded-full">
               {data.height ? `${data.height}cm` : "키 미상"}
             </span>
-            <span className="px-4 py-1 border border-black bg-white text-black text-xs font-bold uppercase tracking-widest">
+            <span className="px-4 py-1.5 border border-hairline shadow-sm bg-white text-ink text-xs font-bold uppercase tracking-widest rounded-full">
               {data.weight ? `${data.weight}kg` : "몸무게 미상"}
             </span>
           </div>
@@ -60,7 +60,7 @@ export function MyProfileView({ data }: Props) {
         <h3 className="text-xl text-black font-black mb-6 uppercase tracking-widest border-b-2 border-black pb-3">
           소개글 (ABOUT ME)
         </h3>
-        <div className="bg-white border border-gray-200 p-8 text-black text-sm font-medium leading-relaxed whitespace-pre-wrap">
+        <div className="bg-white border border-hairline shadow-sm p-8 text-black text-sm font-medium leading-relaxed whitespace-pre-wrap rounded-[2rem]">
           {data.introduction || "아직 작성된 자기 소개가 없습니다."}
         </div>
       </div>
@@ -75,7 +75,7 @@ export function MyProfileView({ data }: Props) {
             {data.tags.map((tag, index) => (
               <span
                 key={index}
-                className="px-4 py-1 bg-black text-white text-xs font-bold uppercase tracking-widest cursor-default"
+                className="px-4 py-1.5 bg-ink text-white text-xs font-bold uppercase tracking-widest cursor-default rounded-full shadow-sm"
               >
                 #{tag.trim()}
               </span>

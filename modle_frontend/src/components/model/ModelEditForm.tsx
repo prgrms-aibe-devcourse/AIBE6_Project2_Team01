@@ -146,7 +146,7 @@ export function ModelEditForm({ initialData }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-8 bg-white p-8 md:p-12 text-black">
+    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-8 bg-white border border-hairline p-8 md:p-12 text-black shadow-xl rounded-[2.5rem]">
       <div className="mb-10 text-center border-b-2 border-black pb-6">
         <h1 className="text-3xl font-black text-black tracking-tighter uppercase">Edit Profile</h1>
         <p className="text-sm text-gray-500 mt-2 font-medium tracking-wide">프로필 정보를 최신 상태로 유지하세요</p>
@@ -200,7 +200,7 @@ export function ModelEditForm({ initialData }: Props) {
           required
           value={formData.name || ''}
           onChange={handleChange}
-          className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors"
+          className="w-full px-5 py-3 border border-gray-300 rounded-2xl bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-black font-medium transition-all shadow-sm"
           placeholder="이름을 입력하세요"
         />
       </div>
@@ -285,7 +285,7 @@ export function ModelEditForm({ initialData }: Props) {
                 key={cat.value}
                 type="button"
                 onClick={() => handleFieldToggle(cat.value)}
-                className={`px-6 py-2 text-xs font-bold tracking-wider uppercase transition-colors border ${
+                className={`px-6 py-2.5 text-xs font-bold tracking-wider uppercase transition-colors border rounded-full ${
                   isSelected 
                     ? 'bg-black text-white border-black' 
                     : 'bg-white text-gray-500 border-gray-300 hover:border-black hover:text-black'
@@ -300,9 +300,9 @@ export function ModelEditForm({ initialData }: Props) {
 
       <div>
         <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">태그 (Tags)</label>
-        <div className="w-full p-2 bg-white border border-gray-300 focus-within:border-black transition-colors flex flex-wrap gap-2 items-center">
+        <div className="w-full p-2 bg-white border border-gray-300 focus-within:border-black focus-within:ring-2 focus-within:ring-black transition-all rounded-2xl flex flex-wrap gap-2 items-center shadow-sm">
           {(formData.tags || []).map((tag, idx) => (
-            <span key={idx} className="flex items-center px-3 py-1 bg-black text-white font-bold text-xs tracking-wider uppercase">
+            <span key={idx} className="flex items-center px-4 py-1.5 bg-black text-white font-bold text-xs tracking-wider uppercase rounded-full">
               #{tag}
               <button type="button" onClick={() => removeTag(tag)} className="ml-2 text-gray-400 hover:text-white focus:outline-none">
                 &times;
@@ -315,7 +315,7 @@ export function ModelEditForm({ initialData }: Props) {
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={handleTagKeyDown}
             placeholder={(!formData.tags || formData.tags.length === 0) ? "태그 입력 후 엔터..." : ""}
-            className="flex-1 min-w-[120px] bg-transparent text-black placeholder-gray-400 focus:outline-none px-2 py-1 text-sm font-medium"
+            className="flex-1 min-w-[120px] bg-transparent text-black placeholder-gray-400 focus:outline-none px-3 py-2 text-sm font-medium"
           />
         </div>
         <p className="text-gray-400 text-xs mt-2 font-medium tracking-wide">엔터(Enter)나 쉼표(,)를 눌러 태그를 추가하세요</p>
@@ -328,23 +328,23 @@ export function ModelEditForm({ initialData }: Props) {
           value={formData.introduction || ''}
           onChange={handleChange}
           rows={5}
-          className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors resize-none"
+          className="w-full px-5 py-4 border border-gray-300 rounded-2xl bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-black font-medium transition-all shadow-sm resize-none"
           placeholder="자신을 소개하는 글을 작성해보세요."
         />
       </div>
 
-      <div className="pt-8 flex justify-end gap-3 border-t border-black">
+      <div className="pt-8 flex justify-end gap-4 border-t border-hairline mt-8">
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-8 py-3 bg-white border border-black text-black hover:bg-gray-50 transition-colors text-xs font-bold tracking-widest uppercase"
+          className="px-8 py-4 border border-gray-300 rounded-full bg-white text-black hover:bg-gray-50 transition-colors text-xs font-bold tracking-widest uppercase shadow-sm"
         >
           취소 (Cancel)
         </button>
         <button
           type="submit"
           disabled={isLoading}
-          className="px-8 py-3 bg-black text-white hover:bg-gray-900 transition-colors text-xs font-bold tracking-widest uppercase disabled:opacity-50 disabled:cursor-not-allowed border border-black"
+          className="px-8 py-4 bg-black text-white hover:bg-gray-900 transition-all rounded-full text-xs font-bold tracking-widest uppercase disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:-translate-y-0.5"
         >
           {isLoading ? '저장 중...' : '저장하기 (Save)'}
         </button>

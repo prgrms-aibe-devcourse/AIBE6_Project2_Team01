@@ -98,41 +98,44 @@ export default function ApplyPage({
   }
 
   return (
-    <main className="min-h-screen bg-canvas text-ink">
-      <div className="mx-auto flex w-full max-w-[640px] flex-col gap-6 px-4 py-10 sm:px-6">
-        <h1 className="text-[24px] font-bold text-ink">지원하기</h1>
+    <main className="min-h-screen bg-[#F8F9FA] text-black py-16">
+      <div className="mx-auto flex w-full max-w-[700px] flex-col gap-8 px-6 py-12 md:px-12 bg-white border border-hairline shadow-xl rounded-[2.5rem]">
+        <div className="text-center border-b-2 border-black pb-6 mb-4">
+          <h1 className="text-3xl font-black text-black uppercase tracking-tighter">지원하기</h1>
+          <p className="text-sm text-gray-500 mt-2 font-medium tracking-wide">멋진 기회가 여러분을 기다리고 있습니다</p>
+        </div>
 
         {/* 지원자 정보 */}
-        <section className="rounded-xl border border-hairline bg-surface p-6">
-          <h2 className="mb-3 text-[15px] font-semibold text-ink">지원자</h2>
-          <p className="text-[14px] text-body">{modelName ?? "-"}</p>
+        <section className="rounded-3xl border border-hairline shadow-sm bg-gray-50 p-6">
+          <h2 className="mb-3 text-[15px] font-black uppercase tracking-widest text-black">지원자</h2>
+          <p className="text-[15px] text-gray-800 font-medium">{modelName ?? "-"}</p>
         </section>
 
         {/* 공고 정보 */}
-        <section className="rounded-xl border border-hairline bg-surface p-6">
-          <h2 className="mb-3 text-[15px] font-semibold text-ink">공고 정보</h2>
-          <dl className="space-y-2 text-[13px]">
-            <div className="grid grid-cols-[72px_1fr] gap-2">
-              <dt className="text-mute">제목</dt>
-              <dd className="text-ink">{job?.title}</dd>
+        <section className="rounded-3xl border border-hairline shadow-sm bg-gray-50 p-6">
+          <h2 className="mb-4 text-[15px] font-black uppercase tracking-widest text-black">공고 정보</h2>
+          <dl className="space-y-3 text-[14px]">
+            <div className="grid grid-cols-[80px_1fr] gap-3">
+              <dt className="text-gray-500 font-bold">제목</dt>
+              <dd className="text-black font-medium">{job?.title}</dd>
             </div>
-            <div className="grid grid-cols-[72px_1fr] gap-2">
-              <dt className="text-mute">카테고리</dt>
-              <dd className="text-ink">{job?.category}</dd>
+            <div className="grid grid-cols-[80px_1fr] gap-3">
+              <dt className="text-gray-500 font-bold">카테고리</dt>
+              <dd className="text-black font-medium">{job?.category}</dd>
             </div>
-            <div className="grid grid-cols-[72px_1fr] gap-2">
-              <dt className="text-mute">지역</dt>
-              <dd className="text-ink">{job?.region}</dd>
+            <div className="grid grid-cols-[80px_1fr] gap-3">
+              <dt className="text-gray-500 font-bold">지역</dt>
+              <dd className="text-black font-medium">{job?.region}</dd>
             </div>
           </dl>
         </section>
 
         {/* 지원 메시지 폼 */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6 mt-4">
+          <div className="flex flex-col gap-3">
             <label
               htmlFor="coverLetter"
-              className="text-[14px] font-semibold text-ink"
+              className="text-[15px] font-black uppercase tracking-widest text-black"
             >
               지원 메시지
             </label>
@@ -142,24 +145,24 @@ export default function ApplyPage({
               onChange={(e) => setCoverLetter(e.target.value)}
               rows={8}
               placeholder="지원 동기와 어필 사항을 자유롭게 작성해주세요."
-              className="w-full resize-none rounded-lg border border-hairline bg-canvas px-4 py-3 text-[14px] text-ink placeholder:text-mute focus:border-primary focus:outline-none"
+              className="w-full resize-none rounded-2xl border border-gray-300 bg-white px-5 py-4 text-[15px] text-black font-medium placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black outline-none transition-all shadow-sm"
             />
           </div>
 
           {error && <p className="text-[13px] text-error">{error}</p>}
 
-          <div className="flex gap-3">
+          <div className="flex gap-4 pt-4 border-t border-hairline mt-4">
             <button
               type="button"
               onClick={() => router.push(`/jobs/${jobPostingId}`)}
-              className="h-11 flex-1 rounded-lg border border-hairline bg-surface text-[14px] font-semibold text-ink transition hover:border-hairline-strong"
+              className="h-14 px-8 rounded-full border border-gray-300 bg-white text-[13px] font-black tracking-widest uppercase text-black transition-all hover:bg-gray-50 shadow-sm"
             >
               취소
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="h-11 flex-1 rounded-lg bg-primary text-[14px] font-semibold text-on-primary transition hover:bg-primary-hover disabled:opacity-50"
+              className="h-14 flex-1 rounded-full bg-black text-[13px] font-black tracking-widest uppercase text-white transition-all hover:bg-gray-900 shadow-md hover:-translate-y-0.5 disabled:opacity-50"
             >
               {submitting ? "지원 중..." : "지원하기"}
             </button>

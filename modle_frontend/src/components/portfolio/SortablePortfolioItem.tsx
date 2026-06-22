@@ -24,7 +24,7 @@ export function SortablePortfolioItem({ item, onDelete, onZoom, onEdit }: Props)
     <div 
       ref={setNodeRef} 
       style={style} 
-      className="relative aspect-[3/4] rounded-lg overflow-hidden group bg-gray-50 border border-gray-200 cursor-grab active:cursor-grabbing"
+      className="relative aspect-[3/4] rounded-3xl overflow-hidden group bg-gray-50 border border-hairline shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-grab active:cursor-grabbing"
       {...attributes} 
       {...listeners}
     >
