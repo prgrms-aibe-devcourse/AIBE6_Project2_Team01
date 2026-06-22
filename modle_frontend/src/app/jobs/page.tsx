@@ -111,7 +111,8 @@ export default function JobsPage() {
             region: region || undefined,
             category: category || undefined,
             status: status || undefined,
-            pageable: { page, size: 12 },
+            page,
+            size: 12,
           },
         },
       })
