@@ -1,6 +1,7 @@
 "use client";
 
 import { ClientProposalButton } from "@/components/message/ClientProposalButton";
+import { JobPostingImageCarousel } from "@/components/jobposting/JobPostingImageCarousel";
 import { ModelCard } from "@/components/model/ModelCard";
 import { ReportModal } from "@/components/ui/ReportModal";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,6 +46,7 @@ type ClientDetail = ClientInfo & {
   shootDate?: string;
   createdDate?: string;
   recommendedModelIds: number[];
+  imageUrls?: string[];
 };
 
 type ModelDetail = ClientInfo & {
@@ -68,6 +70,7 @@ type ModelDetail = ClientInfo & {
   shootDate?: string;
   createdDate?: string;
   favorited: boolean;
+  imageUrls?: string[];
 };
 
 type OtherDetail = ClientInfo & {
@@ -83,6 +86,7 @@ type OtherDetail = ClientInfo & {
   payType?: string;
   shootDate?: string;
   createdDate?: string;
+  imageUrls?: string[];
 };
 
 type DetailData = ClientDetail | ModelDetail | OtherDetail;
@@ -537,6 +541,7 @@ export default function JobDetailPage({
             <p className="mt-4 whitespace-pre-wrap text-[15px] leading-7 text-body">
               {detail.content}
             </p>
+            <JobPostingImageCarousel imageUrls={detail.imageUrls ?? []} />
           </section>
 
           {/* 우측 정보 패널 */}

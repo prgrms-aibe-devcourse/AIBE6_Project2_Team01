@@ -56,8 +56,7 @@ export default function NewJobPage() {
   };
 
   const handleSubmit = async (formData: JobPostingFormState) => {
-    const { response, data } = await client.POST("/api/v1/jobs", {
-      body: {
+    const requestBody = {
         title: formData.title,
         content: formData.content,
         category: formData.category as
@@ -105,7 +104,11 @@ export default function NewJobPage() {
         shootDate: formData.shootDate
           ? `${formData.shootDate}T00:00:00`
           : undefined,
-      },
+    };
+
+    // imageUrls는 백엔드에 추가됐으나 schema.d.ts 재생성 보류 중이라 캐스팅으로 전달
+    const { response, data } = await client.POST("/api/v1/jobs", {
+      body: { ...requestBody, imageUrls: formData.imageUrls } as typeof requestBody,
     });
 
     if (!response.ok) {

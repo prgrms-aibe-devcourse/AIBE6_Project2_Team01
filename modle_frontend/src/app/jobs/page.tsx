@@ -11,6 +11,7 @@ import {
 } from "@/lib/api/bookmark";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { JobCard } from "@/components/jobposting/JobCard";
 
 type JobListItem = components["schemas"]["JobPostingListResponse"];
@@ -102,7 +103,7 @@ export default function JobsPage() {
             region: region || undefined,
             category: category || undefined,
             page,
-            size: 10,
+            size: 12,
           },
         },
       })
@@ -234,24 +235,52 @@ export default function JobsPage() {
 
         {/* 페이지네이션 */}
         {totalPages > 1 ? (
-          <nav className="flex justify-center gap-2">
-            {Array.from({ length: totalPages }, (_, i) => (
+          <nav className="mt-2 flex items-center justify-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 0}
+              aria-label="이전 페이지"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-hairline bg-white text-ink transition hover:border-ink disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            {getPageWindow(currentPage, totalPages).map((i) => (
               <button
                 key={i}
                 type="button"
                 onClick={() => handlePageChange(i)}
-                className={`h-9 w-9 rounded-md border text-[13px] font-semibold transition ${
+                className={`h-10 w-10 rounded-xl text-[14px] font-bold transition ${
                   i === currentPage
-                    ? "border-primary bg-primary text-on-primary"
-                    : "border-hairline bg-surface text-body hover:border-hairline-strong"
+                    ? "bg-ink text-canvas shadow-md"
+                    : "border border-hairline bg-white text-gray-500 hover:border-ink hover:text-ink"
                 }`}
               >
                 {i + 1}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages - 1}
+              aria-label="다음 페이지"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-hairline bg-white text-ink transition hover:border-ink disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
           </nav>
         ) : null}
       </div>
     </main>
   );
+}
+
+// 현재 페이지 주변의 번호만 노출한다 (페이지가 많아도 한 줄을 넘기지 않도록).
+function getPageWindow(current: number, total: number, delta = 2): number[] {
+  const windowSize = delta * 2 + 1;
+  const start = Math.max(0, Math.min(current - delta, total - windowSize));
+  const end = Math.min(total - 1, start + windowSize - 1);
+  const pages: number[] = [];
+  for (let i = start; i <= end; i++) pages.push(i);
+  return pages;
 }

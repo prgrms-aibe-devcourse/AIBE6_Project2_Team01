@@ -18,6 +18,7 @@ import type {
   MessageThread,
   RecruitingJob,
 } from "@/types/message";
+import { ExternalLink, FileText } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -51,8 +52,98 @@ function clampSwipeOffset(value: number): number {
 }
 
 const URL_PATTERN = /(https?:\/\/[^\s]+)/g;
+const CONTRACT_URL_PATTERN = /https?:\/\/[^\s]*\/contracts\/\d+[^\s]*/;
+
+const CONTRACT_STATUS_LABELS: Record<string, string> = {
+  DRAFT: "임시 저장",
+  NOTIFIED: "발송 완료",
+  VIEWED: "열람 완료",
+  AGREED: "동의 완료",
+  REJECTED: "거절됨",
+  CONFIRMED: "최종 확정",
+  CANCELLED: "취소됨",
+};
+
+function extractContractUrl(content: string): string | null {
+  return content.match(CONTRACT_URL_PATTERN)?.[0] ?? null;
+}
+
+function getContractCardMeta(href: string) {
+  try {
+    const url = new URL(href);
+    const contractId = url.pathname.split("/").filter(Boolean).at(-1);
+    const status = url.searchParams.get("status") ?? "";
+    const shootDate = url.searchParams.get("shootDate") ?? "";
+    const location = url.searchParams.get("location") ?? "";
+
+    return {
+      contractId,
+      statusLabel: CONTRACT_STATUS_LABELS[status] ?? "계약 확인",
+      shootDate,
+      location,
+    };
+  } catch {
+    return {
+      contractId: null,
+      statusLabel: "계약 확인",
+      shootDate: "",
+      location: "",
+    };
+  }
+}
+
+function renderContractMessage(content: string, href: string) {
+  const meta = getContractCardMeta(href);
+  const description = content.replace(href, "").trim();
+
+  return (
+    <div className="space-y-3 whitespace-normal">
+      {description ? (
+        <p className="whitespace-pre-wrap text-[14px] leading-6 text-body">
+          {description}
+        </p>
+      ) : null}
+
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block rounded-lg border border-hairline bg-surface p-4 text-ink shadow-sm transition hover:border-hairline-strong hover:bg-canvas-soft"
+      >
+        <div className="flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-canvas-soft text-ink">
+            <FileText size={20} aria-hidden="true" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center justify-between gap-3">
+              <span className="text-[14px] font-bold leading-5">
+                계약서 {meta.contractId ? `#${meta.contractId}` : ""}
+              </span>
+              <span className="shrink-0 rounded-md border border-hairline px-2 py-1 text-[11px] font-semibold text-mute">
+                {meta.statusLabel}
+              </span>
+            </span>
+            <span className="mt-2 block space-y-1 text-[12px] leading-5 text-mute">
+              {meta.shootDate ? <span className="block">촬영일 {meta.shootDate}</span> : null}
+              {meta.location ? <span className="block">장소 {meta.location}</span> : null}
+            </span>
+            <span className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-ink">
+              계약 내용 확인
+              <ExternalLink size={14} aria-hidden="true" />
+            </span>
+          </span>
+        </div>
+      </a>
+    </div>
+  );
+}
 
 function renderMessageContent(content: string) {
+  const contractUrl = extractContractUrl(content);
+  if (contractUrl) {
+    return renderContractMessage(content, contractUrl);
+  }
+
   return content.split(URL_PATTERN).map((part, index) =>
     /^https?:\/\//.test(part) ? (
       <a
@@ -786,6 +877,7 @@ export function MessageWorkspace() {
                     : null;
                 const showDate =
                   !previous || date.toDateString() !== previous.toDateString();
+                const contractUrl = extractContractUrl(message.content);
 
                 return (
                   <div className="contents" key={message.id}>
@@ -805,11 +897,15 @@ export function MessageWorkspace() {
                       }`}
                     >
                       <div
-                        className={`whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed shadow-md transition-all ${
-                          mine
-                            ? "rounded-br-md bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/20"
-                            : "rounded-bl-md border border-hairline bg-white text-ink shadow-black/5"
-                        }`}
+                        className={
+                          contractUrl
+                            ? "w-full min-w-[280px] rounded-2xl text-[14px] leading-relaxed transition-all md:min-w-[360px]"
+                            : `whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed shadow-md transition-all ${
+                                mine
+                                  ? "rounded-br-md bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/20"
+                                  : "rounded-bl-md border border-hairline bg-white text-ink shadow-black/5"
+                              }`
+                        }
                       >
                         {renderMessageContent(message.content)}
                       </div>
