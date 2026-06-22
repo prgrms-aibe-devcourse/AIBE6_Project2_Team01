@@ -1,3 +1,5 @@
+import { motion } from 'framer-motion';
+
 interface TabItem {
   id: string;
   label: string;
@@ -21,19 +23,23 @@ const DEFAULT_TABS: TabItem[] = [
 
 export function ProfileTabs({ activeTab, onTabChange, tabs = DEFAULT_TABS }: Props) {
   return (
-    <div className="flex overflow-x-auto hide-scrollbar">
+    <div className="flex overflow-x-auto hide-scrollbar py-3 gap-2">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
-          className={`whitespace-nowrap px-6 py-4 text-sm font-semibold transition-colors relative ${
-            activeTab === tab.id ? 'text-black' : 'text-gray-500 hover:text-black'
+          className={`relative whitespace-nowrap px-6 py-2.5 text-sm font-bold transition-colors rounded-full ${
+            activeTab === tab.id ? 'text-white' : 'text-gray-500 hover:text-black hover:bg-gray-100'
           }`}
         >
-          {tab.label}
           {activeTab === tab.id && (
-            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />
+            <motion.div
+              layoutId="activeTabPill"
+              className="absolute inset-0 bg-ink rounded-full"
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            />
           )}
+          <span className="relative z-10">{tab.label}</span>
         </button>
       ))}
     </div>

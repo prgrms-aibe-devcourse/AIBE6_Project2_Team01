@@ -510,9 +510,9 @@ export function MessageWorkspace() {
         </div>
       )}
 
-      <div className="mx-auto grid h-full max-w-[1360px] overflow-hidden border-hairline bg-surface shadow-sm md:grid-cols-[270px_minmax(0,1fr)] md:rounded-xl md:border xl:grid-cols-[270px_minmax(0,1fr)_240px]">
-        <aside className="hidden min-h-0 flex-col border-r border-hairline bg-canvas md:flex">
-          <div className="border-b border-hairline px-4 pb-3 pt-4">
+      <div className="mx-auto grid h-full max-w-[1360px] overflow-hidden border-hairline bg-surface md:grid-cols-[270px_minmax(0,1fr)] md:rounded-[2rem] md:border xl:grid-cols-[270px_minmax(0,1fr)_240px] shadow-[0_15px_50px_rgba(0,0,0,0.06)]">
+        <aside className="hidden min-h-0 flex-col border-r border-hairline bg-gray-50/50 md:flex">
+          <div className="border-b border-hairline px-5 pb-4 pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-mute">
@@ -805,10 +805,10 @@ export function MessageWorkspace() {
                       }`}
                     >
                       <div
-                        className={`whitespace-pre-wrap rounded-xl px-3.5 py-2 text-sm leading-5 shadow-sm ${
+                        className={`whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed shadow-md transition-all ${
                           mine
-                            ? "rounded-br-sm bg-ink text-white"
-                            : "rounded-bl-sm border border-hairline bg-white text-ink"
+                            ? "rounded-br-md bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/20"
+                            : "rounded-bl-md border border-hairline bg-white text-ink shadow-black/5"
                         }`}
                       >
                         {renderMessageContent(message.content)}

@@ -11,12 +11,12 @@ export function ClientProfileInfo({ data }: Props) {
     <div className="bg-white border-t-2 border-black pt-10 text-black">
       {/* 상단 프로필 기본 정보 */}
       <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10">
-        <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0">
+        <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0 rounded-full overflow-hidden shadow-lg border-4 border-white">
           <Image
             src={data.profileImageUrl || '/placeholder.png'}
             alt="프로필 이미지"
             fill
-            className="object-cover border border-gray-200 bg-gray-50"
+            className="object-cover bg-gray-50"
             sizes="(max-width: 768px) 128px, 160px"
             onError={(e) => {
               e.currentTarget.srcset = '/placeholder.png';
@@ -28,11 +28,11 @@ export function ClientProfileInfo({ data }: Props) {
           <h2 className="text-4xl text-black font-black mb-4 tracking-tighter uppercase">{data.companyName}</h2>
           
           <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-6">
-            <span className="px-4 py-1 border border-black bg-white text-black text-xs font-bold uppercase tracking-widest">
+            <span className="px-4 py-1.5 border border-hairline shadow-sm bg-white text-ink text-xs font-bold uppercase tracking-widest rounded-full">
               {data.clientType === 'INDIVIDUAL' ? '개인' : '기업'}
             </span>
 
-            <span className="px-4 py-1 border border-black bg-white text-black text-xs font-bold uppercase tracking-widest">
+            <span className="px-4 py-1.5 border border-hairline shadow-sm bg-white text-ink text-xs font-bold uppercase tracking-widest rounded-full">
               {getRegionLabel(data.region)}
             </span>
           </div>
@@ -43,7 +43,7 @@ export function ClientProfileInfo({ data }: Props) {
 
       <div className="mb-12">
         <h3 className="text-xl text-black font-black mb-6 uppercase tracking-widest border-b-2 border-black pb-3">소개글 (ABOUT US)</h3>
-        <div className="bg-white border border-gray-200 p-8 text-black text-sm font-medium leading-relaxed whitespace-pre-wrap">
+        <div className="bg-white border border-hairline shadow-sm p-8 text-black text-sm font-medium leading-relaxed whitespace-pre-wrap rounded-[2rem]">
           {data.introduction || '아직 작성된 소개글이 없습니다.'}
         </div>
       </div>
