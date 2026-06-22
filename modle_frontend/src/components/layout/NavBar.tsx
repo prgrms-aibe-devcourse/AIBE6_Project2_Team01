@@ -7,6 +7,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { NotificationPanel } from "@/components/ui/NotificationPanel";
 import { Toast, type ToastState } from "@/components/ui/Toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { getMyModel } from "@/lib/api/model";
+import { getMyClient } from "@/lib/api/clientProfile";
 
 const ROLE_LABEL: Record<string, string> = {
   MODEL: "모델",
@@ -40,6 +42,7 @@ export function NavBar() {
   const router = useRouter();
   const [toast, setToast] = useState<ToastState | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,6 +62,26 @@ export function NavBar() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [notifOpen]);
+
+  // 사용자 이름 가져오기
+  useEffect(() => {
+    if (!user) {
+      setUserName(null);
+      return;
+    }
+
+    if (user.role === "ADMIN") {
+      setUserName("관리자");
+    } else if (user.role === "MODEL") {
+      getMyModel()
+        .then((m) => setUserName(m.name))
+        .catch(() => setUserName("모델"));
+    } else if (user.role === "CLIENT") {
+      getMyClient()
+        .then((c) => setUserName(c.companyName || c.name || "의뢰인"))
+        .catch(() => setUserName("의뢰인"));
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     await logout();
@@ -120,7 +143,7 @@ export function NavBar() {
 
             <div className="flex items-center gap-3 pl-2 pr-1 border-l border-white/20 ml-1">
               <span className="text-[13px] font-bold tracking-wide text-white">
-                {ROLE_LABEL[user.role] ?? user.role}님
+                {userName ? `${userName}님` : `${ROLE_LABEL[user.role] ?? user.role}님`}
               </span>
               <motion.button
                 whileHover={{ scale: 1.05 }}
