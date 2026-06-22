@@ -116,11 +116,12 @@ public class JobPostingService {
         jobPostingRepository.delete(jobPosting);
     }
 
-    // JOB-005: 지역·카테고리 필터를 적용한 공고 목록을 반환한다.
-    public Page<JobPostingListResponse> getJobPostings(String region, String category, Pageable pageable) {
+    // JOB-005: 지역·카테고리·상태 필터를 적용한 공고 목록을 반환한다.
+    public Page<JobPostingListResponse> getJobPostings(String region, String category, String status, Pageable pageable) {
         Region regionEnum = parseEnum(Region.class, region);
         Category categoryEnum = parseEnum(Category.class, category);
-        return jobPostingRepository.findByFilter(regionEnum, categoryEnum, pageable)
+        JobPostingStatus statusEnum = parseEnum(JobPostingStatus.class, status);
+        return jobPostingRepository.findByFilter(regionEnum, categoryEnum, statusEnum, pageable)
                 .map(JobPostingListResponse::from);
     }
 

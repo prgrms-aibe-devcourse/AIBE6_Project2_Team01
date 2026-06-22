@@ -82,8 +82,9 @@ public class JobPostingController {
     public ApiResponse<Page<JobPostingListResponse>> getJobPostings(
             @RequestParam(required = false) String region,
             @RequestParam(required = false) String category,
+            @RequestParam(required = false) String status,
             @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ApiResponse.ok("공고 목록 조회 성공", jobPostingService.getJobPostings(region, category, pageable));
+        return ApiResponse.ok("공고 목록 조회 성공", jobPostingService.getJobPostings(region, category, status, pageable));
     }
 
     @GetMapping("/mine/recruiting")
