@@ -82,12 +82,7 @@ public class JobPostingService {
     // JOB-003: 공고를 수정한다. 모집 중(RECRUITING) 상태에서만 수정 가능.
     @Transactional
     public JobPostingResponse updateJobPosting(Long jobPostingId, Long clientId, JobPostingUpdateRequest request) {
-        JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
-                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
-
-        if (!jobPosting.getClientId().equals(clientId)) {
-            throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
-        }
+        JobPosting jobPosting = findOwnedJobPosting(jobPostingId, clientId);
 
         if (jobPosting.getStatus() != JobPostingStatus.RECRUITING) {
             throw new CustomException(ErrorCode.JOB_POSTING_NOT_EDITABLE);
@@ -109,12 +104,7 @@ public class JobPostingService {
     // JOB-004: 공고를 삭제한다. 모집 중(RECRUITING) 상태에서만 삭제 가능.
     @Transactional
     public void deleteJobPosting(Long jobPostingId, Long clientId) {
-        JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
-                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
-
-        if (!jobPosting.getClientId().equals(clientId)) {
-            throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
-        }
+        JobPosting jobPosting = findOwnedJobPosting(jobPostingId, clientId);
 
         JobPostingStatus status = jobPosting.getStatus();
         if (status != JobPostingStatus.RECRUITING && status != JobPostingStatus.CANCELLED) {
@@ -143,15 +133,20 @@ public class JobPostingService {
         }
     }
 
-    // JOB-009: 공고 상태를 변경한다. 허용된 전환만 가능하며 본인 공고만 변경 가능.
-    @Transactional
-    public JobPostingResponse updateJobPostingStatus(Long jobPostingId, Long clientId, JobPostingStatusUpdateRequest request) {
+    // 공고를 조회하고 작성자(clientId) 본인 여부를 검증한다.
+    private JobPosting findOwnedJobPosting(Long jobPostingId, Long clientId) {
         JobPosting jobPosting = jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
-
         if (!jobPosting.getClientId().equals(clientId)) {
             throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
         }
+        return jobPosting;
+    }
+
+    // JOB-009: 공고 상태를 변경한다. 허용된 전환만 가능하며 본인 공고만 변경 가능.
+    @Transactional
+    public JobPostingResponse updateJobPostingStatus(Long jobPostingId, Long clientId, JobPostingStatusUpdateRequest request) {
+        JobPosting jobPosting = findOwnedJobPosting(jobPostingId, clientId);
 
         if (!jobPosting.getStatus().canTransitionTo(request.status())) {
             throw new CustomException(ErrorCode.JOB_POSTING_INVALID_STATUS_TRANSITION);
@@ -178,7 +173,7 @@ public class JobPostingService {
 
     // 재모집: 기존 공고를 마감하고 동일 내용으로 새 공고(RECRUITING)를 생성한다.
     @Transactional
-    public JobPosting cloneForReRecruit(Long jobPostingId) {
+    public void cloneForReRecruit(Long jobPostingId) {
         JobPosting original = jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
@@ -207,7 +202,6 @@ public class JobPostingService {
 
         JobPosting saved = jobPostingRepository.save(clone);
         eventPublisher.publishEvent(new JobPostingCreatedEvent(saved.getId()));
-        return saved;
     }
 
     public List<JobPostingListResponse> getMyRecruitingJobPostings(Long clientId) {

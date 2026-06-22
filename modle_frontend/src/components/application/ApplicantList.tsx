@@ -372,6 +372,11 @@ export function ApplicantList({ applicants }: Props) {
                 <p className="text-mute text-[12px] pt-1">
                   ※ 취소(CANCELLED)가 아닌 마감 처리이며, 새 공고에서 지원을 다시 받을 수 있습니다.
                 </p>
+                <p className="text-mute text-[12px]">
+                  ※ 기존 공고의{" "}
+                  <span className="font-semibold text-ink">첨부 이미지는 새 공고로 복사되지 않습니다.</span>{" "}
+                  재모집 후 새 공고를 수정하여 이미지를 다시 첨부해 주세요.
+                </p>
               </div>
               <div className="flex gap-3">
                 <button

@@ -174,8 +174,7 @@ public class ApplicationService {
     // MATCH-008: 의뢰인이 지원자에게 컨택한다 (상태=CONTACTED).
     @Transactional
     public ApplicationResponse contact(Long clientId, Long applicationId) {
-        Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
+        Application application = getApplication(applicationId);
 
         JobPosting jobPosting = jobPostingRepository.findById(application.getJobPostingId())
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
@@ -192,8 +191,7 @@ public class ApplicationService {
             throw new CustomException(ErrorCode.APPLICATION_CONTACT_NOT_ALLOWED);
         }
 
-        Model model = modelRepository.findById(application.getModelId())
-                .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
+        Model model = findModelById(application.getModelId());
 
         Long modelUserId = model.getUser().getId();
 
@@ -218,8 +216,7 @@ public class ApplicationService {
 
     // MATCH-009: 컨택 이력을 조회한다 (공고 작성자 또는 해당 지원의 모델만 접근 가능).
     public List<ContactResponse> getContacts(Long userId, Long applicationId) {
-        Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
+        Application application = getApplication(applicationId);
 
         JobPosting jobPosting = jobPostingRepository.findById(application.getJobPostingId())
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
@@ -290,8 +287,7 @@ public class ApplicationService {
         application.resume();
         jobPosting.updateStatus(JobPostingStatus.SHOOTING);
 
-        Model model = modelRepository.findById(application.getModelId())
-                .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
+        Model model = findModelById(application.getModelId());
         MessageConversation conversation = messageService.findConversationByApplicationId(applicationId);
         messageService.sendSystemMessage(
                 conversation.getId(), clientId, model.getUser().getId(),
@@ -328,16 +324,9 @@ public class ApplicationService {
     // MATCH-016: 촬영 완료 처리 (의뢰인)
     @Transactional
     public ApplicationResponse completeApplication(Long clientId, Long applicationId) {
-        Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
+        Application application = getApplication(applicationId);
 
-        JobPosting jobPosting = jobPostingRepository.findById(application.getJobPostingId())
-                .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
-
-        // 공고 작성자 검증
-        if (!jobPosting.getClientId().equals(clientId)) {
-            throw new CustomException(ErrorCode.JOB_POSTING_FORBIDDEN);
-        }
+        JobPosting jobPosting = getJobPostingAndValidateOwner(application.getJobPostingId(), clientId);
 
         // SHOOTING 상태에서만 가능
         if (application.getStatus() != ApplicationStatus.SHOOTING) {
@@ -394,5 +383,10 @@ public class ApplicationService {
         return modelRepository.findByUserId(userId)
                 .map(Model::getId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    private Model findModelById(Long modelId) {
+        return modelRepository.findById(modelId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
     }
 }
