@@ -29,6 +29,13 @@ const CATEGORY_OPTIONS = [
   { value: "ETC", label: "기타" },
 ];
 
+const STATUS_FILTER_OPTIONS = [
+  { value: "", label: "전체 상태" },
+  { value: "RECRUITING", label: "모집 중" },
+  { value: "SHOOTING", label: "촬영 중" },
+  { value: "COMPLETED", label: "완료" },
+];
+
 
 
 const STATUS_LABELS: Record<string, string> = {
@@ -55,6 +62,7 @@ export default function JobsPage() {
   const isClient = user?.role === "CLIENT";
   const [region, setRegion] = useState("");
   const [category, setCategory] = useState("");
+  const [status, setStatus] = useState("");
   const [page, setPage] = useState(0);
   const [pageData, setPageData] = useState<PageData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -102,6 +110,7 @@ export default function JobsPage() {
           query: {
             region: region || undefined,
             category: category || undefined,
+            status: status || undefined,
             pageable: { page, size: 12 },
           },
         },
@@ -119,13 +128,18 @@ export default function JobsPage() {
     return () => {
       cancelled = true;
     };
-  }, [region, category, page]);
+  }, [region, category, status, page]);
 
-  const handleFilterChange = (nextRegion: string, nextCategory: string) => {
+  const handleFilterChange = (
+    nextRegion: string,
+    nextCategory: string,
+    nextStatus: string,
+  ) => {
     setLoading(true);
     setPage(0);
     setRegion(nextRegion);
     setCategory(nextCategory);
+    setStatus(nextStatus);
   };
 
   const handlePageChange = (i: number) => {
@@ -179,7 +193,7 @@ export default function JobsPage() {
               <button
                 key={o.value}
                 type="button"
-                onClick={() => handleFilterChange(region, o.value)}
+                onClick={() => handleFilterChange(region, o.value, status)}
                 className={`whitespace-nowrap rounded-xl px-5 py-2.5 text-[14px] font-bold transition-all ${
                   category === o.value
                     ? "bg-ink text-canvas shadow-md"
@@ -191,10 +205,22 @@ export default function JobsPage() {
             ))}
           </div>
           
-          <div className="w-full md:w-auto flex shrink-0 border-t md:border-t-0 md:border-l border-hairline pt-4 md:pt-0 md:pl-4 mt-2 md:mt-0">
+          <div className="w-full md:w-auto flex shrink-0 gap-2 border-t md:border-t-0 md:border-l border-hairline pt-4 md:pt-0 md:pl-4 mt-2 md:mt-0">
+            <select
+              value={status}
+              onChange={(e) => handleFilterChange(region, category, e.target.value)}
+              className="w-full md:w-40 h-11 rounded-xl border border-hairline bg-gray-50 px-4 text-[14px] font-medium text-ink outline-none transition focus:border-ink focus:bg-white focus:ring-2 focus:ring-ink/10 cursor-pointer appearance-none"
+              style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg stroke='currentColor' fill='none' stroke-width='2' viewBox='0 0 24 24' stroke-linecap='round' stroke-linejoin='round' height='1em' width='1em' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 1rem center", backgroundSize: "1em" }}
+            >
+              {STATUS_FILTER_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
             <select
               value={region}
-              onChange={(e) => handleFilterChange(e.target.value, category)}
+              onChange={(e) => handleFilterChange(e.target.value, category, status)}
               className="w-full md:w-48 h-11 rounded-xl border border-hairline bg-gray-50 px-4 text-[14px] font-medium text-ink outline-none transition focus:border-ink focus:bg-white focus:ring-2 focus:ring-ink/10 cursor-pointer appearance-none"
               style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg stroke='currentColor' fill='none' stroke-width='2' viewBox='0 0 24 24' stroke-linecap='round' stroke-linejoin='round' height='1em' width='1em' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 1rem center", backgroundSize: "1em" }}
             >
