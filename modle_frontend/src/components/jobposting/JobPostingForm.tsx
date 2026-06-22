@@ -576,12 +576,13 @@ export function JobPostingForm({
           ) : null}
 
           {form.payType === "SERVICE" ? (
-            <Field label="제공 서비스 내용" required>
-              <textarea
-                className="min-h-[88px] w-full resize-none rounded-md border border-hairline bg-canvas-soft px-3 py-2 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
+            <Field label="제공 서비스" required>
+              <input
+                className={inputClass}
                 value={form.serviceDetail}
                 onChange={(e) => updateField("serviceDetail", e.target.value)}
-                placeholder="제공할 서비스 내용을 구체적으로 작성해주세요."
+                placeholder="예: 시술 1회 무료 제공"
+                maxLength={50}
                 required
               />
             </Field>
