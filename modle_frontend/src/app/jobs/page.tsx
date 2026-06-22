@@ -251,6 +251,7 @@ export default function JobsPage() {
                   isFavorited={favoritedIds.has(job.id!)}
                   onToggleFavorite={isModel ? (e, id) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     toggleFavorite(id);
                   } : undefined}
                 />

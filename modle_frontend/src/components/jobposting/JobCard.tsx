@@ -60,13 +60,18 @@ export function JobCard({ job, isFavorited, onToggleFavorite }: JobCardProps) {
           <div className="flex items-center gap-2 text-[12px] text-gray-400 font-medium">
             <span>~{job.shootDate ? new Date(job.shootDate).toLocaleDateString("ko-KR", { month: "2-digit", day: "2-digit" }) : "미정"}</span>
             {onToggleFavorite && (
-              <button 
+              <button
+                type="button"
                 onClick={(e) => onToggleFavorite(e, job.id!)}
-                className={`transition-colors ${isFavorited ? 'text-red-500' : 'text-gray-300 hover:text-red-500'}`} 
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-all active:scale-90 ${
+                  isFavorited
+                    ? "border-red-200 bg-red-50 text-red-500"
+                    : "border-gray-200 bg-white text-gray-400 hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+                }`}
                 aria-label="즐겨찾기"
               >
-                <svg className="w-5 h-5" fill={isFavorited ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                <svg className="w-5 h-5" fill={isFavorited ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </button>
             )}
