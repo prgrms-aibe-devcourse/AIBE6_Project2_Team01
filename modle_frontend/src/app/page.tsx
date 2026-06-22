@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { Alert } from "@/components/ui/Alert";
+import { JobCard } from "@/components/jobposting/JobCard";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Sparkles, Star, Users, MapPin } from "lucide-react";
 import { client } from "@/lib/api/client";
@@ -245,29 +246,7 @@ export default function Home() {
                     visible: { opacity: 1, y: 0, transition: { type: "spring", bounce: 0.4 } }
                   }}
                 >
-                  <Link href={`/jobs/${job.id}`} className="block h-full">
-                    <div className="flex flex-col h-full p-8 rounded-3xl bg-white border border-hairline shadow-sm hover:shadow-[0_15px_40px_rgb(0,0,0,0.08)] hover:-translate-y-2 transition-all duration-300 group">
-                      <div className="flex justify-between items-start mb-6">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold uppercase tracking-wider">
-                          {job.category}
-                        </span>
-                        <span className="text-xs font-bold text-gray-400">{job.status === "RECRUITING" ? "모집중" : job.status}</span>
-                      </div>
-                      <h3 className="text-xl font-bold text-ink mb-4 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                        {job.title}
-                      </h3>
-                      <div className="mt-auto pt-6 border-t border-hairline/50 flex flex-col gap-2">
-                        <div className="flex items-center text-sm text-gray-500 font-medium">
-                          <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                          {getRegionLabel(job.region)}
-                        </div>
-                        <div className="flex items-center text-sm text-gray-500 font-medium">
-                          <span className="font-bold text-ink mr-2">보수</span>
-                          {job.payType === "FREE" ? "무료" : job.payType === "SERVICE" ? "상호무페이" : job.payment ? `${Number(job.payment).toLocaleString()}원` : "협의"}
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
+                  <JobCard job={job} />
                 </motion.div>
               ))}
             </motion.div>

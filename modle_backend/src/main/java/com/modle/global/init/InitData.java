@@ -412,18 +412,22 @@ public class InitData {
                 jobPostingRepository.save(job10);
         }
 
-        // 추천 테스트용 모델 500개 생성
+        // 추천 테스트용 모델 60개 생성
         @Transactional
         public void work8() {
-                Category[] categories = Category.values();
-                Region[] regions = Region.values();
+            if (userRepository.count() < 10) return;
 
-                for (int i = 1; i <= 500; i++) {
+            List<User> newUsers = new ArrayList<>();
+            List<Model> newModels = new ArrayList<>();
+
+            for (int i = 1; i <= 60; i++) {
                         String email = "testmodel%03d@modle.com".formatted(i);
                         if (userRepository.existsByEmail(email)) {
                                 continue;
                         }
 
+                        Category[] categories = Category.values();
+                        Region[] regions = Region.values();
                         Category category = categories[(i - 1) % categories.length];
                         Region region = regions[(i - 1) % regions.length];
                         Sex sex = i % 3 == 0 ? Sex.M : Sex.F;

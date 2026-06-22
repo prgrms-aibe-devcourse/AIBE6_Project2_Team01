@@ -11,6 +11,7 @@ import {
 } from "@/lib/api/bookmark";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { JobCard } from "@/components/jobposting/JobCard";
 
 type JobListItem = components["schemas"]["JobPostingListResponse"];
 type PageData = components["schemas"]["PageJobPostingListResponse"];
@@ -218,63 +219,18 @@ export default function JobsPage() {
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((job: JobListItem) => (
               <li key={job.id} className="relative">
-                <Link
-                  href={`/jobs/${job.id}`}
-                  className="relative block rounded-xl border border-hairline bg-surface p-5 transition hover:border-hairline-strong"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <h2 className="line-clamp-2 text-[15px] font-semibold leading-6 text-ink">
-                      {job.title}
-                    </h2>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_COLORS[job.status ?? ""] ?? "bg-canvas-soft text-body"}`}>
-                      {STATUS_LABELS[job.status ?? ""] ?? job.status}
-                    </span>
-                  </div>
-                  <dl className="mt-3 space-y-1.5 text-[13px] leading-5">
-                    <div className="flex gap-2">
-                      <dt className="text-mute">카테고리</dt>
-                      <dd className="text-ink">{job.category}</dd>
-                    </div>
-                    <div className="flex gap-2">
-                      <dt className="text-mute mr-1">지역</dt>
-                      <dd className="text-ink">{getRegionLabel(job.region)}</dd>
-                    </div>
-                    <div className="flex gap-2">
-                      <dt className="text-mute">보수</dt>
-                      <dd className="text-ink">
-                        {job.payType === "FREE"
-                          ? "무료"
-                          : job.payType === "SERVICE"
-                            ? "서비스"
-                            : job.payment != null
-                              ? `${Number(job.payment).toLocaleString("ko-KR")}원`
-                              : "-"}
-                      </dd>
-                    </div>
-                    {job.shootDate ? (
-                      <div className="flex gap-2">
-                        <dt className="text-mute">촬영일</dt>
-                        <dd className="text-ink">
-                          {job.shootDate.substring(0, 10)}
-                        </dd>
-                      </div>
-                    ) : null}
-                  </dl>
-                  {job.requiredCount != null ? (
-                    <span className={`absolute bottom-3 text-[11px] font-medium text-mute ${isModel ? "right-10" : "right-3"}`}>
-                      {job.requiredCount}명
-                    </span>
-                  ) : null}
-                </Link>
+                <JobCard job={job} />
                 {isModel ? (
                   <button
                     type="button"
                     onClick={() => toggleFavorite(job.id!)}
-                    className="absolute right-3 bottom-3 text-[18px] leading-none transition hover:scale-110"
+                    className="absolute right-6 bottom-6 z-10 p-1.5 rounded-full bg-white shadow-sm border border-gray-100 text-[18px] leading-none transition hover:scale-110"
                     style={{ color: favoritedIds.has(job.id!) ? "#ef4444" : "#d1d5db" }}
                     aria-label={favoritedIds.has(job.id!) ? "즐겨찾기 해제" : "즐겨찾기 추가"}
                   >
-                    {favoritedIds.has(job.id!) ? "♥" : "♡"}
+                    <svg className="w-5 h-5" fill={favoritedIds.has(job.id!) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
                   </button>
                 ) : null}
               </li>
