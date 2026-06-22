@@ -24,7 +24,7 @@ export function ModelFilterBar() {
     
     // 필터 변경 시 첫 페이지로 리셋
     params.delete('page');
-    router.push(`/models?${params.toString()}`);
+    router.push(`/models?${params.toString()}`, { scroll: false });
   };
 
   // 단일 선택 필터 업데이트 함수 (성별, 키, 정렬, 검색 등)
@@ -34,7 +34,7 @@ export function ModelFilterBar() {
     else params.delete(key);
     
     params.delete('page');
-    router.push(`/models?${params.toString()}`);
+    router.push(`/models?${params.toString()}`, { scroll: false });
   };
 
   // 멀티 필터 항목이 선택되어 있는지 확인하는 함수
