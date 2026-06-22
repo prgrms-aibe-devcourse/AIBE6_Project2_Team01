@@ -322,7 +322,7 @@ export default function JobDetailPage({
           | "CANCELLED"
           | "ON_HOLD"
           | "CLOSED",
-        reason: reason || null,
+        reason: reason || undefined,
       },
     });
     setStatusChanging(false);
