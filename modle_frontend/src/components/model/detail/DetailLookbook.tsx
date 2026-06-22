@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 import { CATEGORY_OPTIONS, getCategoryLabel } from '@/lib/constants/category';
+import { ScrollToTopButton } from '@/components/ui/ScrollToTopButton';
 
 interface Portfolio {
   id: number;
@@ -62,7 +63,8 @@ export function DetailLookbook({ portfolios }: DetailLookbookProps) {
   const hasMore = visibleCount < filteredPortfolios.length;
 
   return (
-    <div className="w-full">
+    <div className="w-full animate-in fade-in duration-300">
+      <ScrollToTopButton />
       {/* 필터 영역 */}
       <div className="flex justify-between items-center mb-4 relative" ref={filterRef}>
         <div className="text-sm font-bold text-gray-700">총 {filteredPortfolios.length}개</div>

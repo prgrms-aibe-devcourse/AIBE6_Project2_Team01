@@ -40,6 +40,11 @@ export default async function ModelsPage({ searchParams }: PageProps) {
       <ModelFilterBar />
       
       <div className="mt-8">
+        <div className="flex justify-between items-end mb-4 px-2">
+          <div className="text-sm font-bold text-gray-700">
+            총 {data.totalElements}명의 모델
+          </div>
+        </div>
         <ModelGrid 
           models={data.models} 
           totalPages={data.totalPages} 

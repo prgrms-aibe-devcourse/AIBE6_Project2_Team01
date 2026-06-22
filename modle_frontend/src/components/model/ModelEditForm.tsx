@@ -1,12 +1,12 @@
 'use client';
 
+import { Toast, type ToastState } from '@/components/ui/Toast';
 import { uploadImage } from '@/lib/api/image';
 import { updateMyModel } from '@/lib/api/model';
 import { REGION_OPTIONS } from '@/lib/constants/region';
 import { Model } from '@/types/model';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { Toast, type ToastState } from '@/components/ui/Toast';
+import { useEffect, useState, useRef } from 'react';
 
 interface Props {
   initialData: Model;
@@ -48,6 +48,19 @@ export function ModelEditForm({ initialData }: Props) {
     const timer = setTimeout(() => setToast(null), 3000);
     return () => clearTimeout(timer);
   }, [toast]);
+
+  const [isRegionOpen, setIsRegionOpen] = useState(false);
+  const regionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (regionRef.current && !regionRef.current.contains(e.target as Node)) {
+        setIsRegionOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const [previewUrl, setPreviewUrl] = useState<string>(initialData.profileImageUrl || '');
 
@@ -229,15 +242,20 @@ export function ModelEditForm({ initialData }: Props) {
         </div>
         <div>
           <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">성별 (Gender)</label>
-          <select
-            name="sex"
-            value={formData.sex || 'M'}
-            onChange={handleChange}
-            className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors appearance-none"
-          >
-            <option value="M">남성</option>
-            <option value="F">여성</option>
-          </select>
+          <div className="relative">
+            <select
+              name="sex"
+              value={formData.sex || 'M'}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors appearance-none"
+            >
+              <option value="M">남성</option>
+              <option value="F">여성</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -269,24 +287,41 @@ export function ModelEditForm({ initialData }: Props) {
       <div className="grid grid-cols-2 gap-6 mb-6">
         <div>
           <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">지역 (Region)</label>
-          <select
-            name="region"
-            value={formData.region || ''}
-            onChange={handleChange}
-            className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors appearance-none"
-          >
-            <option value="" disabled>지역을 선택하세요</option>
-            {REGION_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <div className="relative" ref={regionRef}>
+            <div
+              onClick={() => setIsRegionOpen(!isRegionOpen)}
+              className="w-full px-4 py-3 bg-white border border-gray-300 text-black cursor-pointer flex justify-between items-center transition-colors hover:border-black rounded-lg"
+            >
+              <span className={formData.region ? "text-black" : "text-gray-500"}>
+                {formData.region ? REGION_OPTIONS.find(o => o.value === formData.region)?.label : "지역을 선택하세요"}
+              </span>
+              <svg className={`w-4 h-4 text-gray-400 transition-transform ${isRegionOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </div>
+            {isRegionOpen && (
+              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div
+                  className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-gray-500"
+                  onClick={() => { handleChange({ target: { name: 'region', value: '' } } as any); setIsRegionOpen(false); }}
+                >
+                  지역을 선택하세요
+                </div>
+                {REGION_OPTIONS.map(option => (
+                  <div
+                    key={option.value}
+                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-black"
+                    onClick={() => { handleChange({ target: { name: 'region', value: option.value } } as any); setIsRegionOpen(false); }}
+                  >
+                    {option.label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       <div>
-        <label className="block text-xs font-bold text-black mb-3 uppercase tracking-wider">카테고리 (Category)</label>
+        <label className="block text-xs font-bold text-black mb-3 uppercase tracking-wider">희망 활동분야 (Category)</label>
         <div className="flex flex-wrap gap-2">
           {CATEGORY_OPTIONS.map(cat => {
             const isSelected = (formData.field || '').split(',').includes(cat.value);

@@ -11,6 +11,7 @@ import { Toast, type ToastState } from '@/components/ui/Toast';
 import { PortfolioUploadModal } from './PortfolioUploadModal';
 import { SortablePortfolioItem } from './SortablePortfolioItem';
 import { CATEGORY_OPTIONS, getCategoryLabel } from '@/lib/constants/category';
+import { ScrollToTopButton } from '@/components/ui/ScrollToTopButton';
 
 interface Props {
   modelId: number;
@@ -108,6 +109,7 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
 
   return (
     <div className="animate-in fade-in duration-300">
+      <ScrollToTopButton />
       <div className="flex justify-between items-end mb-6 border-b border-black pb-4 text-black">
         <div>
           <h2 className="text-xl font-black text-black mb-1 uppercase tracking-widest">나의 포트폴리오</h2>
