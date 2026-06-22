@@ -32,18 +32,21 @@ export default async function ClientDetailPage({ params }: PageProps) {
           <div className="w-full md:w-[45%] lg:w-[40%] max-w-[450px] mx-auto md:mx-0">
             <div className="relative w-full aspect-[3/4] bg-gray-50 border border-gray-100 overflow-hidden group">
               <Image
-                src={clientData.profileImageUrl || '/images/default-avatar.png'}
+                src={clientData.profileImageUrl || '/placeholder.png'}
                 alt={`${clientData.companyName} 프로필`}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 400px"
+                onError={(e) => {
+                  e.currentTarget.srcset = '/placeholder.png';
+                }}
               />
             </div>
           </div>
 
           {/* 우측 클라이언트 정보 */}
           <div className="w-full md:w-[55%] lg:w-[60%] flex flex-col">
-            <div className="text-sm font-bold text-gray-500 mb-1 underline underline-offset-4 cursor-pointer hover:text-black transition-colors w-fit">
+            <div className="text-sm font-bold text-gray-500 mb-1 underline underline-offset-4 cursor-default w-fit">
               {clientData.clientType === 'CORPORATE' ? '기업 클라이언트' : '개인 클라이언트'}
             </div>
 

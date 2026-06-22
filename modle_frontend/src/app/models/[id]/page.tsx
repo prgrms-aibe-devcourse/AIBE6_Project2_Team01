@@ -5,6 +5,7 @@ import { ModelBookmarkButton } from "@/components/ui/ModelBookmarkButton";
 import { ReportButton } from "@/components/ui/ReportButton";
 import { getModel } from "@/lib/api/model";
 import { getRegionLabel } from "@/lib/constants/region";
+import { getCategoryLabel } from "@/lib/constants/category";
 import { notFound } from "next/navigation";
 
 export const metadata = {
@@ -37,9 +38,9 @@ export default async function ModelDetailPage({ params }: PageProps) {
           </div>
 
           <div className="w-full md:w-[55%] lg:w-[60%] flex flex-col">
-            <div className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-widest cursor-pointer hover:text-ink transition-colors w-fit">
+            <div className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-widest cursor-default w-fit">
               {modelData.categories && modelData.categories.length > 0
-                ? modelData.categories.join(" / ")
+                ? modelData.categories.map(c => getCategoryLabel(c)).join(" / ")
                 : "KOREAN MODEL"}
             </div>
 
@@ -58,11 +59,9 @@ export default async function ModelDetailPage({ params }: PageProps) {
                 </span>
               </div>
               <div className="w-px h-4 bg-hairline-strong"></div>
-              <span className="text-body hover:text-ink transition-colors cursor-pointer">
+              <span className="text-body cursor-default">
                 후기 <span className="font-bold">{modelData.reviewCount || 0}</span>개
               </span>
-              <div className="w-px h-4 bg-hairline-strong"></div>
-              <span className="text-gray-400 font-mono text-xs">ID: {modelData.id}</span>
             </div>
 
             <div className="flex flex-col gap-4 text-[15px] tracking-wide bg-gray-50/50 p-6 rounded-2xl border border-hairline/50">
@@ -92,7 +91,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
                   {modelData.tags?.map((tag, idx) => (
                     <span
                       key={idx}
-                      className="bg-white border border-hairline text-ink px-3 py-1 text-xs font-semibold rounded-full shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer"
+                      className="bg-white border border-hairline text-ink px-3 py-1 text-xs font-semibold rounded-full shadow-sm cursor-default"
                     >
                       #{tag.trim()}
                     </span>

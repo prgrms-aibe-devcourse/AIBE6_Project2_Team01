@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 import { BookmarkedModels } from '@/components/profile/BookmarkedModels';
 import { ClientProfileHeader } from '@/components/profile/ClientProfileHeader';
@@ -17,8 +18,25 @@ interface Props {
 }
 
 export function MyClientProfileContainer({ initialData }: Props) {
-  const [activeTab, setActiveTab] = useState('profile');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  const tabFromUrl = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabFromUrl || 'profile');
   const { user } = useAuth();
+
+  useEffect(() => {
+    if (tabFromUrl && tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
 
   const CLIENT_TABS = [
     { id: 'profile', label: '의뢰인 정보' },
@@ -40,7 +58,7 @@ export function MyClientProfileContainer({ initialData }: Props) {
         <div className="mx-auto max-w-[1200px] px-6">
           <ProfileTabs
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             tabs={CLIENT_TABS}
           />
         </div>

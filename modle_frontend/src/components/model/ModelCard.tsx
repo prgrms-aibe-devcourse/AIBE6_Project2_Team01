@@ -1,4 +1,5 @@
 import { Model } from '@/types/model';
+import { getCategoryLabel } from '@/lib/constants/category';
 import Image from 'next/image';
 import { MouseEvent } from 'react';
 
@@ -91,7 +92,7 @@ export function ModelCard({
                     key={cat}
                     className="text-[11px] text-ink font-semibold tracking-wide border border-hairline px-2 py-1 bg-canvas rounded-md shadow-sm"
                   >
-                    {cat}
+                    {getCategoryLabel(cat)}
                   </span>
                 ))}
               </div>

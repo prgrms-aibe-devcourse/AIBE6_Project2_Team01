@@ -79,7 +79,7 @@ export function NavBar() {
         .catch(() => setUserName("모델"));
     } else if (user.role === "CLIENT") {
       getMyClient()
-        .then((c) => setUserName(c.companyName || c.name || "의뢰인"))
+        .then((c) => setUserName(c.companyName || "의뢰인"))
         .catch(() => setUserName("의뢰인"));
     }
   }, [user]);

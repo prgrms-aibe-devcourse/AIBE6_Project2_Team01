@@ -23,12 +23,15 @@ export function ProfileGallery({ portfolios, mainFallback }: ProfileGalleryProps
     <div className="w-full flex flex-col gap-2">
       <div className="relative w-full aspect-[4/5] bg-gray-100 overflow-hidden border border-gray-200">
         <Image
-          src={activeImage || '/images/default-avatar.png'}
+          src={activeImage || '/placeholder.png'}
           alt="메인 모델 이미지"
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 400px"
           priority
+          onError={(e) => {
+            e.currentTarget.srcset = '/placeholder.png';
+          }}
         />
       </div>
 
@@ -43,11 +46,14 @@ export function ProfileGallery({ portfolios, mainFallback }: ProfileGalleryProps
               }`}
             >
               <Image
-                src={thumb.imgUrl || '/images/default-avatar.png'}
+                src={thumb.imgUrl || '/placeholder.png'}
                 alt="썸네일 이미지"
                 fill
                 className="object-cover"
                 sizes="64px"
+                onError={(e) => {
+                  e.currentTarget.srcset = '/placeholder.png';
+                }}
               />
             </div>
           ))}

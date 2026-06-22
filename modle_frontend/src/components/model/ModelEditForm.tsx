@@ -1,11 +1,12 @@
 'use client';
 
+import { Toast, type ToastState } from '@/components/ui/Toast';
 import { uploadImage } from '@/lib/api/image';
 import { updateMyModel } from '@/lib/api/model';
 import { REGION_OPTIONS } from '@/lib/constants/region';
 import { Model } from '@/types/model';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface Props {
   initialData: Model;
@@ -40,6 +41,26 @@ export function ModelEditForm({ initialData }: Props) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  const [isRegionOpen, setIsRegionOpen] = useState(false);
+  const regionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (regionRef.current && !regionRef.current.contains(e.target as Node)) {
+        setIsRegionOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const [previewUrl, setPreviewUrl] = useState<string>(initialData.profileImageUrl || '');
 
@@ -86,8 +107,17 @@ export function ModelEditForm({ initialData }: Props) {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
       const newTag = tagInput.trim().replace(/^#/, '');
-      if (newTag && !(formData.tags || []).includes(newTag)) {
-        setFormData(prev => ({ ...prev, tags: [...(prev.tags || []), newTag] }));
+      
+      if (newTag) {
+        const currentTags = formData.tags || [];
+        if (currentTags.length >= 20) {
+          setError('태그는 최대 20개까지만 등록할 수 있습니다.');
+          return;
+        }
+        if (!currentTags.includes(newTag)) {
+          setFormData(prev => ({ ...prev, tags: [...currentTags, newTag] }));
+          setError(null); // Clear error on successful tag add
+        }
       }
       setTagInput('');
     }
@@ -113,6 +143,36 @@ export function ModelEditForm({ initialData }: Props) {
     setError(null);
     setIsLoading(true);
 
+    if (!formData.name?.trim()) {
+      setError('이름(Name)을 입력해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.age === undefined || formData.age < 1 || formData.age > 120) {
+      setError('나이는 1~120 사이로 입력해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.height === undefined || formData.height < 30 || formData.height > 250) {
+      setError('키는 30~250cm 사이로 입력해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.weight === undefined || formData.weight < 2 || formData.weight > 200) {
+      setError('몸무게는 2~200kg 사이로 입력해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!formData.field) {
+      setError('희망 활동분야(Category)를 하나 이상 선택해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       let finalImageUrl = formData.profileImageUrl; // 기존 이미지 유지
      
@@ -134,10 +194,12 @@ export function ModelEditForm({ initialData }: Props) {
         categories: formData.field ? formData.field.split(',').filter(Boolean) : [], // 콤마 문자열을 배열로 변환하여 전송
       };
       await updateMyModel(finalFormData);
-      alert('프로필이 성공적으로 수정되었습니다.');
+      setToast({ type: 'success', message: '프로필이 성공적으로 수정되었습니다.' });
       
-      router.push('/my/profile'); // TODO: Create /my/profile page if it doesn't exist
-      router.refresh();
+      setTimeout(() => {
+        router.push('/my/profile'); // TODO: Create /my/profile page if it doesn't exist
+        router.refresh();
+      }, 1000);
     } catch (err: unknown) {
       setError((err as Error).message || '프로필 수정에 실패했습니다.');
     } finally {
@@ -146,17 +208,11 @@ export function ModelEditForm({ initialData }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-8 bg-white border border-hairline p-8 md:p-12 text-black shadow-xl rounded-[2.5rem]">
+    <form onSubmit={handleSubmit} noValidate className="max-w-2xl mx-auto space-y-8 bg-white border border-hairline p-8 md:p-12 text-black shadow-xl rounded-[2.5rem]">
       <div className="mb-10 text-center border-b-2 border-black pb-6">
         <h1 className="text-3xl font-black text-black tracking-tighter uppercase">Edit Profile</h1>
         <p className="text-sm text-gray-500 mt-2 font-medium tracking-wide">프로필 정보를 최신 상태로 유지하세요</p>
       </div>
-
-      {error && (
-        <div className="p-4 bg-error-soft border border-error-soft text-error rounded-lg text-sm">
-          {error}
-        </div>
-      )}
 
       {/* 프로필 이미지 업로드 영역 */}
       <div className="flex flex-col items-center justify-center mb-8">
@@ -197,7 +253,6 @@ export function ModelEditForm({ initialData }: Props) {
         <input
           type="text"
           name="name"
-          required
           value={formData.name || ''}
           onChange={handleChange}
           className="w-full px-5 py-3 border border-gray-300 rounded-2xl bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-black font-medium transition-all shadow-sm"
@@ -219,15 +274,20 @@ export function ModelEditForm({ initialData }: Props) {
         </div>
         <div>
           <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">성별 (Gender)</label>
-          <select
-            name="sex"
-            value={formData.sex || 'M'}
-            onChange={handleChange}
-            className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors appearance-none"
-          >
-            <option value="M">남성</option>
-            <option value="F">여성</option>
-          </select>
+          <div className="relative">
+            <select
+              name="sex"
+              value={formData.sex || 'M'}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors appearance-none"
+            >
+              <option value="M">남성</option>
+              <option value="F">여성</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -259,24 +319,41 @@ export function ModelEditForm({ initialData }: Props) {
       <div className="grid grid-cols-2 gap-6 mb-6">
         <div>
           <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">지역 (Region)</label>
-          <select
-            name="region"
-            value={formData.region || ''}
-            onChange={handleChange}
-            className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors appearance-none"
-          >
-            <option value="" disabled>지역을 선택하세요</option>
-            {REGION_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <div className="relative" ref={regionRef}>
+            <div
+              onClick={() => setIsRegionOpen(!isRegionOpen)}
+              className="w-full px-4 py-3 bg-white border border-gray-300 text-black cursor-pointer flex justify-between items-center transition-colors hover:border-black rounded-lg"
+            >
+              <span className={formData.region ? "text-black" : "text-gray-500"}>
+                {formData.region ? REGION_OPTIONS.find(o => o.value === formData.region)?.label : "지역을 선택하세요"}
+              </span>
+              <svg className={`w-4 h-4 text-gray-400 transition-transform ${isRegionOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </div>
+            {isRegionOpen && (
+              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div
+                  className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-gray-500"
+                  onClick={() => { handleChange({ target: { name: 'region', value: '' } } as any); setIsRegionOpen(false); }}
+                >
+                  지역을 선택하세요
+                </div>
+                {REGION_OPTIONS.map(option => (
+                  <div
+                    key={option.value}
+                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-black"
+                    onClick={() => { handleChange({ target: { name: 'region', value: option.value } } as any); setIsRegionOpen(false); }}
+                  >
+                    {option.label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       <div>
-        <label className="block text-xs font-bold text-black mb-3 uppercase tracking-wider">카테고리 (Category)</label>
+        <label className="block text-xs font-bold text-black mb-3 uppercase tracking-wider">희망 활동분야 (Category)</label>
         <div className="flex flex-wrap gap-2">
           {CATEGORY_OPTIONS.map(cat => {
             const isSelected = (formData.field || '').split(',').includes(cat.value);
@@ -333,22 +410,30 @@ export function ModelEditForm({ initialData }: Props) {
         />
       </div>
 
-      <div className="pt-8 flex justify-end gap-4 border-t border-hairline mt-8">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="px-8 py-4 border border-gray-300 rounded-full bg-white text-black hover:bg-gray-50 transition-colors text-xs font-bold tracking-widest uppercase shadow-sm"
-        >
-          취소 (Cancel)
-        </button>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="px-8 py-4 bg-black text-white hover:bg-gray-900 transition-all rounded-full text-xs font-bold tracking-widest uppercase disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:-translate-y-0.5"
-        >
-          {isLoading ? '저장 중...' : '저장하기 (Save)'}
-        </button>
+      <div>
+        {error && (
+          <div className="mb-4 p-4 bg-error-soft border border-error-soft text-error rounded-xl text-sm font-bold text-center shadow-sm">
+            {error}
+          </div>
+        )}
+        <div className="pt-6 flex justify-end gap-4 border-t border-hairline mt-8">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="px-8 py-4 border border-gray-300 rounded-full bg-white text-black hover:bg-gray-50 transition-colors text-xs font-bold tracking-widest uppercase shadow-sm"
+          >
+            취소 (Cancel)
+          </button>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="px-8 py-4 bg-black text-white hover:bg-gray-900 transition-all rounded-full text-xs font-bold tracking-widest uppercase disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:-translate-y-0.5"
+          >
+            {isLoading ? '저장 중...' : '저장하기 (Save)'}
+          </button>
+        </div>
       </div>
+      {toast && <Toast toast={toast} />}
     </form>
   );
 }
