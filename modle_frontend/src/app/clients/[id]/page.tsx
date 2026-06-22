@@ -46,7 +46,7 @@ export default async function ClientDetailPage({ params }: PageProps) {
 
           {/* 우측 클라이언트 정보 */}
           <div className="w-full md:w-[55%] lg:w-[60%] flex flex-col">
-            <div className="text-sm font-bold text-gray-500 mb-1 underline underline-offset-4 cursor-pointer hover:text-black transition-colors w-fit">
+            <div className="text-sm font-bold text-gray-500 mb-1 underline underline-offset-4 cursor-default w-fit">
               {clientData.clientType === 'CORPORATE' ? '기업 클라이언트' : '개인 클라이언트'}
             </div>
 

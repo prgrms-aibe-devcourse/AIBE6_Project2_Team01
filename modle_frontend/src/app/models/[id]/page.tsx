@@ -37,7 +37,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
           </div>
 
           <div className="w-full md:w-[55%] lg:w-[60%] flex flex-col">
-            <div className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-widest cursor-pointer hover:text-ink transition-colors w-fit">
+            <div className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-widest cursor-default w-fit">
               {modelData.categories && modelData.categories.length > 0
                 ? modelData.categories.join(" / ")
                 : "KOREAN MODEL"}
@@ -58,7 +58,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
                 </span>
               </div>
               <div className="w-px h-4 bg-hairline-strong"></div>
-              <span className="text-body hover:text-ink transition-colors cursor-pointer">
+              <span className="text-body cursor-default">
                 후기 <span className="font-bold">{modelData.reviewCount || 0}</span>개
               </span>
             </div>
@@ -90,7 +90,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
                   {modelData.tags?.map((tag, idx) => (
                     <span
                       key={idx}
-                      className="bg-white border border-hairline text-ink px-3 py-1 text-xs font-semibold rounded-full shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer"
+                      className="bg-white border border-hairline text-ink px-3 py-1 text-xs font-semibold rounded-full shadow-sm cursor-default"
                     >
                       #{tag.trim()}
                     </span>
