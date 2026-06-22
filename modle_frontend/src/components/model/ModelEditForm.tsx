@@ -107,8 +107,17 @@ export function ModelEditForm({ initialData }: Props) {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
       const newTag = tagInput.trim().replace(/^#/, '');
-      if (newTag && !(formData.tags || []).includes(newTag)) {
-        setFormData(prev => ({ ...prev, tags: [...(prev.tags || []), newTag] }));
+      
+      if (newTag) {
+        const currentTags = formData.tags || [];
+        if (currentTags.length >= 20) {
+          setError('태그는 최대 20개까지만 등록할 수 있습니다.');
+          return;
+        }
+        if (!currentTags.includes(newTag)) {
+          setFormData(prev => ({ ...prev, tags: [...currentTags, newTag] }));
+          setError(null); // Clear error on successful tag add
+        }
       }
       setTagInput('');
     }
@@ -133,6 +142,36 @@ export function ModelEditForm({ initialData }: Props) {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
+
+    if (!formData.name?.trim()) {
+      setError('이름(Name)을 입력해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.age === undefined || formData.age < 1 || formData.age > 120) {
+      setError('나이는 1~120 사이로 입력해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.height === undefined || formData.height < 30 || formData.height > 250) {
+      setError('키는 30~250cm 사이로 입력해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.weight === undefined || formData.weight < 2 || formData.weight > 200) {
+      setError('몸무게는 2~200kg 사이로 입력해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!formData.field) {
+      setError('희망 활동분야(Category)를 하나 이상 선택해주세요.');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       let finalImageUrl = formData.profileImageUrl; // 기존 이미지 유지
@@ -169,17 +208,11 @@ export function ModelEditForm({ initialData }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-8 bg-white border border-hairline p-8 md:p-12 text-black shadow-xl rounded-[2.5rem]">
+    <form onSubmit={handleSubmit} noValidate className="max-w-2xl mx-auto space-y-8 bg-white border border-hairline p-8 md:p-12 text-black shadow-xl rounded-[2.5rem]">
       <div className="mb-10 text-center border-b-2 border-black pb-6">
         <h1 className="text-3xl font-black text-black tracking-tighter uppercase">Edit Profile</h1>
         <p className="text-sm text-gray-500 mt-2 font-medium tracking-wide">프로필 정보를 최신 상태로 유지하세요</p>
       </div>
-
-      {error && (
-        <div className="p-4 bg-error-soft border border-error-soft text-error rounded-lg text-sm">
-          {error}
-        </div>
-      )}
 
       {/* 프로필 이미지 업로드 영역 */}
       <div className="flex flex-col items-center justify-center mb-8">
@@ -220,7 +253,6 @@ export function ModelEditForm({ initialData }: Props) {
         <input
           type="text"
           name="name"
-          required
           value={formData.name || ''}
           onChange={handleChange}
           className="w-full px-5 py-3 border border-gray-300 rounded-2xl bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-black font-medium transition-all shadow-sm"
@@ -378,21 +410,28 @@ export function ModelEditForm({ initialData }: Props) {
         />
       </div>
 
-      <div className="pt-8 flex justify-end gap-4 border-t border-hairline mt-8">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="px-8 py-4 border border-gray-300 rounded-full bg-white text-black hover:bg-gray-50 transition-colors text-xs font-bold tracking-widest uppercase shadow-sm"
-        >
-          취소 (Cancel)
-        </button>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="px-8 py-4 bg-black text-white hover:bg-gray-900 transition-all rounded-full text-xs font-bold tracking-widest uppercase disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:-translate-y-0.5"
-        >
-          {isLoading ? '저장 중...' : '저장하기 (Save)'}
-        </button>
+      <div>
+        {error && (
+          <div className="mb-4 p-4 bg-error-soft border border-error-soft text-error rounded-xl text-sm font-bold text-center shadow-sm">
+            {error}
+          </div>
+        )}
+        <div className="pt-6 flex justify-end gap-4 border-t border-hairline mt-8">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="px-8 py-4 border border-gray-300 rounded-full bg-white text-black hover:bg-gray-50 transition-colors text-xs font-bold tracking-widest uppercase shadow-sm"
+          >
+            취소 (Cancel)
+          </button>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="px-8 py-4 bg-black text-white hover:bg-gray-900 transition-all rounded-full text-xs font-bold tracking-widest uppercase disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:-translate-y-0.5"
+          >
+            {isLoading ? '저장 중...' : '저장하기 (Save)'}
+          </button>
+        </div>
       </div>
       {toast && <Toast toast={toast} />}
     </form>

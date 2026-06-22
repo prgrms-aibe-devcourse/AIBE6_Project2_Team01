@@ -146,6 +146,24 @@ export function ModelFilterBar() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </div>
         </div>
+
+        <div className="relative">
+          <select 
+            value={searchParams.get('weight') || ''}
+            onChange={(e) => updateSingleFilter('weight', e.target.value)}
+            className="h-12 pl-5 pr-10 bg-white border border-gray-200 text-gray-800 text-[13px] font-bold focus:outline-none focus:border-black focus:ring-1 focus:ring-black hover:border-black transition-all rounded-full shadow-sm cursor-pointer appearance-none"
+          >
+            <option value="">몸무게 전체</option>
+            <option value="under-50">50kg 이하</option>
+            <option value="50-60">50-60kg</option>
+            <option value="60-70">60-70kg</option>
+            <option value="70-80">70-80kg</option>
+            <option value="over-80">80kg 이상</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </div>
+        </div>
         
         {/* 태그 입력창 */}
         <div className="flex items-center ml-auto">
