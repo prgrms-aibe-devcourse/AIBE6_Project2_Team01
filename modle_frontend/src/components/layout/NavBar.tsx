@@ -2,11 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { NotificationPanel } from "@/components/ui/NotificationPanel";
 import { Toast, type ToastState } from "@/components/ui/Toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { getMyModel } from "@/lib/api/model";
+import { getMyClient } from "@/lib/api/clientProfile";
 
 const ROLE_LABEL: Record<string, string> = {
   MODEL: "모델",
@@ -40,6 +43,7 @@ export function NavBar() {
   const router = useRouter();
   const [toast, setToast] = useState<ToastState | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -60,6 +64,26 @@ export function NavBar() {
     return () => document.removeEventListener("mousedown", handler);
   }, [notifOpen]);
 
+  // 사용자 이름 가져오기
+  useEffect(() => {
+    if (!user) {
+      setUserName(null);
+      return;
+    }
+
+    if (user.role === "ADMIN") {
+      setUserName("관리자");
+    } else if (user.role === "MODEL") {
+      getMyModel()
+        .then((m) => setUserName(m.name))
+        .catch(() => setUserName("모델"));
+    } else if (user.role === "CLIENT") {
+      getMyClient()
+        .then((c) => setUserName(c.companyName || c.name || "의뢰인"))
+        .catch(() => setUserName("의뢰인"));
+    }
+  }, [user]);
+
   const handleLogout = async () => {
     await logout();
     setToast({ type: "success", message: "로그아웃되었습니다." });
@@ -70,8 +94,11 @@ export function NavBar() {
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-white/10 bg-black/90 backdrop-blur-lg px-6 shadow-sm transition-all duration-300">
-      <Link href="/" className="text-[18px] font-extrabold tracking-tight leading-6 text-white hover:text-gray-200 transition-colors">
-        Modle
+      <Link href="/" className="flex items-center gap-2 group">
+        <Image src="/icon.svg" alt="Modle Logo" width={36} height={36} className="rounded-[10px] transition-transform group-hover:scale-105 invert" />
+        <span className="text-[18px] font-extrabold tracking-tight leading-6 text-white group-hover:text-gray-200 transition-colors">
+          Modle
+        </span>
       </Link>
 
       <div className="flex items-center gap-6">
@@ -106,51 +133,21 @@ export function NavBar() {
                     </Link>
                   </>
                 )}
-                <span className="w-1 h-1 rounded-full bg-white/30 mx-3"></span>
-                <Link href="/messages" className={NAV_LINK_CLASS}>
-                  쪽지
-                </Link>
-
-                {/* 알림 버튼 */}
+                {/* 쪽지 (메일함 아이콘) */}
                 {isModelOrClient && (
-                  <div ref={notifRef} className="relative ml-2">
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
-                      type="button"
-                      onClick={() => setNotifOpen((o) => !o)}
-                      aria-label="알림"
-                      aria-expanded={notifOpen}
-                      className={`flex h-8 w-8 items-center justify-center rounded-full border transition-all ${
-                        notifOpen
-                          ? "border-primary text-primary bg-primary/10"
-                          : "border-white/20 text-gray-300 hover:border-white/50 hover:text-white hover:bg-white/10"
-                      }`}
-                    >
-                      <BellIcon />
-                    </motion.button>
-                    <AnimatePresence>
-                      {notifOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          className="absolute right-0 top-12"
-                        >
-                          <NotificationPanel
-                            role={user.role as "MODEL" | "CLIENT"}
-                            onClose={() => setNotifOpen(false)}
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                  <Link href="/messages" className="relative ml-2 flex h-8 w-8 items-center justify-center rounded-full border border-white/20 text-gray-300 hover:border-white/50 hover:text-white hover:bg-white/10 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect width="20" height="16" x="2" y="4" rx="2" />
+                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                    </svg>
+                  </Link>
                 )}
               </div>
             )}
 
             <div className="flex items-center gap-3 pl-2 pr-1 border-l border-white/20 ml-1">
               <span className="text-[13px] font-bold tracking-wide text-white">
-                {ROLE_LABEL[user.role] ?? user.role}님
+                {userName ? `${userName}님` : `${ROLE_LABEL[user.role] ?? user.role}님`}
               </span>
               <motion.button
                 whileHover={{ scale: 1.05 }}

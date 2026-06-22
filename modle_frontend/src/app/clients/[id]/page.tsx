@@ -1,8 +1,8 @@
 import { ClientDetailTabsSection } from "@/components/profile/ClientDetailTabsSection";
 import { getClientProfile } from '@/lib/api/clientProfile';
-import { notFound } from 'next/navigation';
 import { getRegionLabel } from '@/lib/constants/region';
 import Image from 'next/image';
+import { notFound } from 'next/navigation';
 
 export const metadata = {
   title: '클라이언트 상세 | 모들',

@@ -9,6 +9,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useRef, useState } from "react";
+import { Toast, type ToastState } from "@/components/ui/Toast";
 
 export default function EditJobPage({
   params,
@@ -20,13 +21,20 @@ export default function EditJobPage({
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
   const alertedRef = useRef(false);
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user && !alertedRef.current) {
       alertedRef.current = true;
-      alert("로그인이 필요한 서비스입니다.");
-      router.replace("/login");
+      setToast({ type: "error", message: "로그인이 필요한 서비스입니다." });
+      setTimeout(() => router.replace("/login"), 1000);
       return;
     }
     if (user && user.role !== "CLIENT") {
@@ -201,6 +209,7 @@ export default function EditJobPage({
           submitLabel="수정 저장"
         />
       </div>
+      {toast && <Toast toast={toast} />}
     </main>
   );
 }

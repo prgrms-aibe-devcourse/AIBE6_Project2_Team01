@@ -219,21 +219,15 @@ export default function JobsPage() {
         ) : (
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((job: JobListItem) => (
-              <li key={job.id} className="relative">
-                <JobCard job={job} />
-                {isModel ? (
-                  <button
-                    type="button"
-                    onClick={() => toggleFavorite(job.id!)}
-                    className="absolute right-6 bottom-6 z-10 p-1.5 rounded-full bg-white shadow-sm border border-gray-100 text-[18px] leading-none transition hover:scale-110"
-                    style={{ color: favoritedIds.has(job.id!) ? "#ef4444" : "#d1d5db" }}
-                    aria-label={favoritedIds.has(job.id!) ? "즐겨찾기 해제" : "즐겨찾기 추가"}
-                  >
-                    <svg className="w-5 h-5" fill={favoritedIds.has(job.id!) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                  </button>
-                ) : null}
+              <li key={job.id} className="relative h-full">
+                <JobCard 
+                  job={job} 
+                  isFavorited={favoritedIds.has(job.id!)}
+                  onToggleFavorite={isModel ? (e, id) => {
+                    e.preventDefault();
+                    toggleFavorite(id);
+                  } : undefined}
+                />
               </li>
             ))}
           </ul>

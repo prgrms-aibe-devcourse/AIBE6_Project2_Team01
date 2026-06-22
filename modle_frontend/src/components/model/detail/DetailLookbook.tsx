@@ -35,8 +35,8 @@ export function DetailLookbook({ portfolios }: DetailLookbookProps) {
 
   if (!portfolios || portfolios.length === 0) {
     return (
-      <div className="py-20 text-center text-gray-400">
-        등록된 포트폴리오 이미지가 없습니다.
+      <div className="w-full py-16 bg-white flex items-center justify-center rounded-2xl border border-gray-200">
+        <p className="text-gray-400 font-medium text-sm">등록된 포트폴리오 이미지가 없습니다.</p>
       </div>
     );
   }
