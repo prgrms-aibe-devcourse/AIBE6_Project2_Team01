@@ -195,7 +195,7 @@ export default function JobsPage() {
                 key={o.value}
                 type="button"
                 onClick={() => handleFilterChange(region, o.value, status)}
-                className={`whitespace-nowrap rounded-xl px-5 py-2.5 text-[14px] font-bold transition-all ${
+                className={`whitespace-nowrap rounded-lg px-3 py-2 text-[13px] font-bold transition-all ${
                   category === o.value
                     ? "bg-ink text-canvas shadow-md"
                     : "bg-transparent text-gray-500 hover:bg-gray-100 hover:text-ink"
