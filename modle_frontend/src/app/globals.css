@@ -19,6 +19,7 @@
   --color-warning-soft: #f7efe0;
   --color-error: #c93030;
   --color-error-soft: #f9e9e9;
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
 :root {

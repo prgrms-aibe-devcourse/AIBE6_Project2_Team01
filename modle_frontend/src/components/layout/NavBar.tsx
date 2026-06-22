@@ -106,44 +106,14 @@ export function NavBar() {
                     </Link>
                   </>
                 )}
-                <span className="w-1 h-1 rounded-full bg-white/30 mx-3"></span>
-                <Link href="/messages" className={NAV_LINK_CLASS}>
-                  쪽지
-                </Link>
-
-                {/* 알림 버튼 */}
+                {/* 쪽지 (메일함 아이콘) */}
                 {isModelOrClient && (
-                  <div ref={notifRef} className="relative ml-2">
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
-                      type="button"
-                      onClick={() => setNotifOpen((o) => !o)}
-                      aria-label="알림"
-                      aria-expanded={notifOpen}
-                      className={`flex h-8 w-8 items-center justify-center rounded-full border transition-all ${
-                        notifOpen
-                          ? "border-primary text-primary bg-primary/10"
-                          : "border-white/20 text-gray-300 hover:border-white/50 hover:text-white hover:bg-white/10"
-                      }`}
-                    >
-                      <BellIcon />
-                    </motion.button>
-                    <AnimatePresence>
-                      {notifOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          className="absolute right-0 top-12"
-                        >
-                          <NotificationPanel
-                            role={user.role as "MODEL" | "CLIENT"}
-                            onClose={() => setNotifOpen(false)}
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                  <Link href="/messages" className="relative ml-2 flex h-8 w-8 items-center justify-center rounded-full border border-white/20 text-gray-300 hover:border-white/50 hover:text-white hover:bg-white/10 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect width="20" height="16" x="2" y="4" rx="2" />
+                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                    </svg>
+                  </Link>
                 )}
               </div>
             )}

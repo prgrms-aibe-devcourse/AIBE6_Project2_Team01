@@ -1,5 +1,6 @@
 'use client';
 
+import { createPortal } from 'react-dom';
 import { uploadPortfolioImages } from '@/lib/api/portfolio';
 import { Portfolio } from '@/types/model';
 import Image from 'next/image';
@@ -12,6 +13,11 @@ interface Props {
 }
 
 export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [category, setCategory] = useState<string>('HAIR');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
@@ -34,7 +40,7 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -97,12 +103,12 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="bg-white w-full max-w-2xl shadow-xl flex flex-col max-h-[90vh]">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4">
+      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl flex flex-col max-h-[90vh] overflow-hidden">
         
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
+        <div className="flex justify-between items-center p-6 border-b border-gray-200 shrink-0">
           <h3 className="text-xl font-black text-black tracking-widest uppercase">포트폴리오 업로드</h3>
           <button 
             onClick={onClose} 
@@ -116,7 +122,7 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto">
+        <div className="p-6 overflow-y-auto flex-1 min-h-0">
           
           {/* Category Select */}
           <div className="mb-6">
@@ -126,7 +132,7 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full border border-gray-300 p-3 bg-white focus:outline-none focus:border-black transition-colors text-sm"
+              className="w-full border border-gray-300 p-3 rounded-xl bg-white focus:outline-none focus:border-black transition-colors text-sm"
             >
               <option value="HAIR">HAIR</option>
               <option value="MAKEUP">MAKEUP</option>
@@ -145,7 +151,7 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed p-10 flex flex-col items-center justify-center cursor-pointer transition-colors ${
+            className={`border-2 border-dashed p-6 md:p-10 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-colors ${
               isDragging ? 'border-black bg-gray-50' : 'border-gray-300 hover:border-gray-400 bg-white'
             }`}
           >
@@ -160,7 +166,7 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
-            <p className="text-sm font-bold text-black uppercase tracking-wider mb-1">
+            <p className="text-sm font-bold text-black uppercase tracking-wider mb-1 text-center">
               이미지를 이곳으로 드래그 앤 드롭 하세요
             </p>
             <p className="text-xs text-gray-500">
@@ -176,7 +182,7 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
               </h4>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                 {previews.map((preview, index) => (
-                  <div key={index} className="relative aspect-square bg-gray-100 group border border-gray-200">
+                  <div key={index} className="relative aspect-square bg-gray-100 group border border-gray-200 rounded-lg overflow-hidden">
                     <Image
                       src={preview}
                       alt={`preview ${index}`}
@@ -200,23 +206,24 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
+        <div className="p-6 border-t border-gray-200 flex justify-end gap-3 bg-gray-50 shrink-0">
           <button 
             onClick={onClose}
             disabled={isUploading}
-            className="px-6 py-2 border border-black text-black bg-white hover:bg-gray-100 text-xs font-bold uppercase tracking-widest transition-colors disabled:opacity-50"
+            className="px-6 py-2 border border-black text-black bg-white rounded-lg hover:bg-gray-100 text-xs font-bold uppercase tracking-widest transition-colors disabled:opacity-50"
           >
             취소
           </button>
           <button 
             onClick={handleUpload}
             disabled={selectedFiles.length === 0 || isUploading}
-            className="px-6 py-2 bg-black border border-black text-white hover:bg-gray-900 text-xs font-bold uppercase tracking-widest transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2 bg-black border border-black text-white rounded-lg hover:bg-gray-900 text-xs font-bold uppercase tracking-widest transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isUploading ? '업로드 중...' : '완료 및 업로드'}
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
