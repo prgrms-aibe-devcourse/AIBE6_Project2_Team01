@@ -32,11 +32,14 @@ export default async function ClientDetailPage({ params }: PageProps) {
           <div className="w-full md:w-[45%] lg:w-[40%] max-w-[450px] mx-auto md:mx-0">
             <div className="relative w-full aspect-[3/4] bg-gray-50 border border-gray-100 overflow-hidden group">
               <Image
-                src={clientData.profileImageUrl || '/images/default-avatar.png'}
+                src={clientData.profileImageUrl || '/placeholder.png'}
                 alt={`${clientData.companyName} 프로필`}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 400px"
+                onError={(e) => {
+                  e.currentTarget.srcset = '/placeholder.png';
+                }}
               />
             </div>
           </div>

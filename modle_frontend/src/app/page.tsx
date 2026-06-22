@@ -127,8 +127,8 @@ export default function Home() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="flex-1 z-10"
         >
-          <h1 className="text-6xl md:text-7xl lg:text-[5.5rem] font-black tracking-tighter leading-[1.05] text-ink drop-shadow-sm">
-            당신의 브랜드를 <br />
+          <h1 className="text-6xl md:text-7xl lg:text-[5.5rem] font-black tracking-tighter leading-[1.05] text-ink drop-shadow-sm break-keep">
+            <span className="whitespace-nowrap">당신의 브랜드를</span> <br />
             완성할 <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-900 via-gray-600 to-gray-400">파트너</span>
           </h1>
           

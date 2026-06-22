@@ -61,8 +61,6 @@ export default async function ModelDetailPage({ params }: PageProps) {
               <span className="text-body hover:text-ink transition-colors cursor-pointer">
                 후기 <span className="font-bold">{modelData.reviewCount || 0}</span>개
               </span>
-              <div className="w-px h-4 bg-hairline-strong"></div>
-              <span className="text-gray-400 font-mono text-xs">ID: {modelData.id}</span>
             </div>
 
             <div className="flex flex-col gap-4 text-[15px] tracking-wide bg-gray-50/50 p-6 rounded-2xl border border-hairline/50">
