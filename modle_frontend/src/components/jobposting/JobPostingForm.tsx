@@ -2,7 +2,8 @@
 
 import { CATEGORY_OPTIONS } from "@/lib/constants/category";
 import { REGION_OPTIONS } from "@/lib/constants/region";
-import { FormEvent, ReactNode, useState } from "react";
+import { uploadImages } from "@/lib/api/image";
+import { ChangeEvent, FormEvent, ReactNode, useState } from "react";
 
 export type Category =
   | "HAIR"
@@ -61,6 +62,7 @@ export type JobPostingFormState = {
   payment: string;
   payType: PayType | "";
   shootDate: string;
+  imageUrls: string[];
 };
 
 export const defaultFormState: JobPostingFormState = {
@@ -80,6 +82,7 @@ export const defaultFormState: JobPostingFormState = {
   payment: "",
   payType: "",
   shootDate: "",
+  imageUrls: [],
 };
 
 
@@ -107,6 +110,7 @@ export function JobPostingForm({
   const [aiState, setAiState] = useState<"idle" | "generating">("idle");
   const [aiError, setAiError] = useState("");
   const [aiGenerated, setAiGenerated] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const [prevExternalCategory, setPrevExternalCategory] = useState(externalCategory);
   if (prevExternalCategory !== externalCategory && externalCategory) {
@@ -150,6 +154,34 @@ export function JobPostingForm({
     } finally {
       setAiState("idle");
     }
+  };
+
+  const handleImageSelect = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = ""; // 같은 파일 재선택 허용
+    if (files.length === 0) return;
+    if (form.imageUrls.length + files.length > 5) {
+      setMessage("이미지는 최대 5장까지 첨부할 수 있습니다.");
+      setStatus("error");
+      return;
+    }
+    setUploading(true);
+    try {
+      const urls = await uploadImages(files);
+      setForm((cur) => ({ ...cur, imageUrls: [...cur.imageUrls, ...urls] }));
+    } catch {
+      setStatus("error");
+      setMessage("이미지 업로드에 실패했습니다.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleImageRemove = (index: number) => {
+    setForm((cur) => ({
+      ...cur,
+      imageUrls: cur.imageUrls.filter((_, i) => i !== index),
+    }));
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -250,6 +282,41 @@ export function JobPostingForm({
               </div>
             )}
           </Field>
+
+          <div className="flex flex-col gap-2">
+            <span className="text-[13px] font-semibold leading-5 text-ink">
+              이미지 첨부
+              <span className="ml-1 font-normal text-mute">(최대 5장, 본문 하단에 노출)</span>
+            </span>
+            <div className="flex flex-wrap gap-3">
+              {form.imageUrls.map((url, index) => (
+                <div key={url} className="relative h-24 w-24 overflow-hidden rounded-md border border-hairline">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt={`첨부 이미지 ${index + 1}`} className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => handleImageRemove(index)}
+                    className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-ink/70 text-[11px] text-white"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              {form.imageUrls.length < 5 ? (
+                <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-hairline-strong text-[12px] text-mute transition hover:border-primary hover:text-primary">
+                  {uploading ? "업로드 중..." : "＋ 추가"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleImageSelect}
+                    disabled={uploading}
+                  />
+                </label>
+              ) : null}
+            </div>
+          </div>
         </div>
       </section>
 
