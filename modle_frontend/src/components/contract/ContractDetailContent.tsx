@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { ContractAgreementActions } from "@/components/contract/ContractAgreementActions";
 import { ContractNotifyButton } from "@/components/contract/ContractNotifyButton";
@@ -8,6 +8,7 @@ import { ContractStatusOverview } from "@/components/contract/ContractStatusOver
 import { useAuth } from "@/hooks/useAuth";
 import {
   formatContractStatus,
+  getContractStatus,
   viewContract,
   type ContractStatus,
 } from "@/lib/api/contract";
@@ -94,6 +95,46 @@ export function ContractDetailContent({
     isModelUser && !hasViewedContract
       ? "확인 전"
       : formatContractStatus(detail.status);
+
+  const applicationId = detail.applicationId;
+  const documentUrl = getDocumentUrl(detail);
+
+  useEffect(() => {
+    if (applicationId == null || documentUrl) {
+      return;
+    }
+
+    let ignore = false;
+
+    async function loadContractStatus() {
+      if (applicationId == null) {
+        return;
+      }
+
+      try {
+        const contractStatus = await getContractStatus(applicationId);
+
+        if (ignore) {
+          return;
+        }
+
+        setDetail((prev) => ({
+          ...prev,
+          status: contractStatus.status,
+          pdfUrl: contractStatus.pdfUrl?.trim() || prev.pdfUrl,
+          rejectReason: contractStatus.rejectReason?.trim() || prev.rejectReason,
+        }));
+      } catch {
+        // 쿼리스트링 정보만으로도 화면 표시가 가능해야 하므로 보정 조회 실패는 무시합니다.
+      }
+    }
+
+    void loadContractStatus();
+
+    return () => {
+      ignore = true;
+    };
+  }, [applicationId, documentUrl]);
 
   const handleViewContract = async () => {
     setIsViewingContract(true);

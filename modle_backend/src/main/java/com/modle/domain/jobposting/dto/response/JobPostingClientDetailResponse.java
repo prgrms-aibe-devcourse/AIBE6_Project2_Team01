@@ -10,6 +10,7 @@ import com.modle.domain.user.entity.Client;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 // JOB-007: 의뢰인 뷰 — 공고 정보 (AI 추천은 GET /jobs/{id}/recommendations 별도 API)
 public record JobPostingClientDetailResponse(
@@ -37,9 +38,10 @@ public record JobPostingClientDetailResponse(
         String clientCompanyName,
         String clientRegion,
         double clientAvgRating,
-        int clientReviewCount
+        int clientReviewCount,
+        List<String> imageUrls
 ) implements JobPostingDetailResponse {
-    public static JobPostingClientDetailResponse from(JobPosting jobPosting, Client client) {
+    public static JobPostingClientDetailResponse from(JobPosting jobPosting, Client client, List<String> imageUrls) {
         return new JobPostingClientDetailResponse(
                 jobPosting.getId(),
                 jobPosting.getClientId(),
@@ -65,7 +67,8 @@ public record JobPostingClientDetailResponse(
                 client != null ? client.getCompanyName() : null,
                 client != null ? client.getUser().getRegion() : null,
                 client != null ? client.getAvgRating() : 0.0,
-                client != null ? client.getReviewCount() : 0
+                client != null ? client.getReviewCount() : 0,
+                imageUrls
         );
     }
 }

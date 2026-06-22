@@ -9,6 +9,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useRef, useState } from "react";
+import { Toast, type ToastState } from "@/components/ui/Toast";
 
 export default function EditJobPage({
   params,
@@ -20,13 +21,20 @@ export default function EditJobPage({
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
   const alertedRef = useRef(false);
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user && !alertedRef.current) {
       alertedRef.current = true;
-      alert("로그인이 필요한 서비스입니다.");
-      router.replace("/login");
+      setToast({ type: "error", message: "로그인이 필요한 서비스입니다." });
+      setTimeout(() => router.replace("/login"), 1000);
       return;
     }
     if (user && user.role !== "CLIENT") {
@@ -77,6 +85,7 @@ export default function EditJobPage({
             typeof d.shootDate === "string"
               ? d.shootDate.substring(0, 10)
               : "",
+          imageUrls: (d.imageUrls as string[]) ?? [],
         });
       })
       .catch(() => {
@@ -85,9 +94,7 @@ export default function EditJobPage({
   }, [postingId, authLoading, user]);
 
   const handleSubmit = async (formData: JobPostingFormState) => {
-    const { response } = await client.PATCH("/api/v1/jobs/{id}", {
-      params: { path: { id: postingId } },
-      body: {
+    const requestBody = {
         title: formData.title,
         content: formData.content,
         category: formData.category as
@@ -135,7 +142,12 @@ export default function EditJobPage({
         shootDate: formData.shootDate
           ? `${formData.shootDate}T00:00:00`
           : undefined,
-      },
+    };
+
+    // imageUrls는 백엔드에 추가됐으나 schema.d.ts 재생성 보류 중이라 캐스팅으로 전달
+    const { response } = await client.PATCH("/api/v1/jobs/{id}", {
+      params: { path: { id: postingId } },
+      body: { ...requestBody, imageUrls: formData.imageUrls } as typeof requestBody,
     });
 
     if (!response.ok) {
@@ -197,6 +209,7 @@ export default function EditJobPage({
           submitLabel="수정 저장"
         />
       </div>
+      {toast && <Toast toast={toast} />}
     </main>
   );
 }

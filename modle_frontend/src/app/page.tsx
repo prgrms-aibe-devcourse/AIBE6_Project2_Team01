@@ -8,6 +8,7 @@ import { JobCard } from "@/components/jobposting/JobCard";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Sparkles, Star, Users, MapPin } from "lucide-react";
 import { client } from "@/lib/api/client";
+import { getJobBookmarks, addJobBookmark, removeJobBookmark } from "@/lib/api/bookmark";
 import type { components } from "@/lib/api/schema";
 import { getRegionLabel } from "@/lib/constants/region";
 
@@ -51,6 +52,37 @@ export default function Home() {
 
   const [topJobs, setTopJobs] = useState<JobListItem[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
+  const [favoritedIds, setFavoritedIds] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    if (user?.role !== "MODEL") return;
+    getJobBookmarks()
+      .then((bookmarks) => {
+        setFavoritedIds(new Set(bookmarks.map((b) => b.jobPostingId)));
+      })
+      .catch(() => {});
+  }, [user?.role]);
+
+  const toggleFavorite = async (id: number) => {
+    const wasBookmarked = favoritedIds.has(id);
+    setFavoritedIds((prev) => {
+      const next = new Set(prev);
+      if (wasBookmarked) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+    try {
+      if (wasBookmarked) await removeJobBookmark(id);
+      else await addJobBookmark(id);
+    } catch {
+      setFavoritedIds((prev) => {
+        const next = new Set(prev);
+        if (wasBookmarked) next.add(id);
+        else next.delete(id);
+        return next;
+      });
+    }
+  };
 
   useEffect(() => {
     // Fetch top 3 latest/popular jobs
@@ -246,7 +278,14 @@ export default function Home() {
                     visible: { opacity: 1, y: 0, transition: { type: "spring", bounce: 0.4 } }
                   }}
                 >
-                  <JobCard job={job} />
+                  <JobCard 
+                    job={job} 
+                    isFavorited={favoritedIds.has(job.id!)}
+                    onToggleFavorite={user?.role === "MODEL" ? (e, id) => {
+                      e.preventDefault();
+                      toggleFavorite(id);
+                    } : undefined}
+                  />
                 </motion.div>
               ))}
             </motion.div>

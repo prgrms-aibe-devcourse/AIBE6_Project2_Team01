@@ -98,18 +98,6 @@ export function ModelCard({
             )}
           </div>
 
-          {/* 우측 하단 원형 프로필 이미지 (별점 아래) */}
-          <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden border border-gray-200 shadow-sm bg-gray-50 relative ml-2 mb-1">
-            <Image
-              src={model.profileImageUrl || '/placeholder.png'}
-              alt={`${model.name} profile`}
-              fill
-              className="object-cover"
-              onError={(e) => {
-                e.currentTarget.srcset = '/placeholder.png';
-              }}
-            />
-          </div>
         </div>
       </div>
     </div>

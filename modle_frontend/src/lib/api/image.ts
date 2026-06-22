@@ -24,3 +24,12 @@ export async function uploadImage(file: File): Promise<string> {
     throw error;
   }
 }
+
+// 여러 이미지를 순서대로 업로드하고 URL 목록을 반환한다.
+export async function uploadImages(files: File[]): Promise<string[]> {
+  const urls: string[] = [];
+  for (const file of files) {
+    urls.push(await uploadImage(file));
+  }
+  return urls;
+}

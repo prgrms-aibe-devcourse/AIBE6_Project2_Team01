@@ -5,7 +5,9 @@ import { deletePortfolioImage, reorderPortfolioImages, updatePortfolioCategory }
 import { Portfolio } from '@/types/model';
 import { closestCenter, DndContext, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { Toast, type ToastState } from '@/components/ui/Toast';
 import { PortfolioUploadModal } from './PortfolioUploadModal';
 import { SortablePortfolioItem } from './SortablePortfolioItem';
 
@@ -21,6 +23,18 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [editingPortfolioId, setEditingPortfolioId] = useState<number | null>(null);
   const [editingCategory, setEditingCategory] = useState<string>('');
+  const [toast, setToast] = useState<ToastState | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
   
   const categories = ['HAIR', 'MAKEUP', 'HAND', 'FITTING', 'CLOTHING', 'FOOD', 'PRODUCT', 'ETC'];
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -46,9 +60,9 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
     try {
       await deletePortfolioImage(id);
       setPortfolios(prev => prev.filter(p => p.id !== id));
-      alert('삭제되었습니다.');
+      setToast({ type: 'success', message: '삭제되었습니다.' });
     } catch {
-      alert('삭제 중 오류가 발생했습니다.');
+      setToast({ type: 'error', message: '삭제 중 오류가 발생했습니다.' });
     }
   };
 
@@ -65,7 +79,7 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
       try {
         await reorderPortfolioImages(newPortfolios.map(p => p.id));
       } catch {
-        alert('순서 저장에 실패했습니다.');
+        setToast({ type: 'error', message: '순서 저장에 실패했습니다.' });
         setPortfolios(portfolios); // 실패 시 롤백
       }
     }
@@ -128,7 +142,7 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
       </div>
 
       {/* Grid: 진짜 데이터 렌더링 */}
-      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext id="portfolio-dnd-context" collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={displayedPortfolios.map(p => p.id)} strategy={rectSortingStrategy}>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 mb-4">
             {displayedPortfolios.map((item) => (
@@ -170,12 +184,12 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
         onSuccess={(newPortfolios) => {
           // 새로 추가된 사진들을 배열의 맨 앞에 추가 (최신순)
           setPortfolios(prev => [...newPortfolios, ...prev]);
-          alert('포트폴리오 업로드가 완료되었습니다.');
+          setToast({ type: 'success', message: '포트폴리오 업로드가 완료되었습니다.' });
         }}
       />
 
       {/* ================= 카테고리 수정 모달 ================= */}
-      {editingPortfolioId && (
+      {mounted && editingPortfolioId && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/10 backdrop-blur-[2px] p-4" onClick={() => setEditingPortfolioId(null)}>
           <div className="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold mb-4 text-black">카테고리 수정</h3>
@@ -199,16 +213,16 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
               <button 
                 onClick={async () => {
                   if (!editingCategory) {
-                    alert('카테고리를 선택해주세요.');
+                    setToast({ type: 'error', message: '카테고리를 선택해주세요.' });
                     return;
                   }
                   try {
                     await updatePortfolioCategory(editingPortfolioId, editingCategory);
                     setPortfolios(prev => prev.map(p => p.id === editingPortfolioId ? { ...p, category: editingCategory } : p));
-                    alert('카테고리가 성공적으로 수정되었습니다.');
+                    setToast({ type: 'success', message: '카테고리가 성공적으로 수정되었습니다.' });
                     setEditingPortfolioId(null);
                   } catch (e: unknown) {
-                    alert((e as Error).message || '수정 중 오류가 발생했습니다.');
+                    setToast({ type: 'error', message: (e as Error).message || '수정 중 오류가 발생했습니다.' });
                   }
                 }}
                 className="px-4 py-2 text-sm text-white bg-black hover:bg-gray-900 rounded-md transition-colors"
@@ -217,11 +231,12 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ================= 크게 보기 모달 ================= */}
-      {selectedImage && (
+      {mounted && selectedImage && createPortal(
         <div 
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-95 p-4 md:p-8"
           onClick={() => setSelectedImage(null)}
@@ -249,8 +264,11 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
               priority
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
+
+      {toast && <Toast toast={toast} />}
     </div>
   );
 }
