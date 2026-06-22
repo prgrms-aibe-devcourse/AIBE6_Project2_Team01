@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 import { MyProfileView } from '@/components/model/MyProfileView';
 import { PortfolioGallery } from '@/components/portfolio/PortfolioGallery';
@@ -20,7 +21,24 @@ interface Props {
 import { AnimatePresence, motion } from 'framer-motion';
 
 export function MyProfileContainer({ initialData }: Props) {
-  const [activeTab, setActiveTab] = useState('portfolio');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  const tabFromUrl = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabFromUrl || 'portfolio');
+
+  useEffect(() => {
+    if (tabFromUrl && tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 text-ink">
@@ -33,7 +51,7 @@ export function MyProfileContainer({ initialData }: Props) {
 
       <div className="sticky top-0 z-20 border-b border-hairline bg-white/90 backdrop-blur-md shadow-sm">
         <div className="mx-auto max-w-[1200px] px-6">
-          <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
+          <ProfileTabs activeTab={activeTab} onTabChange={handleTabChange} />
         </div>
       </div>
 
