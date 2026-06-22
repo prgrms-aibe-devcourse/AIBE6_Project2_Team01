@@ -13,6 +13,7 @@ import type { Model } from "@/types/model";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
+import { Toast, type ToastState } from "@/components/ui/Toast";
 
 type ClientInfo = {
   clientProfileId?: number | null;
@@ -134,10 +135,17 @@ export default function JobDetailPage({
   const postingId = Number(id);
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   const requireLogin = () => {
-    alert("로그인이 필요한 서비스입니다.");
-    router.push("/login");
+    setToast({ type: "error", message: "로그인이 필요한 서비스입니다." });
+    setTimeout(() => router.push("/login"), 1000);
   };
 
   const [detail, setDetail] = useState<DetailData | null>(null);
@@ -315,7 +323,7 @@ export default function JobDetailPage({
     });
     setStatusChanging(false);
     if (!response.ok) {
-      alert("상태 변경에 실패했습니다.");
+      setToast({ type: "error", message: "상태 변경에 실패했습니다." });
       return;
     }
     const newStatus = (data?.data as { status: string })?.status;
@@ -336,7 +344,7 @@ export default function JobDetailPage({
 
   const handleStatusReasonConfirm = async () => {
     if (statusNeedsReason && !statusReason.trim()) {
-      alert("사유를 입력해 주세요.");
+      setToast({ type: "error", message: "사유를 입력해 주세요." });
       return;
     }
     setStatusReasonModalOpen(false);
@@ -349,7 +357,7 @@ export default function JobDetailPage({
       params: { path: { id: postingId } },
     });
     if (!response.ok) {
-      alert("삭제에 실패했습니다.");
+      setToast({ type: "error", message: "삭제에 실패했습니다." });
       return;
     }
     router.push("/jobs");
@@ -709,6 +717,7 @@ export default function JobDetailPage({
           )}
         </div>
       </div>
+      {toast && <Toast toast={toast} />}
     </main>
   );
 }

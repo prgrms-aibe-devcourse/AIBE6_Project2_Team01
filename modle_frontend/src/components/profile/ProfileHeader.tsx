@@ -58,9 +58,6 @@ export function ProfileHeader({ data }: Props) {
               프로필 수정 (EDIT)
             </button>
           </Link>
-          <button className="flex-1 md:flex-none px-8 py-3 bg-white border border-black hover:bg-gray-50 text-black text-xs font-bold tracking-widest uppercase transition-colors rounded-full shadow-sm hover:shadow-md hover:-translate-y-0.5">
-            포트폴리오 공유 (SHARE)
-          </button>
         </div>
       </div>
     </div>

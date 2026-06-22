@@ -5,6 +5,7 @@ import { client } from "@/lib/api/client";
 import { applyToJob } from "@/lib/api/application";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
+import { Toast, type ToastState } from "@/components/ui/Toast";
 
 type JobSummary = {
   id: number;
@@ -29,17 +30,24 @@ export default function ApplyPage({
   const [coverLetter, setCoverLetter] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      alert("로그인이 필요한 서비스입니다.");
-      router.push("/login");
+      setToast({ type: "error", message: "로그인이 필요한 서비스입니다." });
+      setTimeout(() => router.push("/login"), 1000);
       return;
     }
     if (user.role !== "MODEL") {
-      alert("모델 계정만 지원할 수 있습니다.");
-      router.push(`/jobs/${jobPostingId}`);
+      setToast({ type: "error", message: "모델 계정만 지원할 수 있습니다." });
+      setTimeout(() => router.push(`/jobs/${jobPostingId}`), 1000);
       return;
     }
 
@@ -53,8 +61,8 @@ export default function ApplyPage({
       }
       const loaded = jobRes.data?.data as JobSummary;
       if (loaded.status !== "RECRUITING") {
-        alert("모집 중인 공고에만 지원할 수 있습니다.");
-        router.push(`/jobs/${jobPostingId}`);
+        setToast({ type: "error", message: "모집 중인 공고에만 지원할 수 있습니다." });
+        setTimeout(() => router.push(`/jobs/${jobPostingId}`), 1000);
         return;
       }
       setJob(loaded);
@@ -72,8 +80,8 @@ export default function ApplyPage({
     setError("");
     try {
       await applyToJob(jobPostingId, coverLetter.trim());
-      alert("지원이 완료되었습니다.");
-      router.push(`/jobs/${jobPostingId}`);
+      setToast({ type: "success", message: "지원이 완료되었습니다." });
+      setTimeout(() => router.push(`/jobs/${jobPostingId}`), 1000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "지원에 실패했습니다.");
     } finally {
@@ -169,6 +177,7 @@ export default function ApplyPage({
           </div>
         </form>
       </div>
+      {toast && <Toast toast={toast} />}
     </main>
   );
 }

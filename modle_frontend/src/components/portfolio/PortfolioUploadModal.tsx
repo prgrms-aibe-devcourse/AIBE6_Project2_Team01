@@ -5,6 +5,7 @@ import { uploadPortfolioImages } from '@/lib/api/portfolio';
 import { Portfolio } from '@/types/model';
 import Image from 'next/image';
 import { ChangeEvent, DragEvent, useEffect, useRef, useState } from 'react';
+import { Toast, type ToastState } from '@/components/ui/Toast';
 
 interface Props {
   isOpen: boolean;
@@ -24,6 +25,13 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   // 모달이 닫힐 때 상태 초기화
   useEffect(() => {
@@ -98,7 +106,7 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
       onSuccess(newPortfolios);
       onClose();
     } catch {
-      alert('업로드 중 오류가 발생했습니다.');
+      setToast({ type: 'error', message: '업로드 중 오류가 발생했습니다.' });
       setIsUploading(false);
     }
   };
@@ -223,6 +231,7 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
           </button>
         </div>
       </div>
+      {toast && <Toast toast={toast} />}
     </div>,
     document.body
   );
