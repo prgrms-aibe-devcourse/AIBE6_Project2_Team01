@@ -5,7 +5,8 @@ import { updateMyModel } from '@/lib/api/model';
 import { REGION_OPTIONS } from '@/lib/constants/region';
 import { Model } from '@/types/model';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Toast, type ToastState } from '@/components/ui/Toast';
 
 interface Props {
   initialData: Model;
@@ -40,6 +41,13 @@ export function ModelEditForm({ initialData }: Props) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   const [previewUrl, setPreviewUrl] = useState<string>(initialData.profileImageUrl || '');
 
@@ -134,10 +142,12 @@ export function ModelEditForm({ initialData }: Props) {
         categories: formData.field ? formData.field.split(',').filter(Boolean) : [], // 콤마 문자열을 배열로 변환하여 전송
       };
       await updateMyModel(finalFormData);
-      alert('프로필이 성공적으로 수정되었습니다.');
+      setToast({ type: 'success', message: '프로필이 성공적으로 수정되었습니다.' });
       
-      router.push('/my/profile'); // TODO: Create /my/profile page if it doesn't exist
-      router.refresh();
+      setTimeout(() => {
+        router.push('/my/profile'); // TODO: Create /my/profile page if it doesn't exist
+        router.refresh();
+      }, 1000);
     } catch (err: unknown) {
       setError((err as Error).message || '프로필 수정에 실패했습니다.');
     } finally {
@@ -349,6 +359,7 @@ export function ModelEditForm({ initialData }: Props) {
           {isLoading ? '저장 중...' : '저장하기 (Save)'}
         </button>
       </div>
+      {toast && <Toast toast={toast} />}
     </form>
   );
 }
