@@ -10,6 +10,7 @@ import com.modle.domain.user.entity.Client;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 // JOB-008: 기타 사용자 뷰 — 공고 기본 정보만 노출 (AI 추천·지원·쪽지 버튼 없음)
 public record JobPostingOtherDetailResponse(
@@ -29,9 +30,10 @@ public record JobPostingOtherDetailResponse(
         String clientCompanyName,
         String clientRegion,
         double clientAvgRating,
-        int clientReviewCount
+        int clientReviewCount,
+        List<String> imageUrls
 ) implements JobPostingDetailResponse {
-    public static JobPostingOtherDetailResponse from(JobPosting jobPosting, Client client) {
+    public static JobPostingOtherDetailResponse from(JobPosting jobPosting, Client client, List<String> imageUrls) {
         return new JobPostingOtherDetailResponse(
                 jobPosting.getId(),
                 jobPosting.getTitle(),
@@ -49,7 +51,8 @@ public record JobPostingOtherDetailResponse(
                 client != null ? client.getCompanyName() : null,
                 client != null ? client.getUser().getRegion() : null,
                 client != null ? client.getAvgRating() : 0.0,
-                client != null ? client.getReviewCount() : 0
+                client != null ? client.getReviewCount() : 0,
+                imageUrls
         );
     }
 }

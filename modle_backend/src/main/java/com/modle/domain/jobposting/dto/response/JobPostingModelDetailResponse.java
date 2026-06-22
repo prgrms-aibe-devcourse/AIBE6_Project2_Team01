@@ -10,6 +10,7 @@ import com.modle.domain.user.entity.Client;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 // JOB-006: 모델 뷰 — 공고 정보 + 즐겨찾기 여부 (지원하기·즐겨찾기 버튼은 프론트에서 노출)
 public record JobPostingModelDetailResponse(
@@ -36,9 +37,10 @@ public record JobPostingModelDetailResponse(
         String clientCompanyName,
         String clientRegion,
         double clientAvgRating,
-        int clientReviewCount
+        int clientReviewCount,
+        List<String> imageUrls
 ) implements JobPostingDetailResponse {
-    public static JobPostingModelDetailResponse from(JobPosting jobPosting, Client client) {
+    public static JobPostingModelDetailResponse from(JobPosting jobPosting, Client client, List<String> imageUrls) {
         return new JobPostingModelDetailResponse(
                 jobPosting.getId(),
                 jobPosting.getTitle(),
@@ -63,7 +65,8 @@ public record JobPostingModelDetailResponse(
                 client != null ? client.getCompanyName() : null,
                 client != null ? client.getUser().getRegion() : null,
                 client != null ? client.getAvgRating() : 0.0,
-                client != null ? client.getReviewCount() : 0
+                client != null ? client.getReviewCount() : 0,
+                imageUrls
         );
     }
 }

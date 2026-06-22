@@ -7,11 +7,14 @@ import com.modle.domain.jobposting.dto.request.JobPostingStatusUpdateRequest;
 import com.modle.domain.jobposting.dto.request.JobPostingUpdateRequest;
 import com.modle.domain.jobposting.dto.response.*;
 import com.modle.domain.jobposting.entity.JobPosting;
+import com.modle.domain.jobposting.entity.JobPostingImage;
 import com.modle.domain.jobposting.entity.type.Category;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
 import com.modle.domain.jobposting.entity.type.ViewerType;
 import com.modle.domain.jobposting.event.JobPostingCreatedEvent;
+import com.modle.domain.jobposting.repository.JobPostingImageRepository;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
+import com.modle.global.gcs.GcsService;
 import com.modle.domain.message.service.MessageService;
 import com.modle.domain.user.entity.Client;
 import com.modle.domain.user.repository.ClientRepository;
@@ -38,6 +41,8 @@ public class JobPostingService {
     private final ApplicationRepository applicationRepository;
     private final ClientRepository clientRepository;
     private final MessageService messageService;
+    private final JobPostingImageRepository jobPostingImageRepository;
+    private final GcsService gcsService;
 
 
     // JOB-002: 공고를 저장하고(상태=모집 중) AI 모델 추천을 비동기로 트리거한다.
@@ -66,6 +71,8 @@ public class JobPostingService {
 
         JobPosting saved = jobPostingRepository.save(jobPosting);
 
+        saveImages(saved.getId(), request.imageUrls());
+
         // 등록 후 AI 모델 추천 트리거 (유일 허용 비동기 지점)
         eventPublisher.publishEvent(new JobPostingCreatedEvent(saved.getId()));
 
@@ -92,6 +99,9 @@ public class JobPostingService {
                 request.weightMin(), request.weightMax(),
                 request.minCareerMonths(),
                 request.payment(), request.payType(), request.shootDate());
+
+        replaceImages(jobPostingId, request.imageUrls());
+
         return JobPostingResponse.from(jobPosting);
     }
 
@@ -110,6 +120,8 @@ public class JobPostingService {
         if (status != JobPostingStatus.RECRUITING && status != JobPostingStatus.CANCELLED) {
             throw new CustomException(ErrorCode.JOB_POSTING_NOT_EDITABLE);
         }
+
+        replaceImages(jobPostingId, List.of());
 
         jobPostingRepository.delete(jobPosting);
     }
@@ -222,10 +234,16 @@ public class JobPostingService {
 
         Client client = clientRepository.findByUserId(jobPosting.getClientId()).orElse(null);
 
+        List<String> imageUrls = jobPostingImageRepository
+                .findByJobPostingIdOrderByDisplayOrderAsc(jobPostingId)
+                .stream()
+                .map(JobPostingImage::getImageUrl)
+                .toList();
+
         return switch (viewerType) {
-            case MODEL -> JobPostingModelDetailResponse.from(jobPosting, client);
-            case CLIENT -> JobPostingClientDetailResponse.from(jobPosting, client);
-            case OTHER -> JobPostingOtherDetailResponse.from(jobPosting, client);
+            case MODEL -> JobPostingModelDetailResponse.from(jobPosting, client, imageUrls);
+            case CLIENT -> JobPostingClientDetailResponse.from(jobPosting, client, imageUrls);
+            case OTHER -> JobPostingOtherDetailResponse.from(jobPosting, client, imageUrls);
         };
     }
 
@@ -270,5 +288,26 @@ public class JobPostingService {
                 .orElseThrow(() -> new CustomException(ErrorCode.JOB_POSTING_NOT_FOUND));
 
         jobPosting.updateStatus(JobPostingStatus.SHOOTING);
+    }
+
+    // 공고 이미지 저장: imageUrls 순서를 displayOrder로 보존한다.
+    private void saveImages(Long jobPostingId, List<String> imageUrls) {
+        if (imageUrls == null || imageUrls.isEmpty()) return;
+        for (int i = 0; i < imageUrls.size(); i++) {
+            String url = imageUrls.get(i);
+            if (url == null || url.isBlank()) continue;
+            jobPostingImageRepository.save(new JobPostingImage(jobPostingId, url, i));
+        }
+    }
+
+    // 공고 이미지 전체 교체: 기존 이미지를 GCS·DB에서 제거 후 새 목록으로 재저장한다.
+    private void replaceImages(Long jobPostingId, List<String> imageUrls) {
+        List<JobPostingImage> existing =
+                jobPostingImageRepository.findByJobPostingIdOrderByDisplayOrderAsc(jobPostingId);
+        for (JobPostingImage image : existing) {
+            gcsService.deleteImage(image.getImageUrl());
+        }
+        jobPostingImageRepository.deleteByJobPostingId(jobPostingId);
+        saveImages(jobPostingId, imageUrls);
     }
 }
