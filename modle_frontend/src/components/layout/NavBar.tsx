@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { NotificationPanel } from "@/components/ui/NotificationPanel";
@@ -93,8 +94,11 @@ export function NavBar() {
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-white/10 bg-black/90 backdrop-blur-lg px-6 shadow-sm transition-all duration-300">
-      <Link href="/" className="text-[18px] font-extrabold tracking-tight leading-6 text-white hover:text-gray-200 transition-colors">
-        Modle
+      <Link href="/" className="flex items-center gap-2 group">
+        <Image src="/icon.svg" alt="Modle Logo" width={36} height={36} className="rounded-[10px] transition-transform group-hover:scale-105 invert" />
+        <span className="text-[18px] font-extrabold tracking-tight leading-6 text-white group-hover:text-gray-200 transition-colors">
+          Modle
+        </span>
       </Link>
 
       <div className="flex items-center gap-6">
