@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { createReview } from "@/lib/api/review";
 
 interface Props {
@@ -35,10 +36,19 @@ export function ReviewModal({ applicationId, targetName, onSuccess, onClose }: P
     }
   }
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
   const activeRating = hoverRating || rating;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md border border-hairline bg-surface shadow-xl">
         <div className="flex items-center justify-between border-b border-hairline px-5 py-4">
           <h2 className="text-[18px] font-bold text-ink">{targetName} 리뷰 작성</h2>
@@ -106,6 +116,7 @@ export function ReviewModal({ applicationId, targetName, onSuccess, onClose }: P
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
