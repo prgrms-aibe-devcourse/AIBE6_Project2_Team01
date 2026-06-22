@@ -195,7 +195,10 @@ export default function JobsPage() {
               <button
                 key={o.value}
                 type="button"
-                onClick={() => handleFilterChange(region, o.value, status)}
+                onClick={() => {
+                  const next = category === o.value ? "" : o.value;
+                  if (next !== category) handleFilterChange(region, next, status);
+                }}
                 className={`whitespace-nowrap rounded-lg px-3 py-2 text-[13px] font-bold transition-all ${
                   category === o.value
                     ? "bg-ink text-canvas shadow-md"
