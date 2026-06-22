@@ -81,6 +81,7 @@ export default function EditJobPage({
           payment: d.payment != null ? String(d.payment) : "",
           payType:
             (d.payType as "CASH" | "SERVICE" | "FREE" | undefined) ?? "",
+          serviceDetail: (d.serviceDetail as string) ?? "",
           shootDate:
             typeof d.shootDate === "string"
               ? d.shootDate.substring(0, 10)
@@ -139,6 +140,7 @@ export default function EditJobPage({
           : undefined,
         payment: formData.payment ? Number(formData.payment) : undefined,
         payType: formData.payType || undefined,
+        serviceDetail: formData.serviceDetail || undefined,
         shootDate: formData.shootDate
           ? `${formData.shootDate}T00:00:00`
           : undefined,

@@ -1412,6 +1412,7 @@ export interface components {
             payment?: number;
             /** @enum {string} */
             payType?: "CASH" | "SERVICE" | "FREE";
+            serviceDetail?: string;
             /** Format: date-time */
             shootDate?: string;
             imageUrls?: string[];
@@ -1721,6 +1722,7 @@ export interface components {
             payment?: number;
             /** @enum {string} */
             payType?: "CASH" | "SERVICE" | "FREE";
+            serviceDetail?: string;
             /** Format: date-time */
             shootDate?: string;
             imageUrls?: string[];
@@ -1836,9 +1838,9 @@ export interface components {
             sort?: components["schemas"]["SortObject"];
             paged?: boolean;
             /** Format: int32 */
-            pageSize?: number;
-            /** Format: int32 */
             pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
             unpaged?: boolean;
         };
         SortObject: {
@@ -1993,6 +1995,7 @@ export interface components {
             payment?: number;
             /** @enum {string} */
             payType?: "CASH" | "SERVICE" | "FREE";
+            serviceDetail?: string;
             /** Format: date-time */
             shootDate?: string;
             /** Format: date-time */
@@ -2040,6 +2043,7 @@ export interface components {
             payment?: number;
             /** @enum {string} */
             payType?: "CASH" | "SERVICE" | "FREE";
+            serviceDetail?: string;
             /** Format: date-time */
             shootDate?: string;
             /** Format: date-time */
@@ -2072,6 +2076,7 @@ export interface components {
             payment?: number;
             /** @enum {string} */
             payType?: "CASH" | "SERVICE" | "FREE";
+            serviceDetail?: string;
             /** Format: date-time */
             shootDate?: string;
             /** Format: date-time */

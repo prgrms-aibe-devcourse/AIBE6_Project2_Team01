@@ -52,7 +52,7 @@ export function JobCard({ job, isFavorited, onToggleFavorite }: JobCardProps) {
             {job.payType === "FREE"
               ? "무료"
               : job.payType === "SERVICE"
-              ? "상호무페이"
+              ? "서비스 제공"
               : job.payment
               ? `${Number(job.payment).toLocaleString()}원`
               : "협의"}

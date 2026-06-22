@@ -66,6 +66,7 @@ public class JobPostingService {
                 .minCareerMonths(request.minCareerMonths())
                 .payment(request.payment())
                 .payType(request.payType())
+                .serviceDetail(request.serviceDetail())
                 .shootDate(request.shootDate())
                 .build();
 
@@ -93,7 +94,7 @@ public class JobPostingService {
                 request.heightMin(), request.heightMax(),
                 request.weightMin(), request.weightMax(),
                 request.minCareerMonths(),
-                request.payment(), request.payType(), request.shootDate());
+                request.payment(), request.payType(), request.serviceDetail(), request.shootDate());
 
         replaceImages(jobPostingId, request.imageUrls());
 
@@ -198,6 +199,7 @@ public class JobPostingService {
                 .minCareerMonths(original.getMinCareerMonths())
                 .payment(original.getPayment())
                 .payType(original.getPayType())
+                .serviceDetail(original.getServiceDetail())
                 .shootDate(original.getShootDate())
                 .build();
 
