@@ -1,5 +1,6 @@
 import { JobListItem } from "@/types/job";
 import { getRegionLabel } from "@/lib/constants/region";
+import { getCategoryLabel } from "@/lib/constants/category";
 import Link from "next/link";
 
 interface JobCardProps {
@@ -39,7 +40,7 @@ export function JobCard({ job, isFavorited, onToggleFavorite }: JobCardProps) {
           <div className="flex items-center">
             <span className="truncate">
               {getRegionLabel(job.region)} <span className="mx-1.5 text-gray-300">|</span>{" "}
-              {job.category} <span className="mx-1.5 text-gray-300">|</span>{" "}
+              {getCategoryLabel(job.category)} <span className="mx-1.5 text-gray-300">|</span>{" "}
               {job.requiredSex === "M" ? "남성" : job.requiredSex === "F" ? "여성" : "성별무관"}
             </span>
           </div>
