@@ -32,4 +32,10 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
 
     // MATCH-006: 의뢰인 전체 공고 목록 (상태 무관)
     List<JobPosting> findByClientIdOrderByCreatedDateDesc(Long clientId);
+
+    // PROFILE: 의뢰인 공개 공고 목록 (지정한 상태 집합만)
+    List<JobPosting> findByClientIdAndStatusInOrderByCreatedDateDesc(
+            Long clientId,
+            List<JobPostingStatus> statuses
+    );
 }

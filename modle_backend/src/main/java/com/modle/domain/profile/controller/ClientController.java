@@ -1,5 +1,7 @@
 package com.modle.domain.profile.controller;
 
+import com.modle.domain.jobposting.dto.response.MyJobPostingResponse;
+import com.modle.domain.jobposting.service.JobPostingService;
 import com.modle.domain.profile.dto.ClientDto;
 import com.modle.domain.profile.dto.request.ClientModifyReqBody;
 import com.modle.domain.profile.service.ClientService;
@@ -26,6 +28,7 @@ import java.util.List;
 public class ClientController {
     private final ClientService clientService;
     private final GcsService gcsService;
+    private final JobPostingService jobPostingService;
 
     @Transactional(readOnly = true)
     @GetMapping
@@ -72,6 +75,21 @@ public class ClientController {
                 "200-1",
                 "조회 성공",
                 new ClientDto(item));
+    }
+
+    @Transactional(readOnly = true)
+    @GetMapping("/{id}/job-postings")
+    @Operation(summary = "의뢰인 공개 공고 목록 조회 (상태 필터 선택)")
+    public ApiResponse<List<MyJobPostingResponse>> getClientJobPostings(
+            @PathVariable Long id,
+            @RequestParam(required = false) String status) {
+        Client client = clientService.findById(id);
+        Long clientUserId = client.getUser().getId();
+
+        return new ApiResponse<>(
+                "200-1",
+                "의뢰인 공고 목록 조회 성공",
+                jobPostingService.getClientJobPostings(clientUserId, status));
     }
 
     @PutMapping("/my")

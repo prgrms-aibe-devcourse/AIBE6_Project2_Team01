@@ -67,6 +67,7 @@ public class SecurityConfig {
                                                                 "/api/v1/models/{id}",
                                                                 "/api/v1/clients",
                                                                 "/api/v1/clients/{id}",
+                                                                "/api/v1/clients/{id}/job-postings",
                                                                 "/api/v1/jobs",
                                                                 "/api/v1/jobs/{id}",
                                                                 "/api/v1/users/{userId}/reviews"

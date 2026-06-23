@@ -257,39 +257,72 @@ public class JobPostingService {
         };
     }
 
+    // PROFILE: 기업 프로필에 공개되는 공고 상태 (취소·보류 제외)
+    private static final List<JobPostingStatus> PUBLIC_VISIBLE_STATUSES = List.of(
+            JobPostingStatus.RECRUITING,
+            JobPostingStatus.SHOOTING,
+            JobPostingStatus.COMPLETED,
+            JobPostingStatus.CLOSED
+    );
+
     // MATCH-006: 작성한 공고 목록 (의뢰인)
     public List<MyJobPostingResponse> getMyJobPostings(Long clientId) {
         List<JobPosting> jobPostings =
                 jobPostingRepository.findByClientIdOrderByCreatedDateDesc(clientId);
 
         return jobPostings.stream()
-                .map(jobPosting -> {
-                    long applicantCount = applicationRepository.countByJobPostingIdAndStatusNot(
-                            jobPosting.getId(), ApplicationStatus.APPLICATION_CANCELLED);
-
-                    long contactedCount = applicationRepository.countByJobPostingIdAndStatusIn(
-                            jobPosting.getId(),
-                            List.of(
-                                    ApplicationStatus.CONTACTED,
-                                    ApplicationStatus.CONTRACT_SENT,
-                                    ApplicationStatus.SHOOTING,
-                                    ApplicationStatus.COMPLETED
-                            )
-                    );
-
-                    long completedCount = applicationRepository.countByJobPostingIdAndStatus(
-                            jobPosting.getId(),
-                            ApplicationStatus.COMPLETED
-                    );
-
-                    return MyJobPostingResponse.of(
-                            jobPosting,
-                            applicantCount,
-                            contactedCount,
-                            completedCount
-                    );
-                })
+                .map(this::toMyJobPostingResponse)
                 .toList();
+    }
+
+    // PROFILE: 특정 의뢰인의 공개 공고 목록 (비로그인 포함 누구나 조회 가능, 공개 상태만 노출)
+    public List<MyJobPostingResponse> getClientJobPostings(Long clientUserId, String status) {
+        JobPostingStatus statusEnum = parseEnum(JobPostingStatus.class, status);
+
+        List<JobPosting> jobPostings;
+        if (statusEnum != null) {
+            // 공개 허용 상태로만 필터링 가능
+            if (!PUBLIC_VISIBLE_STATUSES.contains(statusEnum)) {
+                throw new CustomException(ErrorCode.JOB_POSTING_INVALID_FILTER_VALUE);
+            }
+            jobPostings = jobPostingRepository
+                    .findByClientIdAndStatusOrderByCreatedDateDesc(clientUserId, statusEnum);
+        } else {
+            jobPostings = jobPostingRepository
+                    .findByClientIdAndStatusInOrderByCreatedDateDesc(clientUserId, PUBLIC_VISIBLE_STATUSES);
+        }
+
+        return jobPostings.stream()
+                .map(this::toMyJobPostingResponse)
+                .toList();
+    }
+
+    // 공고 1건을 지원자 카운트와 함께 응답 DTO로 변환한다.
+    private MyJobPostingResponse toMyJobPostingResponse(JobPosting jobPosting) {
+        long applicantCount = applicationRepository.countByJobPostingIdAndStatusNot(
+                jobPosting.getId(), ApplicationStatus.APPLICATION_CANCELLED);
+
+        long contactedCount = applicationRepository.countByJobPostingIdAndStatusIn(
+                jobPosting.getId(),
+                List.of(
+                        ApplicationStatus.CONTACTED,
+                        ApplicationStatus.CONTRACT_SENT,
+                        ApplicationStatus.SHOOTING,
+                        ApplicationStatus.COMPLETED
+                )
+        );
+
+        long completedCount = applicationRepository.countByJobPostingIdAndStatus(
+                jobPosting.getId(),
+                ApplicationStatus.COMPLETED
+        );
+
+        return MyJobPostingResponse.of(
+                jobPosting,
+                applicantCount,
+                contactedCount,
+                completedCount
+        );
     }
 
     @Transactional
