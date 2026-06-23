@@ -138,6 +138,17 @@ export function ModelEditForm({ initialData }: Props) {
     { label: '기타', value: 'ETC' },
   ];
 
+  const DAY_OPTIONS = ['월', '화', '수', '목', '금', '토', '일'];
+
+  const handleDaysToggle = (day: string) => {
+    const currentDays = formData.availableDays ? formData.availableDays.split(',').filter(Boolean) : [];
+    if (currentDays.includes(day)) {
+      setFormData(prev => ({ ...prev, availableDays: currentDays.filter(d => d !== day).join(',') }));
+    } else {
+      setFormData(prev => ({ ...prev, availableDays: [...currentDays, day].join(',') }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -291,7 +302,7 @@ export function ModelEditForm({ initialData }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">키 (Height, cm)</label>
           <input
@@ -314,6 +325,54 @@ export function ModelEditForm({ initialData }: Props) {
             placeholder="예: 65"
           />
         </div>
+        <div>
+          <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">발사이즈 (Shoe, mm)</label>
+          <input
+            type="number"
+            name="shoeSize"
+            value={formData.shoeSize || ''}
+            onChange={handleChange}
+            className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors"
+            placeholder="예: 260"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">상의 사이즈 (Top Size)</label>
+          <input
+            type="text"
+            name="topSize"
+            value={formData.topSize || ''}
+            onChange={handleChange}
+            className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors"
+            placeholder="예: S, M, L 또는 95, 100"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">하의 사이즈 (Bottom Size)</label>
+          <input
+            type="text"
+            name="bottomSize"
+            value={formData.bottomSize || ''}
+            onChange={handleChange}
+            className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors"
+            placeholder="예: S, M 또는 28, 30"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">경력 (Experience)</label>
+        <input
+          type="text"
+          name="experience"
+          value={formData.experience || ''}
+          onChange={handleChange}
+          className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors"
+          placeholder="예: 신입, 1년 미만, 3년 이상, 다수 쇼핑몰 촬영"
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-6 mb-6">
@@ -349,6 +408,29 @@ export function ModelEditForm({ initialData }: Props) {
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-xs font-bold text-black mb-3 uppercase tracking-wider">촬영 가능 요일 (Available Days)</label>
+        <div className="flex flex-wrap gap-2">
+          {DAY_OPTIONS.map(day => {
+            const isSelected = (formData.availableDays || '').split(',').includes(day);
+            return (
+              <button
+                key={day}
+                type="button"
+                onClick={() => handleDaysToggle(day)}
+                className={`px-6 py-2.5 text-xs font-bold tracking-wider uppercase transition-colors border rounded-full ${
+                  isSelected 
+                    ? 'bg-black text-white border-black' 
+                    : 'bg-white text-gray-500 border-gray-300 hover:border-black hover:text-black'
+                }`}
+              >
+                {day}
+              </button>
+            );
+          })}
         </div>
       </div>
 

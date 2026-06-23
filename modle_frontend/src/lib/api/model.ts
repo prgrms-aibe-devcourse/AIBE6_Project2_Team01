@@ -41,10 +41,14 @@ export async function getModels(params: Record<string, string | string[] | undef
       height: item.height,
       weight: item.weight,
       sex: item.sex,
-      careerStartDate: item.careerStartDate,
       activeRegions: item.activeRegions,
       introduction: item.introduction || '',
-      portfolios: item.portfolios || []
+      portfolios: item.portfolios || [],
+      experience: item.experience,
+      topSize: item.topSize,
+      bottomSize: item.bottomSize,
+      shoeSize: item.shoeSize,
+      availableDays: item.availableDays
     };
   };
 
@@ -99,11 +103,16 @@ export async function getModel(id: string | number): Promise<Model> {
     height: item.height,
     weight: item.weight,
     sex: item.sex,
-    careerStartDate: item.careerStartDate,
+    sex: item.sex,
     activeRegions: item.activeRegions,
     tags: item.tags || [],
     introduction: item.introduction || '',
-    portfolios: item.portfolios || []
+    portfolios: item.portfolios || [],
+    experience: item.experience,
+    topSize: item.topSize,
+    bottomSize: item.bottomSize,
+    shoeSize: item.shoeSize,
+    availableDays: item.availableDays
   };
 }
 
@@ -135,12 +144,16 @@ export async function getMyModel(customHeaders?: HeadersInit): Promise<Model> {
     height: item.height,
     weight: item.weight,
     sex: item.sex,
-    careerStartDate: item.careerStartDate,
     activeRegions: item.activeRegions,
     field: item.field,
     tags: item.tags || [],
     introduction: item.introduction || '',
-    portfolios: item.portfolios || []
+    portfolios: item.portfolios || [],
+    experience: item.experience,
+    topSize: item.topSize,
+    bottomSize: item.bottomSize,
+    shoeSize: item.shoeSize,
+    availableDays: item.availableDays
   };
 }
 
@@ -151,13 +164,17 @@ export async function updateMyModel(modelData: Partial<Model>): Promise<void> {
     weight: modelData.weight,
     sex: modelData.sex,
     age: modelData.age,
-    careerStartDate: modelData.careerStartDate,
     activeRegions: modelData.activeRegions,
     categories: modelData.categories || [],
     tags: modelData.tags || [],
     introduction: modelData.introduction,
     region: modelData.region,
-    profileImageUrl: modelData.profileImageUrl
+    profileImageUrl: modelData.profileImageUrl,
+    experience: modelData.experience,
+    topSize: modelData.topSize,
+    bottomSize: modelData.bottomSize,
+    shoeSize: modelData.shoeSize,
+    availableDays: modelData.availableDays
   };
 
   const { error } = await client.PUT('/api/v1/models/my', {

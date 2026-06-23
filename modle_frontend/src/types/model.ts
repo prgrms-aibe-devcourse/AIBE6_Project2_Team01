@@ -17,12 +17,16 @@ export interface Model {
   height?: number;
   weight?: number;
   sex?: "M" | "F";
-  careerStartDate?: string;
   activeRegions?: string[];
   field?: string;
   tags?: string[];
   introduction?: string;
   portfolios?: Portfolio[];
+  experience?: string;
+  topSize?: string;
+  bottomSize?: string;
+  shoeSize?: number;
+  availableDays?: string;
 }
 
 export interface ModelListResponse {
