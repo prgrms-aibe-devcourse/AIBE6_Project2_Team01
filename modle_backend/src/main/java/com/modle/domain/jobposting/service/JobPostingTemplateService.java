@@ -118,7 +118,6 @@ public class JobPostingTemplateService {
         return switch (request.category()) {
             case HAIR -> buildHairConditions(request.title());
             case MAKEUP -> "- 피부 트러블 또는 알레르기가 없는 분\n- 메이크업 제거에 동의하시는 분";
-            case CLOTHING -> "- 의상 사이즈 정확히 기재 필수\n- 다수 의상 착용 가능한 분";
             case FITTING -> "- 신체 사이즈 정확히 기재 필수\n- 다수 의상 착용 및 장시간 피팅 가능한 분";
             case HAND -> "- 손 피부 상태가 양호한 분 (손톱 정리 필수)\n- 네일아트 유무 사전 안내 필수";
             case FOOD -> "- 음식 알레르기 여부 사전 안내 필수\n- 음식 취식 연기 촬영 가능한 분";
@@ -169,7 +168,6 @@ public class JobPostingTemplateService {
         return switch (category) {
             case HAIR -> "헤어";
             case MAKEUP -> "메이크업";
-            case CLOTHING -> "의류";
             case FITTING -> "피팅";
             case HAND -> "핸드";
             case FOOD -> "음식";

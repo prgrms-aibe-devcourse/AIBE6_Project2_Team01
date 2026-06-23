@@ -8,7 +8,6 @@ import { ChangeEvent, FormEvent, ReactNode, useState } from "react";
 export type Category =
   | "HAIR"
   | "MAKEUP"
-  | "CLOTHING"
   | "FITTING"
   | "HAND"
   | "FOOD"

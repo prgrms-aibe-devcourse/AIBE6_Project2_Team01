@@ -85,6 +85,28 @@ export default async function ModelDetailPage({ params }: PageProps) {
                   <span>{modelData.weight ? `${modelData.weight} kg` : "미상"}</span>
                 </span>
               </div>
+              <div className="flex items-center">
+                <span className="w-28 text-gray-500 font-medium">상세 사이즈</span>
+                <span className="text-ink font-bold flex gap-3">
+                  <span>상의 {modelData.topSize || "미상"}</span>
+                  <span className="text-gray-300">|</span>
+                  <span>하의 {modelData.bottomSize || "미상"}</span>
+                  <span className="text-gray-300">|</span>
+                  <span>발 {modelData.shoeSize ? `${modelData.shoeSize} mm` : "미상"}</span>
+                </span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-28 text-gray-500 font-medium">경력</span>
+                <span className="text-ink font-bold">
+                  {modelData.experience === 0 ? "신입" : modelData.experience ? `${modelData.experience}년` : "미상"}
+                </span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-28 text-gray-500 font-medium">촬영 가능 요일</span>
+                <span className="text-ink font-bold">
+                  {modelData.availableDays || "무관"}
+                </span>
+              </div>
               <div className="flex items-start mt-2 pt-4 border-t border-hairline/50">
                 <span className="w-28 text-gray-500 font-medium mt-1.5">관련 태그</span>
                 <div className="flex flex-wrap gap-2 flex-1">

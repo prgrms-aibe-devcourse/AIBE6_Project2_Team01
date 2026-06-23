@@ -40,6 +40,7 @@ public class ModelController {
                 @RequestParam(required = false) List<String> regions,
                 @RequestParam(required = false) List<String> tags,
                 @RequestParam(required = false) String height,
+                @RequestParam(required = false) String weight,
                 @RequestParam(required = false) String sort,
                 @RequestParam(defaultValue = "0") int page,
                 @RequestParam(defaultValue = "12") int size
@@ -52,7 +53,7 @@ public class ModelController {
                 }
 
                 // Service 호출 시 page, size 파라미터 추가
-                Page<Model> items = modelService.getList(query, sexParam, categories, regions, tags, height, sort, page, size);
+                Page<Model> items = modelService.getList(query, sexParam, categories, regions, tags, height, weight, sort, page, size);
 
                 // DTO 변환 (리스트의 stream().map() 대신 Page의 내장 map() 사용)
                 Page<ModelDto> dtoList = items.map(ModelDto::new);
@@ -119,8 +120,12 @@ public class ModelController {
                                 reqBody.introduction(),
                                 reqBody.region(),
                                 newImageUrl,
-                                reqBody.careerStartDate(),
-                                reqBody.activeRegions());
+                                reqBody.activeRegions(),
+                                reqBody.experience(),
+                                reqBody.topSize(),
+                                reqBody.bottomSize(),
+                                reqBody.shoeSize(),
+                                reqBody.availableDays());
                 return new ApiResponse<>(
                                 "200-1",
                                 "내 프로필이 수정되었습니다.");

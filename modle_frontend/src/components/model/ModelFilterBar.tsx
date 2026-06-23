@@ -44,7 +44,6 @@ export function ModelFilterBar() {
   const categories = [
     { label: '헤어', value: 'HAIR' },
     { label: '메이크업', value: 'MAKEUP' },
-    { label: '의류', value: 'CLOTHING' },
     { label: '피팅', value: 'FITTING' },
     { label: '핸드', value: 'HAND' },
     { label: '음식', value: 'FOOD' },

@@ -33,7 +33,12 @@ export function ModelEditForm({ initialData }: Props) {
     field: initialData.categories?.join(',') || initialData.field || '',
     tags: initialData.tags || [],
     introduction: initialData.introduction || '',
-    profileImageUrl: initialData.profileImageUrl || ''
+    profileImageUrl: initialData.profileImageUrl || '',
+    experience: initialData.experience,
+    topSize: initialData.topSize,
+    bottomSize: initialData.bottomSize,
+    shoeSize: initialData.shoeSize,
+    availableDays: initialData.availableDays
   });
 
   const [tagInput, setTagInput] = useState('');
@@ -132,11 +137,21 @@ export function ModelEditForm({ initialData }: Props) {
     { label: '메이크업', value: 'MAKEUP' },
     { label: '손/부분', value: 'HAND' },
     { label: '피팅', value: 'FITTING' },
-    { label: '의류', value: 'CLOTHING' },
     { label: '푸드', value: 'FOOD' },
     { label: '제품', value: 'PRODUCT' },
     { label: '기타', value: 'ETC' },
   ];
+
+  const DAY_OPTIONS = ['월', '화', '수', '목', '금', '토', '일'];
+
+  const handleDaysToggle = (day: string) => {
+    const currentDays = formData.availableDays ? formData.availableDays.split(',').filter(Boolean) : [];
+    if (currentDays.includes(day)) {
+      setFormData(prev => ({ ...prev, availableDays: currentDays.filter(d => d !== day).join(',') }));
+    } else {
+      setFormData(prev => ({ ...prev, availableDays: [...currentDays, day].join(',') }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,6 +178,18 @@ export function ModelEditForm({ initialData }: Props) {
 
     if (formData.weight === undefined || formData.weight < 2 || formData.weight > 200) {
       setError('몸무게는 2~200kg 사이로 입력해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.experience !== undefined && (formData.experience < 0 || formData.experience > 60)) {
+      setError('경력은 0~60 사이로 입력해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.shoeSize !== undefined && (formData.shoeSize < 200 || formData.shoeSize > 350)) {
+      setError('발사이즈는 200~350 사이로 입력해주세요.');
       setIsLoading(false);
       return;
     }
@@ -291,7 +318,7 @@ export function ModelEditForm({ initialData }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">키 (Height, cm)</label>
           <input
@@ -314,6 +341,80 @@ export function ModelEditForm({ initialData }: Props) {
             placeholder="예: 65"
           />
         </div>
+        <div>
+          <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">발사이즈 (Shoe, mm)</label>
+          <input
+            type="number"
+            name="shoeSize"
+            value={formData.shoeSize || ''}
+            onChange={handleChange}
+            className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors"
+            placeholder="예: 260"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">상의 사이즈 (Top Size)</label>
+          <div className="relative">
+            <select
+              name="topSize"
+              value={formData.topSize || ''}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors appearance-none cursor-pointer"
+            >
+              <option value="">상의 사이즈 선택</option>
+              <option value="SS">SS</option>
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+              <option value="2XL">2XL</option>
+              <option value="3XL">3XL</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">하의 사이즈 (Bottom Size)</label>
+          <div className="relative">
+            <select
+              name="bottomSize"
+              value={formData.bottomSize || ''}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors appearance-none cursor-pointer"
+            >
+              <option value="">하의 사이즈 선택</option>
+              <option value="SS">SS</option>
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+              <option value="2XL">2XL</option>
+              <option value="3XL">3XL</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">경력 (Experience) - 년 단위</label>
+        <input
+          type="number"
+          name="experience"
+          min="0"
+          max="60"
+          value={formData.experience ?? ''}
+          onChange={handleChange}
+          className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors"
+          placeholder="숫자로 입력 (0 입력 시 '신입'으로 표시됩니다)"
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-6 mb-6">
@@ -349,6 +450,29 @@ export function ModelEditForm({ initialData }: Props) {
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-xs font-bold text-black mb-3 uppercase tracking-wider">촬영 가능 요일 (Available Days)</label>
+        <div className="flex flex-wrap gap-2">
+          {DAY_OPTIONS.map(day => {
+            const isSelected = (formData.availableDays || '').split(',').includes(day);
+            return (
+              <button
+                key={day}
+                type="button"
+                onClick={() => handleDaysToggle(day)}
+                className={`px-6 py-2.5 text-xs font-bold tracking-wider uppercase transition-colors border rounded-full ${
+                  isSelected 
+                    ? 'bg-black text-white border-black' 
+                    : 'bg-white text-gray-500 border-gray-300 hover:border-black hover:text-black'
+                }`}
+              >
+                {day}
+              </button>
+            );
+          })}
         </div>
       </div>
 

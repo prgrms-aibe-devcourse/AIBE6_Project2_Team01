@@ -41,6 +41,21 @@ export function MyProfileView({ data }: Props) {
             <span className="px-4 py-1.5 border border-hairline shadow-sm bg-white text-ink text-xs font-bold uppercase tracking-widest rounded-full">
               {data.weight ? `${data.weight}kg` : "몸무게 미상"}
             </span>
+            {data.topSize && (
+              <span className="px-4 py-1.5 border border-hairline shadow-sm bg-white text-ink text-xs font-bold uppercase tracking-widest rounded-full">
+                상의: {data.topSize}
+              </span>
+            )}
+            {data.bottomSize && (
+              <span className="px-4 py-1.5 border border-hairline shadow-sm bg-white text-ink text-xs font-bold uppercase tracking-widest rounded-full">
+                하의: {data.bottomSize}
+              </span>
+            )}
+            {data.shoeSize && (
+              <span className="px-4 py-1.5 border border-hairline shadow-sm bg-white text-ink text-xs font-bold uppercase tracking-widest rounded-full">
+                발: {data.shoeSize}mm
+              </span>
+            )}
           </div>
 
           {data.field && (
@@ -49,6 +64,22 @@ export function MyProfileView({ data }: Props) {
                 활동 분야 (CATEGORY)
               </span>{" "}
               {data.field}
+            </p>
+          )}
+          {data.experience !== undefined && data.experience !== null && (
+            <p className="text-xs font-bold uppercase tracking-widest text-black mt-2">
+              <span className="text-gray-500 mr-2 border-r border-black pr-2">
+                경력 (EXPERIENCE)
+              </span>{" "}
+              {data.experience === 0 ? "신입" : `${data.experience}년`}
+            </p>
+          )}
+          {data.availableDays && (
+            <p className="text-xs font-bold uppercase tracking-widest text-black mt-2">
+              <span className="text-gray-500 mr-2 border-r border-black pr-2">
+                촬영 가능 요일 (AVAILABLE DAYS)
+              </span>{" "}
+              {data.availableDays}
             </p>
           )}
         </div>

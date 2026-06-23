@@ -146,7 +146,6 @@ export function PortfolioUploadModal({ isOpen, onClose, onSuccess }: Props) {
               <option value="MAKEUP">MAKEUP</option>
               <option value="HAND">HAND</option>
               <option value="FITTING">FITTING</option>
-              <option value="CLOTHING">CLOTHING</option>
               <option value="FOOD">FOOD</option>
               <option value="PRODUCT">PRODUCT</option>
               <option value="ETC">ETC</option>

@@ -1242,7 +1242,7 @@ export interface components {
             region?: string;
             profileImageUrl?: string;
             /** Format: date */
-            careerStartDate?: string;
+
             activeRegions?: string[];
         };
         ClientModifyReqBody: {
@@ -1806,7 +1806,7 @@ export interface components {
             introduction?: string;
             profileImageUrl?: string;
             /** Format: date */
-            careerStartDate?: string;
+
             activeRegions?: string[];
             /** Format: double */
             avgRating: number;

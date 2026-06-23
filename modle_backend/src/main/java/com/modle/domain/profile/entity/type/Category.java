@@ -5,7 +5,6 @@ public enum Category {
     MAKEUP,
     HAND,
     FITTING,
-    CLOTHING,
     FOOD,
     PRODUCT,
     ETC

@@ -37,9 +37,6 @@ export default async function ClientDetailPage({ params }: PageProps) {
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 400px"
-                onError={(e) => {
-                  e.currentTarget.srcset = '/placeholder.png';
-                }}
               />
             </div>
           </div>

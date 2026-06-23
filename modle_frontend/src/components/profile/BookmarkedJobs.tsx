@@ -10,7 +10,7 @@ import {
 } from "@/lib/api/bookmark";
 
 const CATEGORY_LABELS: Record<string, string> = {
-  HAIR: "헤어", MAKEUP: "메이크업", CLOTHING: "의류", FITTING: "피팅",
+  HAIR: "헤어", MAKEUP: "메이크업", FITTING: "피팅",
   HAND: "핸드", FOOD: "음식", PRODUCT: "제품", ETC: "기타",
 };
 
