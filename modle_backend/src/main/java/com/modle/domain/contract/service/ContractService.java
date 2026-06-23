@@ -84,7 +84,8 @@ public class ContractService {
 
     @Transactional
     public ContractResponse notifyContract(Long clientUserId, Long contractId) {
-        Contract contract = contractRepository.findById(contractId)
+        // 더블 클릭 등 동시 요청 시 알림 중복 발송을 막기 위해 row-level lock 획득
+        Contract contract = contractRepository.findByIdForUpdate(contractId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CONTRACT_NOT_FOUND));
 
         contractValidator.validateDraftStatus(contract);
