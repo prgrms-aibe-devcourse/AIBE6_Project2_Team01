@@ -296,7 +296,7 @@ public class InitData {
                                 .clientId(client1Id)
                                 .title("가을 신상 의류 룩북 모델 모집")
                                 .content("무신사 가을 신상 의류 룩북 촬영을 위한 모델을 모집합니다.")
-                                .category(Category.CLOTHING)
+                                .category(Category.FITTING)
                                 .region(Region.DAEGU)
                                 .status(JobPostingStatus.RECRUITING)
                                 .requiredSex(RequiredSex.F)
@@ -390,7 +390,7 @@ public class InitData {
                                 .clientId(client1Id)
                                 .title("강원 워크웨어 룩북 모델 모집")
                                 .content("무신사 워크웨어 룩북 촬영을 위한 모델을 모집합니다.")
-                                .category(Category.CLOTHING)
+                                .category(Category.FITTING)
                                 .region(Region.GANGWON)
                                 .status(JobPostingStatus.RECRUITING)
                                 .requiredSex(RequiredSex.ANY)
@@ -442,7 +442,7 @@ public class InitData {
                                         category.name(),
                                         categories[i % categories.length].name(),
                                         i % 3 == 0 ? Category.HAIR.name() : category.name(),
-                                        i % 5 == 0 ? Category.CLOTHING.name() : category.name()));
+                                        i % 5 == 0 ? Category.FITTING.name() : category.name()));
                         List<String> activeRegionNames = distinctNames(List.of(
                                         region.name(),
                                         regions[i % regions.length].name(),
