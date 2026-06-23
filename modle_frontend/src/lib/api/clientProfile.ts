@@ -1,6 +1,31 @@
 import { Client } from '@/types/client';
-import { client } from './client';
+import { client, API_BASE_URL } from './client';
 import { components } from './schema';
+
+export type ClientJobPosting = components["schemas"]["MyJobPostingResponse"];
+
+/**
+ * 특정 의뢰인(클라이언트 프로필 id)의 공개 공고 목록을 조회한다.
+ * 공개 상태(모집중/촬영중/완료/마감)만 노출되며, status로 단일 상태 필터링이 가능하다.
+ * 비로그인 포함 누구나 조회 가능한 엔드포인트라 인증 없이 호출한다.
+ */
+export async function getClientJobPostings(
+  id: string | number,
+  status?: string,
+): Promise<ClientJobPosting[]> {
+  const url = new URL(`${API_BASE_URL}/api/v1/clients/${Number(id)}/job-postings`);
+  if (status) {
+    url.searchParams.set('status', status);
+  }
+
+  const res = await fetch(url.toString(), { credentials: 'include' });
+  if (!res.ok) {
+    throw new Error('공고 목록을 불러오는데 실패했습니다.');
+  }
+
+  const body = (await res.json()) as { data?: ClientJobPosting[] };
+  return body?.data ?? [];
+}
 
 export async function getClientProfile(id: string | number): Promise<Client> {
   const { data, error } = await client.GET('/api/v1/clients/{id}', {

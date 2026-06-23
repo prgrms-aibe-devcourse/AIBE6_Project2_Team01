@@ -83,6 +83,7 @@ export default async function ClientDetailPage({ params }: PageProps) {
 
         {clientData.userId ? (
           <ClientDetailTabsSection
+            clientId={clientData.id}
             clientUserId={clientData.userId}
             reviewCount={clientData.reviewCount || 0}
             introduction={clientData.introduction || ''}
