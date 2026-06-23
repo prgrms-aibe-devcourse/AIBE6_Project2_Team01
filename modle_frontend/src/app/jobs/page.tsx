@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { JobCard } from "@/components/jobposting/JobCard";
+import { JobCardSkeleton } from "@/components/jobposting/JobCardSkeleton";
 
 type JobListItem = components["schemas"]["JobPostingListResponse"];
 type PageData = components["schemas"]["PageJobPostingListResponse"];
@@ -32,24 +33,6 @@ const STATUS_FILTER_OPTIONS = [
 ];
 
 
-
-const STATUS_LABELS: Record<string, string> = {
-  RECRUITING: "모집 중",
-  SHOOTING: "촬영 중",
-  COMPLETED: "완료",
-  CANCELLED: "취소",
-  ON_HOLD: "일시정지",
-  CLOSED: "마감",
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  RECRUITING: "bg-green-100 text-green-700",
-  SHOOTING:   "bg-blue-100 text-blue-700",
-  COMPLETED:  "bg-gray-100 text-gray-600",
-  CANCELLED:  "bg-red-100 text-red-600",
-  ON_HOLD:    "bg-amber-100 text-amber-700",
-  CLOSED:     "bg-slate-200 text-slate-600",
-};
 
 export default function JobsPage() {
   const { user } = useAuth();
@@ -270,7 +253,13 @@ export default function JobsPage() {
 
         {/* 목록 */}
         {loading ? (
-          <p className="py-12 text-center text-[15px] text-mute">로딩 중...</p>
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <li key={i} className="relative h-full">
+                <JobCardSkeleton />
+              </li>
+            ))}
+          </ul>
         ) : items.length === 0 ? (
           <p className="py-12 text-center text-[15px] text-mute">
             등록된 공고가 없습니다.

@@ -1,7 +1,9 @@
 import { JobListItem } from "@/types/job";
 import { getRegionLabel } from "@/lib/constants/region";
 import { getCategoryLabel } from "@/lib/constants/category";
+import { STATUS_LABELS } from "@/lib/constants/jobPostingStatus";
 import Link from "next/link";
+import Image from "next/image";
 
 interface JobCardProps {
   job: JobListItem;
@@ -10,9 +12,8 @@ interface JobCardProps {
 }
 
 export function JobCard({ job, isFavorited, onToggleFavorite }: JobCardProps) {
-  // Mock company data if not provided
-  const companyName = "모들 파트너스";
-  const profileImageUrl = "/placeholder.png";
+  const companyName = job.clientCompanyName ?? "업체명 비공개";
+  const profileImageUrl = job.clientProfileImageUrl ?? "/placeholder.png";
 
   return (
     <Link href={`/jobs/${job.id}`} className="block h-full w-full group">
@@ -21,13 +22,19 @@ export function JobCard({ job, isFavorited, onToggleFavorite }: JobCardProps) {
         <div className="flex flex-col mb-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full border border-gray-100 overflow-hidden shrink-0 bg-gray-50 flex items-center justify-center">
-                <img src={profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
+              <div className="relative w-8 h-8 rounded-full border border-gray-100 overflow-hidden shrink-0 bg-gray-50">
+                <Image
+                  src={profileImageUrl}
+                  alt={`${companyName} 프로필`}
+                  fill
+                  sizes="32px"
+                  className="object-cover"
+                />
               </div>
               <span className="text-[13px] font-bold text-gray-600 truncate">{companyName}</span>
             </div>
             <span className="text-[11px] font-bold text-gray-400">
-              {job.status === "RECRUITING" ? "모집중" : job.status}
+              {job.status ? STATUS_LABELS[job.status] ?? job.status : ""}
             </span>
           </div>
           <h3 className="text-[17px] font-bold text-gray-900 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors">

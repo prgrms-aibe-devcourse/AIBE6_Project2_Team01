@@ -1937,6 +1937,8 @@ export interface components {
             shootDate?: string;
             /** Format: date-time */
             createdDate?: string;
+            clientCompanyName?: string;
+            clientProfileImageUrl?: string;
         };
         PageJobPostingListResponse: {
             /** Format: int64 */

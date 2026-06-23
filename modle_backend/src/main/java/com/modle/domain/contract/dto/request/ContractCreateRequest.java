@@ -11,7 +11,6 @@ import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-// TODO: GlobalExceptionHandler 도입 시 validation 에러 메시지 포맷 통일
 @Schema(description = "계약서 생성 요청")
 public record ContractCreateRequest(
 
