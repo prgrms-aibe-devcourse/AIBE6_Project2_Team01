@@ -1,7 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { CATEGORY_OPTIONS, getCategoryLabel } from '@/lib/constants/category';
+import { ScrollToTopButton } from '@/components/ui/ScrollToTopButton';
 
 interface Portfolio {
   id: number;
@@ -17,11 +19,20 @@ export function DetailLookbook({ portfolios }: DetailLookbookProps) {
   const INITIAL_COUNT = 6;
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  
-  const categories = ['HAIR', 'MAKEUP', 'HAND', 'FITTING', 'CLOTHING', 'FOOD', 'PRODUCT', 'ETC'];
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategories(prev => 
@@ -32,6 +43,10 @@ export function DetailLookbook({ portfolios }: DetailLookbookProps) {
   const filteredPortfolios = portfolios.filter(p => 
     selectedCategories.length === 0 || (p.category && selectedCategories.includes(p.category))
   );
+
+  const getCategoryCount = (category: string) => {
+    return portfolios.filter(p => p.category === category).length;
+  };
 
   if (!portfolios || portfolios.length === 0) {
     return (
@@ -46,9 +61,11 @@ export function DetailLookbook({ portfolios }: DetailLookbookProps) {
   const hasMore = visibleCount < filteredPortfolios.length;
 
   return (
-    <div className="w-full">
+    <div className="w-full animate-in fade-in duration-300">
+      <ScrollToTopButton />
       {/* 필터 영역 */}
-      <div className="flex justify-end mb-4 relative">
+      <div className="flex justify-between items-center mb-4 relative" ref={filterRef}>
+        <div className="text-sm font-bold text-gray-700">총 {filteredPortfolios.length}개</div>
         <button 
           onClick={() => setIsFilterOpen(!isFilterOpen)}
           className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm font-medium transition-colors"
@@ -69,7 +86,7 @@ export function DetailLookbook({ portfolios }: DetailLookbookProps) {
                   onChange={() => handleCategoryChange(cat)}
                   className="rounded border-gray-300 accent-black w-4 h-4"
                 />
-                <span className="text-sm text-gray-700">{cat}</span>
+                <span className="text-sm text-gray-700">{getCategoryLabel(cat)} ({getCategoryCount(cat)})</span>
               </label>
             ))}
           </div>
@@ -83,11 +100,11 @@ export function DetailLookbook({ portfolios }: DetailLookbookProps) {
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 w-full">
-        {displayedPortfolios.map((portfolio) => (
+        {displayedPortfolios.map((portfolio, index) => (
           <div 
             key={portfolio.id} 
             className="relative aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden cursor-pointer group shadow-sm"
-            onClick={() => setSelectedImage(portfolio.imgUrl)}
+            onClick={() => setSelectedIndex(index)}
           >
             <Image
               src={portfolio.imgUrl || '/images/default-avatar.png'}
@@ -113,27 +130,36 @@ export function DetailLookbook({ portfolios }: DetailLookbookProps) {
       )}
 
       {/* ================= 크게 보기 모달 ================= */}
-      {selectedImage && (
+      {selectedIndex !== null && filteredPortfolios[selectedIndex] && (
         <div 
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-95 p-4 md:p-8"
-          onClick={() => setSelectedImage(null)}
+          onClick={() => setSelectedIndex(null)}
         >
           <button 
             className="absolute top-4 right-4 md:top-8 md:right-8 text-white text-4xl hover:text-gray-300 transition-colors z-[101]"
             onClick={(e) => {
               e.stopPropagation();
-              setSelectedImage(null);
+              setSelectedIndex(null);
             }}
           >
             &times;
           </button>
           
+          {selectedIndex > 0 && (
+            <button 
+              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white text-5xl hover:text-gray-300 transition-colors z-[101] px-4 py-8"
+              onClick={(e) => { e.stopPropagation(); setSelectedIndex(selectedIndex - 1); }}
+            >
+              &#10094;
+            </button>
+          )}
+
           <div 
             className="relative w-full max-w-5xl h-[80vh] md:h-[95vh] bg-transparent rounded-lg overflow-hidden flex items-center justify-center"
             onClick={(e) => e.stopPropagation()} 
           >
             <Image
-              src={selectedImage}
+              src={filteredPortfolios[selectedIndex].imgUrl}
               alt="포트폴리오 상세 이미지"
               fill
               className="object-contain"
@@ -141,6 +167,15 @@ export function DetailLookbook({ portfolios }: DetailLookbookProps) {
               priority
             />
           </div>
+
+          {selectedIndex < filteredPortfolios.length - 1 && (
+            <button 
+              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white text-5xl hover:text-gray-300 transition-colors z-[101] px-4 py-8"
+              onClick={(e) => { e.stopPropagation(); setSelectedIndex(selectedIndex + 1); }}
+            >
+              &#10095;
+            </button>
+          )}
         </div>
       )}
     </div>

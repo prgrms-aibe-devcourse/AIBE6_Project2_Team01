@@ -897,7 +897,7 @@ function LockedRecommendationCard({
               key={category}
               className="rounded-full border border-hairline bg-white px-2 py-1 text-[10px] font-semibold text-mute"
             >
-              {category}
+              {getCategoryLabel(category)}
             </span>
           ))}
           {item.region ? (

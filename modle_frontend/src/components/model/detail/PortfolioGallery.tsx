@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { CATEGORY_OPTIONS, getCategoryLabel } from '@/lib/constants/category';
 
 interface Portfolio {
   id: number;
@@ -17,9 +18,20 @@ interface PortfolioGalleryProps {
 export function PortfolioGallery({ portfolios, fallbackImage = '/images/default-avatar.png' }: PortfolioGalleryProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const categories = ['HAIR', 'MAKEUP', 'HAND', 'FITTING', 'CLOTHING', 'FOOD', 'PRODUCT', 'ETC'];
+  const categories = CATEGORY_OPTIONS.map(opt => opt.value);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategories(prev => 
@@ -30,6 +42,10 @@ export function PortfolioGallery({ portfolios, fallbackImage = '/images/default-
   const filteredPortfolios = portfolios?.filter(p => 
     selectedCategories.length === 0 || (p.category && selectedCategories.includes(p.category))
   ) || [];
+
+  const getCategoryCount = (category: string) => {
+    return portfolios?.filter(p => p.category === category).length || 0;
+  };
 
   if (!portfolios || portfolios.length === 0) {
     return (
@@ -42,7 +58,8 @@ export function PortfolioGallery({ portfolios, fallbackImage = '/images/default-
   return (
     <div className="w-full">
       {/* 필터 영역 */}
-      <div className="flex justify-end mb-4 relative">
+      <div className="flex justify-between items-center mb-4 relative" ref={filterRef}>
+        <div className="text-sm font-bold text-gray-700">총 {filteredPortfolios.length}개</div>
         <button 
           onClick={() => setIsFilterOpen(!isFilterOpen)}
           className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm font-medium transition-colors"
@@ -63,7 +80,7 @@ export function PortfolioGallery({ portfolios, fallbackImage = '/images/default-
                   onChange={() => handleCategoryChange(cat)}
                   className="rounded border-gray-300 accent-black w-4 h-4"
                 />
-                <span className="text-sm text-gray-700">{cat}</span>
+                <span className="text-sm text-gray-700">{getCategoryLabel(cat)} ({getCategoryCount(cat)})</span>
               </label>
             ))}
           </div>

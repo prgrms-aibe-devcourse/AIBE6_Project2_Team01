@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { DetailLookbook } from "@/components/model/detail/DetailLookbook";
 import { ModelCareerSection } from "@/components/model/detail/ModelCareerSection";
 import { ReviewList } from "@/components/review/ReviewList";
 import { useAuth } from "@/hooks/useAuth";
 import type { Portfolio } from "@/types/model";
+import { useState } from "react";
 
 interface Props {
   portfolios: Portfolio[];
@@ -33,7 +33,7 @@ export function ModelDetailTabsSection({ portfolios, modelId, modelUserId, revie
     <div className="mt-20 md:mt-24">
       <div className="sticky top-0 z-10 flex border-b border-gray-200 bg-white">
         <button onClick={() => setActiveTab("info")} className={tabClass("info")}>
-          상세정보
+          포트폴리오
         </button>
         <button onClick={() => setActiveTab("review")} className={tabClass("review")}>
           리뷰 ({reviewCount})

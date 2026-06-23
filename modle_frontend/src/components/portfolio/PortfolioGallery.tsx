@@ -5,11 +5,13 @@ import { deletePortfolioImage, reorderPortfolioImages, updatePortfolioCategory }
 import { Portfolio } from '@/types/model';
 import { closestCenter, DndContext, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Toast, type ToastState } from '@/components/ui/Toast';
 import { PortfolioUploadModal } from './PortfolioUploadModal';
 import { SortablePortfolioItem } from './SortablePortfolioItem';
+import { CATEGORY_OPTIONS, getCategoryLabel } from '@/lib/constants/category';
+import { ScrollToTopButton } from '@/components/ui/ScrollToTopButton';
 
 interface Props {
   modelId: number;
@@ -20,7 +22,7 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
   // 화면에 보여줄 사진 목록 상태
   const [portfolios, setPortfolios] = useState<Portfolio[]>(initialPortfolios);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [editingPortfolioId, setEditingPortfolioId] = useState<number | null>(null);
   const [editingCategory, setEditingCategory] = useState<string>('');
   const [toast, setToast] = useState<ToastState | null>(null);
@@ -36,9 +38,20 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
     return () => clearTimeout(timer);
   }, [toast]);
   
-  const categories = ['HAIR', 'MAKEUP', 'HAND', 'FITTING', 'CLOTHING', 'FOOD', 'PRODUCT', 'ETC'];
+  const categories = CATEGORY_OPTIONS.map(opt => opt.value);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategories(prev => 
@@ -49,6 +62,10 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
   const filteredPortfolios = portfolios.filter(p => 
     selectedCategories.length === 0 || (p.category && selectedCategories.includes(p.category))
   );
+
+  const getCategoryCount = (category: string) => {
+    return portfolios.filter(p => p.category === category).length;
+  };
   
   const INITIAL_COUNT = 6;
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
@@ -92,6 +109,7 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
 
   return (
     <div className="animate-in fade-in duration-300">
+      <ScrollToTopButton />
       <div className="flex justify-between items-end mb-6 border-b border-black pb-4 text-black">
         <div>
           <h2 className="text-xl font-black text-black mb-1 uppercase tracking-widest">나의 포트폴리오</h2>
@@ -99,8 +117,9 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
         </div>
         
         <div className="flex gap-3 items-center">
+          <div className="text-sm font-bold text-gray-700 mr-1">총 {filteredPortfolios.length}개</div>
           {/* 필터 영역 */}
-          <div className="relative">
+          <div className="relative" ref={filterRef}>
             <button 
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm font-medium transition-colors"
@@ -121,7 +140,7 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
                       onChange={() => handleCategoryChange(cat)}
                       className="rounded border-gray-300 accent-black w-4 h-4"
                     />
-                    <span className="text-sm text-gray-700">{cat}</span>
+                    <span className="text-sm text-gray-700">{getCategoryLabel(cat)} ({getCategoryCount(cat)})</span>
                   </label>
                 ))}
               </div>
@@ -145,12 +164,12 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
       <DndContext id="portfolio-dnd-context" collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={displayedPortfolios.map(p => p.id)} strategy={rectSortingStrategy}>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 mb-4">
-            {displayedPortfolios.map((item) => (
+            {displayedPortfolios.map((item, index) => (
               <SortablePortfolioItem 
                 key={item.id} 
                 item={item} 
                 onDelete={handleDelete} 
-                onZoom={() => setSelectedImage(item.imgUrl)} 
+                onZoom={() => setSelectedIndex(index)} 
                 onEdit={(id, currentCategory) => {
                   setEditingPortfolioId(id);
                   setEditingCategory(currentCategory || '');
@@ -200,7 +219,7 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
             >
               <option value="" disabled>카테고리를 선택하세요</option>
               {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
               ))}
             </select>
             <div className="flex justify-end gap-2">
@@ -236,27 +255,36 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
       )}
 
       {/* ================= 크게 보기 모달 ================= */}
-      {mounted && selectedImage && createPortal(
+      {mounted && selectedIndex !== null && filteredPortfolios[selectedIndex] && createPortal(
         <div 
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-95 p-4 md:p-8"
-          onClick={() => setSelectedImage(null)}
+          onClick={() => setSelectedIndex(null)}
         >
           <button 
             className="absolute top-4 right-4 md:top-8 md:right-8 text-white text-4xl hover:text-gray-300 transition-colors z-[101]"
             onClick={(e) => {
               e.stopPropagation();
-              setSelectedImage(null);
+              setSelectedIndex(null);
             }}
           >
             &times;
           </button>
           
+          {selectedIndex > 0 && (
+            <button 
+              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white text-5xl hover:text-gray-300 transition-colors z-[101] px-4 py-8"
+              onClick={(e) => { e.stopPropagation(); setSelectedIndex(selectedIndex - 1); }}
+            >
+              &#10094;
+            </button>
+          )}
+
           <div 
             className="relative w-full max-w-5xl h-[80vh] md:h-[95vh] bg-transparent rounded-lg overflow-hidden flex items-center justify-center"
             onClick={(e) => e.stopPropagation()} 
           >
             <Image
-              src={selectedImage}
+              src={filteredPortfolios[selectedIndex].imgUrl}
               alt="포트폴리오 상세 이미지"
               fill
               className="object-contain"
@@ -264,6 +292,15 @@ export function PortfolioGallery({ initialPortfolios = [] }: Props) {
               priority
             />
           </div>
+
+          {selectedIndex < filteredPortfolios.length - 1 && (
+            <button 
+              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white text-5xl hover:text-gray-300 transition-colors z-[101] px-4 py-8"
+              onClick={(e) => { e.stopPropagation(); setSelectedIndex(selectedIndex + 1); }}
+            >
+              &#10095;
+            </button>
+          )}
         </div>,
         document.body
       )}

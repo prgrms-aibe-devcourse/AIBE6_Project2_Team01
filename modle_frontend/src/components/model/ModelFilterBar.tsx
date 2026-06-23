@@ -24,7 +24,7 @@ export function ModelFilterBar() {
     
     // 필터 변경 시 첫 페이지로 리셋
     params.delete('page');
-    router.push(`/models?${params.toString()}`);
+    router.push(`/models?${params.toString()}`, { scroll: false });
   };
 
   // 단일 선택 필터 업데이트 함수 (성별, 키, 정렬, 검색 등)
@@ -34,7 +34,7 @@ export function ModelFilterBar() {
     else params.delete(key);
     
     params.delete('page');
-    router.push(`/models?${params.toString()}`);
+    router.push(`/models?${params.toString()}`, { scroll: false });
   };
 
   // 멀티 필터 항목이 선택되어 있는지 확인하는 함수
@@ -141,6 +141,24 @@ export function ModelFilterBar() {
             <option value="160-170">160-170cm</option>
             <option value="170-180">170-180cm</option>
             <option value="over-180">180cm 이상</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </div>
+        </div>
+
+        <div className="relative">
+          <select 
+            value={searchParams.get('weight') || ''}
+            onChange={(e) => updateSingleFilter('weight', e.target.value)}
+            className="h-12 pl-5 pr-10 bg-white border border-gray-200 text-gray-800 text-[13px] font-bold focus:outline-none focus:border-black focus:ring-1 focus:ring-black hover:border-black transition-all rounded-full shadow-sm cursor-pointer appearance-none"
+          >
+            <option value="">몸무게 전체</option>
+            <option value="under-50">50kg 이하</option>
+            <option value="50-60">50-60kg</option>
+            <option value="60-70">60-70kg</option>
+            <option value="70-80">70-80kg</option>
+            <option value="over-80">80kg 이상</option>
           </select>
           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>

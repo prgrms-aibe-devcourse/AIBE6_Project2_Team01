@@ -4,13 +4,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { client } from "@/lib/api/client";
 import { REGION_OPTIONS, getRegionLabel } from "@/lib/constants/region";
 import type { components } from "@/lib/api/schema";
-import {
-  addJobBookmark,
-  getJobBookmarks,
-  removeJobBookmark,
-} from "@/lib/api/bookmark";
+import { addJobBookmark, getJobBookmarks, removeJobBookmark } from "@/lib/api/bookmark";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { JobCard } from "@/components/jobposting/JobCard";
 
@@ -67,6 +63,19 @@ export default function JobsPage() {
   const [pageData, setPageData] = useState<PageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [favoritedIds, setFavoritedIds] = useState<Set<number>>(new Set());
+
+  const [isRegionOpen, setIsRegionOpen] = useState(false);
+  const regionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (regionRef.current && !regionRef.current.contains(e.target as Node)) {
+        setIsRegionOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // 초기 북마크 목록 로드
   useEffect(() => {
@@ -223,19 +232,34 @@ export default function JobsPage() {
                 </option>
               ))}
             </select>
-            <select
-              value={region}
-              onChange={(e) => handleFilterChange(e.target.value, category, status)}
-              className="w-full md:w-48 h-11 rounded-xl border border-hairline bg-gray-50 px-4 text-[14px] font-medium text-ink outline-none transition focus:border-ink focus:bg-white focus:ring-2 focus:ring-ink/10 cursor-pointer appearance-none"
-              style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg stroke='currentColor' fill='none' stroke-width='2' viewBox='0 0 24 24' stroke-linecap='round' stroke-linejoin='round' height='1em' width='1em' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 1rem center", backgroundSize: "1em" }}
+            <div className="relative w-full md:w-48" ref={regionRef}>
+            <div
+              onClick={() => setIsRegionOpen(!isRegionOpen)}
+              className="w-full md:w-48 h-11 rounded-xl border border-hairline bg-gray-50 px-4 text-[14px] font-medium text-ink flex items-center justify-between cursor-pointer hover:border-ink hover:bg-white transition"
             >
-              <option value="">🗺️ 전체 지역</option>
-              {REGION_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
+              <span>{region ? REGION_OPTIONS.find(o => o.value === region)?.label : "🗺️ 전체 지역"}</span>
+              <svg className={`w-4 h-4 text-gray-400 transition-transform ${isRegionOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </div>
+            {isRegionOpen && (
+              <div className="absolute z-50 top-full mt-2 left-0 md:left-4 w-full md:w-48 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                <div
+                  className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-gray-500 text-[14px]"
+                  onClick={() => { handleFilterChange('', category, status); setIsRegionOpen(false); }}
+                >
+                  🗺️ 전체 지역
+                </div>
+                {REGION_OPTIONS.map(o => (
+                  <div
+                    key={o.value}
+                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-ink text-[14px]"
+                    onClick={() => { handleFilterChange(o.value, category, status); setIsRegionOpen(false); }}
+                  >
+                    {o.label}
+                  </div>
+                ))}
+              </div>
+            )}
+            </div>
           </div>
         </section>
 

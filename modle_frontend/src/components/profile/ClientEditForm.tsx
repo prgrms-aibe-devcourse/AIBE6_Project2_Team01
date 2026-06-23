@@ -5,7 +5,8 @@ import { updateMyClient } from '@/lib/api/clientProfile';
 import { Client } from '@/types/client';
 import { REGION_OPTIONS } from '@/lib/constants/region';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Toast, type ToastState } from '@/components/ui/Toast';
 
 interface Props {
   initialData: Client;
@@ -24,6 +25,13 @@ export function ClientEditForm({ initialData }: Props) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   const [previewUrl, setPreviewUrl] = useState<string>(initialData.profileImageUrl || '');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -64,8 +72,11 @@ export function ClientEditForm({ initialData }: Props) {
         profileImageUrl: imageUrlToSubmit
       });
       
-      router.push('/my/profile');
-      router.refresh();
+      setToast({ type: 'success', message: '프로필이 성공적으로 수정되었습니다.' });
+      setTimeout(() => {
+        router.push('/my/profile');
+        router.refresh();
+      }, 1000);
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -193,6 +204,7 @@ export function ClientEditForm({ initialData }: Props) {
           </button>
         </div>
       </form>
+      {toast && <Toast toast={toast} />}
     </div>
   );
 }
