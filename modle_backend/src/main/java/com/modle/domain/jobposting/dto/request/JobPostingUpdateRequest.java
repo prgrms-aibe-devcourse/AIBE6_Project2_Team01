@@ -1,9 +1,12 @@
 package com.modle.domain.jobposting.dto.request;
 
+import com.modle.domain.jobposting.dto.request.validation.JobPostingFields;
+import com.modle.domain.jobposting.dto.request.validation.ValidJobPostingFields;
 import com.modle.domain.jobposting.entity.type.Category;
 import com.modle.domain.jobposting.entity.type.PayType;
 import com.modle.global.entity.type.Region;
 import com.modle.domain.jobposting.entity.type.RequiredSex;
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -14,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@ValidJobPostingFields
 public record JobPostingUpdateRequest(
         @NotBlank String title,
         @NotBlank String content,
@@ -50,13 +54,15 @@ public record JobPostingUpdateRequest(
 
         BigDecimal payment,
 
+        @NotNull(message = "지급 방식은 필수입니다.")
         PayType payType,
 
         String serviceDetail,
 
+        @Future(message = "촬영일은 미래 날짜여야 합니다.")
         LocalDateTime shootDate,
 
         @Size(max = 5, message = "이미지는 최대 5장까지 첨부할 수 있습니다.")
         List<String> imageUrls
-) {
+) implements JobPostingFields {
 }

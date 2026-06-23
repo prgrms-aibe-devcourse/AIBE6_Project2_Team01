@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum PayType {
     CASH("현금"),
     SERVICE("서비스"),
-    FREE("재능기부");
+    FREE("무료");
 
     private final String displayName;
 }
