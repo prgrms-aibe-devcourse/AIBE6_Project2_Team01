@@ -17,6 +17,7 @@ interface DetailLookbookProps {
 
 export function DetailLookbook({ portfolios }: DetailLookbookProps) {
   const INITIAL_COUNT = 6;
+  const categories = CATEGORY_OPTIONS.map(opt => opt.value);
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
