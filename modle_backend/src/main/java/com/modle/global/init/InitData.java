@@ -138,7 +138,8 @@ public class InitData {
                 modelService.update(model1, "홍길동", 180, 75, com.modle.domain.user.entity.type.Sex.M, 25,
                                 List.of("FITTING"), List.of("tag1"),
                                 "안녕하세요, 홍길동입니다.",
-                                "SEOUL", "", null, List.of("SEOUL"));
+                                "SEOUL", "", List.of("SEOUL"),
+                                "신입", "L", "M", 270, "월,수,금");
 
                 User user2 = User.createLocal(
                                 "model2@modle.com",
@@ -150,7 +151,8 @@ public class InitData {
                 modelService.update(model2, "김철수", 175, 68, com.modle.domain.user.entity.type.Sex.M, 30,
                                 List.of("HAIR"), List.of("tag2"),
                                 "안녕하세요, 김철수입니다.",
-                                "BUSAN", "", java.time.LocalDate.of(2020, 1, 1), List.of("BUSAN"));
+                                "BUSAN", "", List.of("BUSAN"),
+                                "3년", "M", "S", 260, "화,목");
 
                 User user3 = User.createLocal(
                                 "model3@modle.com",
@@ -162,7 +164,8 @@ public class InitData {
                 modelService.update(model3, "이영희", 165, 55, com.modle.domain.user.entity.type.Sex.F, 28,
                                 List.of("MAKEUP"), List.of("tag3"),
                                 "안녕하세요, 이영희입니다.",
-                                "DAEJEON", "", null, List.of("DAEJEON"));
+                                "DAEJEON", "", List.of("DAEJEON"),
+                                "5년", "S", "S", 240, "주말");
         }
 
         @Transactional
@@ -434,9 +437,7 @@ public class InitData {
                         int age = 19 + (i % 17);
                         int height = 155 + (i % 36);
                         int weight = 45 + (i % 36);
-                        LocalDate careerStartDate = i % 5 == 0
-                                        ? null
-                                        : LocalDate.of(2018 + (i % 7), (i % 12) + 1, 1);
+                        String experience = i % 5 == 0 ? "신입" : (i % 7) + "년차";
                         List<String> categoryNames = distinctNames(List.of(
                                         category.name(),
                                         categories[i % categories.length].name(),
@@ -475,8 +476,9 @@ public class InitData {
                                                         category.name()),
                                         region.getDisplayName(),
                                         "",
-                                        careerStartDate,
-                                        activeRegionNames);
+                                        activeRegionNames,
+                                        experience,
+                                        "M", "M", 260, "무관");
                 }
         }
 

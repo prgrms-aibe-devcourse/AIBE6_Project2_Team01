@@ -119,8 +119,12 @@ public class ModelController {
                                 reqBody.introduction(),
                                 reqBody.region(),
                                 newImageUrl,
-                                reqBody.careerStartDate(),
-                                reqBody.activeRegions());
+                                reqBody.activeRegions(),
+                                reqBody.experience(),
+                                reqBody.topSize(),
+                                reqBody.bottomSize(),
+                                reqBody.shoeSize(),
+                                reqBody.availableDays());
                 return new ApiResponse<>(
                                 "200-1",
                                 "내 프로필이 수정되었습니다.");

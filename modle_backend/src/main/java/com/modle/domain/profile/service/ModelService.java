@@ -148,9 +148,13 @@ public class ModelService {
             String introduction,
             String region,
             String profileImageUrl,
-            java.time.LocalDate careerStartDate,
-            List<String> activeRegions) {
-        model.update(name, height, weight, sex, age, introduction, profileImageUrl, careerStartDate);
+            List<String> activeRegions,
+            String experience,
+            String topSize,
+            String bottomSize,
+            Integer shoeSize,
+            String availableDays) {
+        model.update(name, height, weight, sex, age, introduction, profileImageUrl, experience, topSize, bottomSize, shoeSize, availableDays);
         if (region != null && !region.isBlank()) {
             model.getUser().updateRegion(region);
         }

@@ -30,8 +30,11 @@ public record ModelModifyReqBody (
         String introduction,
         String region,
         String profileImageUrl,
-        
-        java.time.LocalDate careerStartDate,
-        List<String> activeRegions
+        List<String> activeRegions,
 
+        String experience,
+        String topSize,
+        String bottomSize,
+        Integer shoeSize,
+        String availableDays
 ) {}

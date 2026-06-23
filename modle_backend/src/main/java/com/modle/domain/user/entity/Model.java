@@ -1,17 +1,30 @@
 package com.modle.domain.user.entity;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.annotations.BatchSize;
+
 import com.modle.domain.profile.entity.ModelCategory;
 import com.modle.domain.profile.entity.ModelTag;
 import com.modle.domain.profile.entity.Portfolio;
 import com.modle.domain.user.entity.type.Sex;
 import com.modle.global.entity.BaseEntity;
-import jakarta.persistence.*;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.BatchSize;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "model")
@@ -38,10 +51,19 @@ public class Model extends BaseEntity {
     @Column(nullable = false)
     private int age;
 
-    private java.time.LocalDate careerStartDate;
+    @Column(length = 100)
+    private String experience;
 
+    @Column(length = 50)
+    private String topSize;
 
+    @Column(length = 50)
+    private String bottomSize;
 
+    private Integer shoeSize;
+
+    @Column(length = 100)
+    private String availableDays;
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "model", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<com.modle.domain.profile.entity.ModelRegion> modelRegions = new ArrayList<>();
@@ -55,7 +77,6 @@ public class Model extends BaseEntity {
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "model", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ModelCategory> modelCategories = new ArrayList<>();
-
 
     @Column(columnDefinition = "TEXT")
     private String introduction;
@@ -74,9 +95,8 @@ public class Model extends BaseEntity {
     @OrderBy("displayOrder ASC, id DESC") // 변경: 순서를 최우선, 없으면 최신순
     private List<Portfolio> portfolios = new ArrayList<>();
 
-
     public static Model create(User user, String name, int height,
-                               int weight, Sex sex, int age) {
+            int weight, Sex sex, int age) {
         Model model = new Model();
         model.user = user;
         model.name = name;
@@ -88,8 +108,9 @@ public class Model extends BaseEntity {
     }
 
     public void update(String name, int height, int weight, Sex sex,
-                       int age, String introduction, String profileImageUrl,
-                       java.time.LocalDate careerStartDate) {
+            int age, String introduction, String profileImageUrl,
+            String experience,
+            String topSize, String bottomSize, Integer shoeSize, String availableDays) {
         this.name = name;
         this.height = height;
         this.weight = weight;
@@ -97,13 +118,16 @@ public class Model extends BaseEntity {
         this.age = age;
         this.introduction = introduction;
         this.profileImageUrl = profileImageUrl;
-        this.careerStartDate = careerStartDate;
+        this.experience = experience;
+        this.topSize = topSize;
+        this.bottomSize = bottomSize;
+        this.shoeSize = shoeSize;
+        this.availableDays = availableDays;
     }
 
     public void updateRating(int newRating) {
         this.avgRating = Math.round(
-                ((this.avgRating * this.reviewCount) + newRating) / (this.reviewCount + 1.0) * 10
-        ) / 10.0;
+                ((this.avgRating * this.reviewCount) + newRating) / (this.reviewCount + 1.0) * 10) / 10.0;
         this.reviewCount++;
     }
 }

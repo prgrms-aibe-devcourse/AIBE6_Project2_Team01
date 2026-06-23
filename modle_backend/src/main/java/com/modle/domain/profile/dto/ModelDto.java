@@ -24,8 +24,13 @@ public record ModelDto(
         String introduction,
         String profileImageUrl,
         
-        java.time.LocalDate careerStartDate,
         List<String> activeRegions,
+        
+        String experience,
+        String topSize,
+        String bottomSize,
+        Integer shoeSize,
+        String availableDays,
         
         @NonNull double avgRating,
         @NonNull int reviewCount,
@@ -56,11 +61,15 @@ public record ModelDto(
                 model.getUser() != null ? model.getUser().getRegion() : null,
                 model.getIntroduction(),
                 model.getProfileImageUrl(),
-                model.getCareerStartDate(),
                 model.getModelRegions() != null ? 
                         model.getModelRegions().stream()
                         .map(mr -> mr.getRegion().name())
                         .toList() : List.of(),
+                model.getExperience(),
+                model.getTopSize(),
+                model.getBottomSize(),
+                model.getShoeSize(),
+                model.getAvailableDays(),
                 model.getAvgRating(),
                 model.getReviewCount(),
                 model.getPortfolios() != null ?
