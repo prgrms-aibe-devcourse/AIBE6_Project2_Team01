@@ -1,5 +1,5 @@
 import { Client } from '@/types/client';
-import { client, API_BASE_URL } from './client';
+import { client } from './client';
 import { components } from './schema';
 
 export type ClientJobPosting = components["schemas"]["MyJobPostingResponse"];
@@ -13,18 +13,18 @@ export async function getClientJobPostings(
   id: string | number,
   status?: string,
 ): Promise<ClientJobPosting[]> {
-  const url = new URL(`${API_BASE_URL}/api/v1/clients/${Number(id)}/job-postings`);
-  if (status) {
-    url.searchParams.set('status', status);
+  const { data, error } = await client.GET('/api/v1/clients/{id}/job-postings', {
+    params: {
+      path: { id: Number(id) },
+      query: status ? { status } : {},
+    },
+  });
+
+  if (error) {
+    throw new Error((error as { msg?: string })?.msg || '공고 목록을 불러오는데 실패했습니다.');
   }
 
-  const res = await fetch(url.toString(), { credentials: 'include' });
-  if (!res.ok) {
-    throw new Error('공고 목록을 불러오는데 실패했습니다.');
-  }
-
-  const body = (await res.json()) as { data?: ClientJobPosting[] };
-  return body?.data ?? [];
+  return data?.data ?? [];
 }
 
 export async function getClientProfile(id: string | number): Promise<Client> {

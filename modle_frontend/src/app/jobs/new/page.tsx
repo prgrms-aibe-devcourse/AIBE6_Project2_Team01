@@ -98,7 +98,7 @@ export default function NewJobPage() {
           ? Number(formData.minCareerMonths)
           : undefined,
         payment: formData.payment ? Number(formData.payment) : undefined,
-        payType: formData.payType || undefined,
+        payType: formData.payType as "CASH" | "SERVICE" | "FREE",
         serviceDetail: formData.serviceDetail || undefined,
         shootDate: formData.shootDate
           ? `${formData.shootDate}T00:00:00`

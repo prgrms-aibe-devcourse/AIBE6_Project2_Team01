@@ -1002,6 +1002,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clients/{id}/job-postings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 의뢰인 공개 공고 목록 조회 (상태 필터 선택) */
+        get: operations["getClientJobPostings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/careers/my": {
         parameters: {
             query?: never;
@@ -1216,7 +1233,7 @@ export interface components {
     schemas: {
         PortfolioModifyReqBody: {
             /** @enum {string} */
-            category?: "HAIR" | "MAKEUP" | "HAND" | "FITTING" | "CLOTHING" | "FOOD" | "PRODUCT" | "ETC";
+            category?: "HAIR" | "MAKEUP" | "HAND" | "FITTING" | "FOOD" | "PRODUCT" | "ETC";
         };
         ApiResponseVoid: {
             resultCode?: string;
@@ -1241,9 +1258,14 @@ export interface components {
             introduction?: string;
             region?: string;
             profileImageUrl?: string;
-            /** Format: date */
-
             activeRegions?: string[];
+            /** Format: int32 */
+            experience?: number;
+            topSize?: string;
+            bottomSize?: string;
+            /** Format: int32 */
+            shoeSize?: number;
+            availableDays?: string;
         };
         ClientModifyReqBody: {
             companyName: string;
@@ -1325,7 +1347,7 @@ export interface components {
             id?: number;
             imgUrl?: string;
             /** @enum {string} */
-            category?: "HAIR" | "MAKEUP" | "HAND" | "FITTING" | "CLOTHING" | "FOOD" | "PRODUCT" | "ETC";
+            category?: "HAIR" | "MAKEUP" | "HAND" | "FITTING" | "FOOD" | "PRODUCT" | "ETC";
         };
         SendMessageRequest: {
             /** Format: int64 */
@@ -1388,7 +1410,7 @@ export interface components {
             title: string;
             content: string;
             /** @enum {string} */
-            category: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            category: "HAIR" | "MAKEUP" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
             /** @enum {string} */
             region: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
             /** @enum {string} */
@@ -1411,7 +1433,7 @@ export interface components {
             minCareerMonths?: number;
             payment?: number;
             /** @enum {string} */
-            payType?: "CASH" | "SERVICE" | "FREE";
+            payType: "CASH" | "SERVICE" | "FREE";
             serviceDetail?: string;
             /** Format: date-time */
             shootDate?: string;
@@ -1430,7 +1452,7 @@ export interface components {
             title?: string;
             content?: string;
             /** @enum {string} */
-            category?: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            category?: "HAIR" | "MAKEUP" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
             /** @enum {string} */
             region?: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
             /** @enum {string} */
@@ -1517,7 +1539,7 @@ export interface components {
         };
         JobPostingTemplateGenerateRequest: {
             /** @enum {string} */
-            category: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            category: "HAIR" | "MAKEUP" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
             title: string;
             shootDate: string;
             /** @enum {string} */
@@ -1698,7 +1720,7 @@ export interface components {
             title: string;
             content: string;
             /** @enum {string} */
-            category: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            category: "HAIR" | "MAKEUP" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
             /** @enum {string} */
             region: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
             /** @enum {string} */
@@ -1721,7 +1743,7 @@ export interface components {
             minCareerMonths?: number;
             payment?: number;
             /** @enum {string} */
-            payType?: "CASH" | "SERVICE" | "FREE";
+            payType: "CASH" | "SERVICE" | "FREE";
             serviceDetail?: string;
             /** Format: date-time */
             shootDate?: string;
@@ -1805,9 +1827,14 @@ export interface components {
             region?: string;
             introduction?: string;
             profileImageUrl?: string;
-            /** Format: date */
-
             activeRegions?: string[];
+            /** Format: int32 */
+            experience?: number;
+            topSize?: string;
+            bottomSize?: string;
+            /** Format: int32 */
+            shoeSize?: number;
+            availableDays?: string;
             /** Format: double */
             avgRating: number;
             /** Format: int32 */
@@ -1837,11 +1864,11 @@ export interface components {
             offset?: number;
             sort?: components["schemas"]["SortObject"];
             paged?: boolean;
+            unpaged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
         };
         SortObject: {
             empty?: boolean;
@@ -1921,7 +1948,7 @@ export interface components {
             id?: number;
             title?: string;
             /** @enum {string} */
-            category?: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            category?: "HAIR" | "MAKEUP" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
             /** @enum {string} */
             region?: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
             /** @enum {string} */
@@ -1971,7 +1998,7 @@ export interface components {
             title?: string;
             content?: string;
             /** @enum {string} */
-            category?: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            category?: "HAIR" | "MAKEUP" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
             /** @enum {string} */
             region?: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
             /** @enum {string} */
@@ -2019,7 +2046,7 @@ export interface components {
             title?: string;
             content?: string;
             /** @enum {string} */
-            category?: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            category?: "HAIR" | "MAKEUP" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
             /** @enum {string} */
             region?: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
             /** @enum {string} */
@@ -2066,7 +2093,7 @@ export interface components {
             title?: string;
             content?: string;
             /** @enum {string} */
-            category?: "HAIR" | "MAKEUP" | "CLOTHING" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
+            category?: "HAIR" | "MAKEUP" | "FITTING" | "HAND" | "FOOD" | "PRODUCT" | "ETC";
             /** @enum {string} */
             region?: "SEOUL" | "BUSAN" | "DAEGU" | "INCHEON" | "GWANGJU" | "DAEJEON" | "ULSAN" | "SEJONG" | "GYEONGGI" | "GANGWON" | "CHUNGBUK" | "CHUNGNAM" | "JEONBUK" | "JEONNAM" | "GYEONGBUK" | "GYEONGNAM" | "JEJU";
             /** @enum {string} */
@@ -2636,7 +2663,7 @@ export interface operations {
     uploadPortfolios: {
         parameters: {
             query: {
-                category: "HAIR" | "MAKEUP" | "HAND" | "FITTING" | "CLOTHING" | "FOOD" | "PRODUCT" | "ETC";
+                category: "HAIR" | "MAKEUP" | "HAND" | "FITTING" | "FOOD" | "PRODUCT" | "ETC";
             };
             header?: never;
             path?: never;
@@ -3797,10 +3824,11 @@ export interface operations {
             query?: {
                 query?: string;
                 gender?: string;
-                categories?: ("HAIR" | "MAKEUP" | "HAND" | "FITTING" | "CLOTHING" | "FOOD" | "PRODUCT" | "ETC")[];
+                categories?: ("HAIR" | "MAKEUP" | "HAND" | "FITTING" | "FOOD" | "PRODUCT" | "ETC")[];
                 regions?: string[];
                 tags?: string[];
                 height?: string;
+                weight?: string;
                 sort?: string;
                 page?: number;
                 size?: number;
@@ -4120,6 +4148,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseClientDto"];
+                };
+            };
+        };
+    };
+    getClientJobPostings: {
+        parameters: {
+            query?: {
+                status?: string;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListMyJobPostingResponse"];
                 };
             };
         };
