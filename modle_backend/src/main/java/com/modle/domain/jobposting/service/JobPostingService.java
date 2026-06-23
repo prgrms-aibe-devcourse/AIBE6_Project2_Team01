@@ -310,12 +310,20 @@ public class JobPostingService {
         }
     }
 
-    // 공고 이미지 전체 교체: 기존 이미지를 GCS·DB에서 제거 후 새 목록으로 재저장한다.
+    // 공고 이미지 전체 교체: 신규 목록에 없는 기존 이미지만 GCS에서 제거 후 DB를 재구성한다.
     private void replaceImages(Long jobPostingId, List<String> imageUrls) {
+        Set<String> newUrls = (imageUrls == null)
+                ? Set.of()
+                : imageUrls.stream()
+                        .filter(url -> url != null && !url.isBlank())
+                        .collect(Collectors.toSet());
+
         List<JobPostingImage> existing =
                 jobPostingImageRepository.findByJobPostingIdOrderByDisplayOrderAsc(jobPostingId);
         for (JobPostingImage image : existing) {
-            gcsService.deleteImage(image.getImageUrl());
+            if (!newUrls.contains(image.getImageUrl())) {
+                gcsService.deleteImage(image.getImageUrl());
+            }
         }
         jobPostingImageRepository.deleteByJobPostingId(jobPostingId);
         saveImages(jobPostingId, imageUrls);
