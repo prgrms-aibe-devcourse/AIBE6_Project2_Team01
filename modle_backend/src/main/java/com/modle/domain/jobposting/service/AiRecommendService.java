@@ -76,6 +76,8 @@ public class AiRecommendService {
      *
      * @EnableAsync는 global/config/AsyncConfig에서 활성화한다.
     */
+
+   // 공고 등록 후 추천 스냅샷 생성
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -114,6 +116,8 @@ public class AiRecommendService {
         JobPosting jobPosting = findJobPostingForUpdate(postId);
         Optional<PostEmbedding> postEmbedding = ensurePostEmbedding(jobPosting);
         Set<Long> appliedModelIds = findAppliedModelIds(postId);
+
+        // 후보 선별 -> 유사도 점수 -> 상위 5개 저장
         List<Model> candidates = findCandidates(jobPosting).stream()
                 .filter(model -> !appliedModelIds.contains(model.getId()))
                 .toList();
@@ -209,9 +213,20 @@ public class AiRecommendService {
     }
 
     private List<Model> findCandidates(JobPosting jobPosting) {
-        String sex = jobPosting.getRequiredSex() == RequiredSex.ANY
+        if (jobPosting.getRegion() == null || jobPosting.getCategory() == null) {
+            log.warn(
+                    "Recommendation skipped because job posting filter is incomplete. postId={}, region={}, category={}",
+                    jobPosting.getId(),
+                    jobPosting.getRegion(),
+                    jobPosting.getCategory()
+            );
+            return List.of();
+        }
+
+        RequiredSex requiredSex = Optional.ofNullable(jobPosting.getRequiredSex()).orElse(RequiredSex.ANY);
+        String sex = requiredSex == RequiredSex.ANY
                 ? null
-                : jobPosting.getRequiredSex().name();
+                : requiredSex.name();
         return modelRepository.findRecommendationCandidates(
                 sex,
                 jobPosting.getAgeMin(),
@@ -343,10 +358,27 @@ public class AiRecommendService {
                 .toList();
         String region = model.getModelRegions().stream()
                 .findFirst()
-                .map(modelRegion -> modelRegion.getRegion().name())
+                .map(modelRegion -> modelRegion.getRegion() == null ? null : modelRegion.getRegion().name())
                 .orElse(null);
 
         if (!visible) {
+            return new RecommendationCardResponse(
+                    rank,
+                    true,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    categories,
+                    region,
+                    null
+            );
+        }
+
+        if (model.getUser() == null) {
+            log.warn("Recommended model user is missing while building response. modelId={}", model.getId());
             return new RecommendationCardResponse(
                     rank,
                     true,

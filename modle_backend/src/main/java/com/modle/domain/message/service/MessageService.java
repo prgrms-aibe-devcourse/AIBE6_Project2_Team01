@@ -39,6 +39,7 @@ public class MessageService {
     private final UserService userService;
     private final JobPostingRepository jobPostingRepository;
 
+    // 대화방 생성 메서드
     @Transactional
     public MessageConversationResponse createConversation(
             Long creatorId,

@@ -33,10 +33,7 @@ public interface ModelRepository extends JpaRepository<Model,Long>, JpaSpecifica
               AND (
                     :minCareerMonths IS NULL
                     OR :minCareerMonths <= 0
-                    OR (
-                        m.career_start_date IS NOT NULL
-                        AND TIMESTAMPDIFF(MONTH, m.career_start_date, CURRENT_DATE) >= :minCareerMonths
-                    )
+                    OR COALESCE(m.experience, 0) * 12 >= :minCareerMonths
                   )
               AND mr.region = :region
               AND mc.category = :category

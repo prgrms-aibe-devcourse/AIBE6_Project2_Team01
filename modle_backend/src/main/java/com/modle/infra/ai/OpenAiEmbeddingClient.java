@@ -17,7 +17,7 @@ public class OpenAiEmbeddingClient implements EmbeddingClient {
 
     public OpenAiEmbeddingClient(
             @Value("${openai.api-key:${OPENAI_API_KEY:}}") String apiKey,
-            @Value("${openai.embedding-model:text-embedding-3-small}") String model
+            @Value("${openai.embedding-model:${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}}") String model
     ) {
         this.restClient = RestClient.builder()
                 .baseUrl("https://api.openai.com/v1")

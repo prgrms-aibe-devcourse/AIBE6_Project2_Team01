@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum Category {
     HAIR,
     MAKEUP,
+    CLOTHING,
     FITTING,
     HAND,
     FOOD,
