@@ -20,7 +20,6 @@ public class Portfolio extends BaseEntity {
     private Model model;
     @Column(length = 500, nullable = false)
     private String imgUrl;
-    @Enumerated(EnumType.STRING)
     private Category category;
     public Portfolio(Model model, String imgUrl, Category category) {
         this.model = model;

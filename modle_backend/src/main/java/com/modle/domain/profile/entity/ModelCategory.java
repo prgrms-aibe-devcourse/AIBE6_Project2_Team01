@@ -9,7 +9,7 @@ import lombok.Setter;
 
 //id	BIGINT PK	고유 식별자
 //model_id	BIGINT FK	MODEL 참조
-//category	ENUM	HAIR / MAKEUP / HAND / FITTING / CLOTHING / ETC
+//category	ENUM	HAIR / MAKEUP / HAND / FITTING / ETC
 @Entity
 @Getter
 @Setter
@@ -22,7 +22,6 @@ public class ModelCategory{
     @ManyToOne
     @JoinColumn(name = "model_id")
     Model model;
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     Category category;
 }

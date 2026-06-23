@@ -34,7 +34,7 @@ public interface ModelRepository extends JpaRepository<Model,Long>, JpaSpecifica
                     :minCareerMonths IS NULL
                     OR :minCareerMonths <= 0
                     OR COALESCE(m.experience, 0) * 12 >= :minCareerMonths
-                  )
+              )
               AND mr.region = :region
               AND mc.category = :category
             """, nativeQuery = true)

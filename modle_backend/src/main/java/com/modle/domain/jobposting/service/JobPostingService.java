@@ -24,6 +24,7 @@ import com.modle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -125,8 +126,11 @@ public class JobPostingService {
         Category categoryEnum = parseEnum(Category.class, category);
         JobPostingStatus statusEnum = parseEnum(JobPostingStatus.class, status);
         Page<JobPosting> page = jobPostingRepository.findByFilter(regionEnum, categoryEnum, statusEnum, pageable);
+        List<JobPosting> visibleJobPostings = page.getContent().stream()
+                .filter(jobPosting -> jobPosting.getCategory() != null)
+                .toList();
 
-        List<Long> clientIds = page.getContent().stream()
+        List<Long> clientIds = visibleJobPostings.stream()
                 .map(JobPosting::getClientId)
                 .distinct()
                 .toList();
@@ -135,8 +139,11 @@ public class JobPostingService {
                 : clientRepository.findByUser_IdIn(clientIds).stream()
                         .collect(Collectors.toMap(c -> c.getUser().getId(), c -> c));
 
-        return page.map(jobPosting ->
-                JobPostingListResponse.from(jobPosting, clientsByUserId.get(jobPosting.getClientId())));
+        List<JobPostingListResponse> responses = visibleJobPostings.stream()
+                .map(jobPosting -> JobPostingListResponse.from(jobPosting, clientsByUserId.get(jobPosting.getClientId())))
+                .toList();
+
+        return new PageImpl<>(responses, pageable, responses.size());
     }
 
     private <E extends Enum<E>> E parseEnum(Class<E> enumClass, String value) {

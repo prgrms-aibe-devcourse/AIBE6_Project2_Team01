@@ -51,6 +51,7 @@ public record ModelDto(
                 //  연관관계 엔티티에서 문자열 이름만 추출해서 List로 반환
                 model.getModelCategories() != null ?
                         model.getModelCategories().stream()
+                        .filter(mc -> mc.getCategory() != null)
                         .map(mc -> mc.getCategory().name())
                         .toList() : List.of(),
 

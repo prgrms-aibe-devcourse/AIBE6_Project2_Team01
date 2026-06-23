@@ -21,7 +21,7 @@ public record MyApplicationResponse(
                 application.getId(),
                 jobPosting.getId(),
                 jobPosting.getTitle(),
-                jobPosting.getCategory().name(),
+                jobPosting.getCategory() == null ? null : jobPosting.getCategory().name(),
                 jobPosting.getRegion().name(),
                 application.getStatus(),
                 application.getStatus() == ApplicationStatus.SHOOTING

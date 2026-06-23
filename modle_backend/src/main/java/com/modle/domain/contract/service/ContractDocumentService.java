@@ -148,7 +148,7 @@ public class ContractDocumentService {
                 model.getName(),
                 modelUser.getEmail(),
                 jobPosting.content(),
-                jobPosting.category().name(),
+                jobPosting.category() == null ? "" : jobPosting.category().name(),
                 contract.getShootStartAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
                 contract.getShootEndAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
                 contract.getLocation(),

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -126,8 +127,18 @@ public class ModelService {
 
         Pageable pageable = PageRequest.of(page, size, sortObj);
 
-        return modelRepository.findAll(finalSpec, pageable);
+        Page<Model> result = modelRepository.findAll(finalSpec, pageable);
+        List<Model> visibleModels = result.getContent().stream()
+                .filter(this::hasOnlyKnownCategories)
+                .toList();
+        return new PageImpl<>(visibleModels, pageable, visibleModels.size());
 
+    }
+
+    private boolean hasOnlyKnownCategories(Model model) {
+        return model.getModelCategories() == null
+                || model.getModelCategories().stream()
+                .allMatch(modelCategory -> modelCategory.getCategory() != null);
     }
 
     public Model findById(Long id) {

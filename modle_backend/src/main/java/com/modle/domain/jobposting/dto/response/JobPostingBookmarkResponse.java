@@ -16,7 +16,7 @@ public record JobPostingBookmarkResponse(
         return new JobPostingBookmarkResponse(
                 bookmark.getJobPostingId(),
                 jobPosting.getTitle(),
-                jobPosting.getCategory().name(),
+                jobPosting.getCategory() == null ? null : jobPosting.getCategory().name(),
                 jobPosting.getRegion().name(),
                 bookmark.getCreatedDate()
         );

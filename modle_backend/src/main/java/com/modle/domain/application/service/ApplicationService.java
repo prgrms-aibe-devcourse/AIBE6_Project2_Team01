@@ -348,7 +348,7 @@ public class ApplicationService {
                 application.getModelId(),
                 jobPosting.getId(),
                 jobPosting.getTitle(),
-                jobPosting.getCategory().name(),
+                jobPosting.getCategory() == null ? "" : jobPosting.getCategory().name(),
                 jobPosting.getRegion().name(),
                 jobPosting.getShootDate(),
                 LocalDateTime.now()

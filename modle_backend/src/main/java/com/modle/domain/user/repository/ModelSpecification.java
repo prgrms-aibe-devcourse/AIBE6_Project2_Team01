@@ -62,6 +62,7 @@ public class ModelSpecification {
             return categoryJoin.get("category").in(categories);
         };
     }
+
     // 지역 다중 필터 (거주지 User.region 우선 검색, 추후 필요시 ModelRegion 조인 추가 가능)
     public static Specification<Model> hasRegions(List<String> regions) {
         return (root, query, criteriaBuilder) -> {
@@ -80,5 +81,3 @@ public class ModelSpecification {
         };
     }
 }
-
-

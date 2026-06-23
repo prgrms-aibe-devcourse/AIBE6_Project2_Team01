@@ -28,7 +28,6 @@ public class JobPosting extends BaseEntity {
     @Column(nullable = false, columnDefinition = "LONGTEXT")
     private String content;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Category category;
 
@@ -146,5 +145,4 @@ public class JobPosting extends BaseEntity {
         this.status = JobPostingStatus.CLOSED;
     }
 }
-
 
