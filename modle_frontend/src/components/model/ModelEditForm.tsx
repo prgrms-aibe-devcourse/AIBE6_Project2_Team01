@@ -33,7 +33,12 @@ export function ModelEditForm({ initialData }: Props) {
     field: initialData.categories?.join(',') || initialData.field || '',
     tags: initialData.tags || [],
     introduction: initialData.introduction || '',
-    profileImageUrl: initialData.profileImageUrl || ''
+    profileImageUrl: initialData.profileImageUrl || '',
+    experience: initialData.experience,
+    topSize: initialData.topSize,
+    bottomSize: initialData.bottomSize,
+    shoeSize: initialData.shoeSize,
+    availableDays: initialData.availableDays
   });
 
   const [tagInput, setTagInput] = useState('');
