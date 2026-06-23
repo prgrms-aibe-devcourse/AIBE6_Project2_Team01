@@ -1,7 +1,5 @@
 package com.modle.global.init;
 
-import com.modle.domain.contract.entity.ContractTemplate;
-import com.modle.domain.contract.repository.ContractTemplateRepository;
 import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.type.Category;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
@@ -49,7 +47,6 @@ public class InitData {
         private final ClientRepository clientRepository;
         private final BCryptPasswordEncoder passwordEncoder;
         private final ModelService modelService;
-        private final ContractTemplateRepository contractTemplateRepository;
         private final JobPostingRepository jobPostingRepository;
 
         @Bean
@@ -60,8 +57,7 @@ public class InitData {
                         self.work3(); // 테스트 의뢰인
                         self.work4(); // 테스트 모델프로필
                         self.work5(); // 테스트 클라이언트프로필
-                        self.work6(); // 계약서 템플릿
-                        self.work8(); // 추천 테스트용 모델 500개
+                        self.work6(); // 추천 테스트용 모델 500개
                         self.work7(); // 테스트 공고
                 };
         }
@@ -211,29 +207,10 @@ public class InitData {
                 clientRepository.save(client3);
         }
 
-        @Transactional
-        public void work6() {
-                if (contractTemplateRepository.count() > 0)
-                        return;
-
-                ContractTemplate template = ContractTemplate.create(
-                                "기본 촬영 계약서",
-                                """
-                                                촬영 시작: {{shoot_start_at}}
-                                                촬영 종료: {{shoot_end_at}}
-                                                촬영 장소: {{location}}
-                                                보수 금액: {{payment}}
-                                                보수 방식: {{pay_type}}
-                                                사용 범위: {{usage_scope}}
-                                                기타 메모: {{memo}}
-                                                """);
-
-                contractTemplateRepository.save(template);
-        }
 
         // 테스트 공고 데이터 생성
         @Transactional
-        public void work7() {
+        public void work6() {
                 if (jobPostingRepository.count() > 0)
                         return;
 
@@ -417,7 +394,7 @@ public class InitData {
 
         // 추천 테스트용 모델 60개 생성
         @Transactional
-        public void work8() {
+        public void work7() {
             if (userRepository.count() < 10) return;
 
             List<User> newUsers = new ArrayList<>();

@@ -505,7 +505,6 @@ function NewContractPageContent() {
                   }
                 >
                   <option value="TEMPLATE">템플릿 작성</option>
-                  <option value="FILE">PDF 파일 첨부</option>
                 </select>
               </Field>
 
@@ -539,19 +538,6 @@ function NewContractPageContent() {
                     )}
                   </Field>
 
-                  {selectedTemplate ? (
-                    <div className="md:col-span-2 rounded-xl border border-hairline bg-canvas-soft p-4">
-                      <p className="text-[13px] font-semibold text-mute">
-                        선택한 템플릿
-                      </p>
-                      <h3 className="mt-2 text-[17px] font-semibold text-ink">
-                        {selectedTemplate.title}
-                      </h3>
-                      <pre className="mt-3 whitespace-pre-wrap break-words text-[14px] leading-6 text-body">
-                        {renderedTemplateContent}
-                      </pre>
-                    </div>
-                  ) : null}
                 </>
               ) : null}
 
@@ -642,19 +628,6 @@ function NewContractPageContent() {
                 />
               </Field>
 
-              <Field label="PDF URL" required={isFileContract} className="md:col-span-2">
-                <input
-                  className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink disabled:bg-canvas-soft disabled:text-mute"
-                  placeholder={
-                    isFileContract
-                      ? "FILE 계약은 PDF URL을 입력해야 합니다."
-                      : "템플릿 계약은 URL을 입력할 수 없습니다."
-                  }
-                  value={isTemplateContract ? "" : form.pdfUrl}
-                  disabled={isTemplateContract}
-                  onChange={(event) => updateField("pdfUrl", event.target.value)}
-                />
-              </Field>
             </div>
           </section>
 

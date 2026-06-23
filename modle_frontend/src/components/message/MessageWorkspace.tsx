@@ -75,12 +75,14 @@ function getContractCardMeta(href: string) {
     const status = url.searchParams.get("status") ?? "";
     const shootDate = url.searchParams.get("shootDate") ?? "";
     const location = url.searchParams.get("location") ?? "";
+    const postTitle = url.searchParams.get("postTitle") ?? "";
 
     return {
       contractId,
       statusLabel: CONTRACT_STATUS_LABELS[status] ?? "계약 확인",
       shootDate,
       location,
+      postTitle,
     };
   } catch {
     return {
@@ -88,6 +90,7 @@ function getContractCardMeta(href: string) {
       statusLabel: "계약 확인",
       shootDate: "",
       location: "",
+      postTitle: "",
     };
   }
 }
@@ -117,15 +120,20 @@ function renderContractMessage(content: string, href: string) {
           <span className="min-w-0 flex-1">
             <span className="flex items-center justify-between gap-3">
               <span className="text-[14px] font-bold leading-5">
-                계약서 {meta.contractId ? `#${meta.contractId}` : ""}
+                {meta.postTitle ||
+                  `계약서${meta.contractId ? ` #${meta.contractId}` : ""}`}
               </span>
               <span className="shrink-0 rounded-md border border-hairline px-2 py-1 text-[11px] font-semibold text-mute">
                 {meta.statusLabel}
               </span>
             </span>
             <span className="mt-2 block space-y-1 text-[12px] leading-5 text-mute">
-              {meta.shootDate ? <span className="block">촬영일 {meta.shootDate}</span> : null}
-              {meta.location ? <span className="block">장소 {meta.location}</span> : null}
+              {meta.shootDate ? (
+                <span className="block">촬영일 {meta.shootDate}</span>
+              ) : null}
+              {meta.location ? (
+                <span className="block">장소 {meta.location}</span>
+              ) : null}
             </span>
             <span className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-ink">
               계약 내용 확인
@@ -484,7 +492,9 @@ export function MessageWorkspace() {
       const nextThreads = threads.filter((thread) => thread.id !== threadId);
       setThreads(nextThreads);
       setSelectedId((currentSelectedId) =>
-        currentSelectedId === threadId ? nextThreads[0]?.id ?? null : currentSelectedId,
+        currentSelectedId === threadId
+          ? (nextThreads[0]?.id ?? null)
+          : currentSelectedId,
       );
       setError(null);
       setSwipedThreadId((current) => (current === threadId ? null : current));
@@ -718,10 +728,14 @@ export function MessageWorkspace() {
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <strong className="truncate text-sm">{thread.participantName}</strong>
+                          <strong className="truncate text-sm">
+                            {thread.participantName}
+                          </strong>
                           <span
                             className={`shrink-0 text-[11px] ${
-                              selectedThread.id === thread.id ? "text-white/55" : "text-mute"
+                              selectedThread.id === thread.id
+                                ? "text-white/55"
+                                : "text-mute"
                             }`}
                           >
                             {thread.time}
@@ -729,7 +743,9 @@ export function MessageWorkspace() {
                         </div>
                         <p
                           className={`mt-1 truncate text-xs ${
-                            selectedThread.id === thread.id ? "text-white/65" : "text-mute"
+                            selectedThread.id === thread.id
+                              ? "text-white/65"
+                              : "text-mute"
                           }`}
                         >
                           {thread.preview}
@@ -794,7 +810,9 @@ export function MessageWorkspace() {
                 <button
                   type="button"
                   onClick={handleDeleteConversation}
-                  disabled={deletingConversationId === selectedThread.conversationId}
+                  disabled={
+                    deletingConversationId === selectedThread.conversationId
+                  }
                   className="h-8 rounded-md border border-error/25 bg-white px-3 text-xs font-semibold text-error transition hover:bg-error-soft disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {deletingConversationId === selectedThread.conversationId

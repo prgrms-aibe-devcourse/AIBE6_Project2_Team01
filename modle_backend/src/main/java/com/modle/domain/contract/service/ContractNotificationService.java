@@ -34,7 +34,7 @@ public class ContractNotificationService {
     @Value("${app.frontend.base-url:http://localhost:3000}")
     private String frontendBaseUrl;
 
-    private String createContractLink(Contract contract, ContractStatus status) {
+    private String createContractLink(Contract contract, ContractStatus status, String postTitle) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(frontendBaseUrl)
                 .path("/contracts/{id}")
                 .queryParam("applicationId", contract.getApplicationId())
@@ -48,11 +48,15 @@ public class ContractNotificationService {
                 .queryParam("usageScope", contract.getUsageScope())
                 .queryParam("status", status.name());
 
+        if (postTitle != null && !postTitle.isBlank()) {
+            builder.queryParam("postTitle", postTitle);
+        }
+
         if (contract.getMemo() != null && !contract.getMemo().isBlank()) {
             builder.queryParam("memo", contract.getMemo());
         }
 
-        return builder.buildAndExpand(contract.getId()).toUriString();
+        return builder.encode().buildAndExpand(contract.getId()).toUriString();
     }
 
     private String formatContractLinkTime(LocalDateTime dateTime) {
@@ -74,7 +78,7 @@ public class ContractNotificationService {
         JobPostingResponse jobPosting = jobPostingService.getJobPosting(application.getJobPostingId());
         User clientUser = userService.findById(jobPosting.clientId());
 
-        String contractLink = createContractLink(contract, contract.getStatus());
+        String contractLink = createContractLink(contract, contract.getStatus(), jobPosting.title());
 
         MessageConversationResponse conversation = messageService.createApplicationConversation(
                 clientUser.getId(),
@@ -105,7 +109,8 @@ public class ContractNotificationService {
             Contract contract,
             Application application,
             Long clientUserId,
-            User modelUser
+            User modelUser,
+            String postTitle
     ) {
         MessageConversationResponse conversation = messageService.createApplicationConversation(
                 clientUserId,
@@ -114,7 +119,7 @@ public class ContractNotificationService {
                 application.getId()
         );
 
-        String contractLink = createContractLink(contract, ContractStatus.NOTIFIED);
+        String contractLink = createContractLink(contract, ContractStatus.NOTIFIED, postTitle);
 
         messageService.sendSystemMessage(
                 conversation.id(),

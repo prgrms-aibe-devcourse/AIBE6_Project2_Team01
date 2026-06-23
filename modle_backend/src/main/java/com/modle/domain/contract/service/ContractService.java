@@ -101,7 +101,8 @@ public class ContractService {
                 contract,
                 parties.application(),
                 clientUserId,
-                parties.modelUser()
+                parties.modelUser(),
+                parties.jobPosting().title()
         );
 
         contract.notifyModel(LocalDateTime.now());
