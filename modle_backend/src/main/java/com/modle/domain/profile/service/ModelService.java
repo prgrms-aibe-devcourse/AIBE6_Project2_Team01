@@ -43,7 +43,7 @@ public class ModelService {
     }
 
     public Page<Model> getList(String query, Sex sex, List<Category> categories, List<String> regions,
-            List<String> tags, String height, String sortType, int page, int size) {
+            List<String> tags, String height, String weight, String sortType, int page, int size) {
 
         List<Specification<Model>> specs = new ArrayList<>();
         // 1. 이름 검색 (query)
@@ -89,6 +89,27 @@ public class ModelService {
                     break;
                 case "over-180":
                     specs.add(ModelSpecification.heightGreaterThanEqual(180));
+                    break;
+            }
+        }
+        
+        // 7. 몸무게 (weight)
+        if (weight != null && !weight.isBlank()) {
+            switch (weight) {
+                case "under-50":
+                    specs.add(ModelSpecification.weightLessThan(50));
+                    break;
+                case "50-60":
+                    specs.add(ModelSpecification.weightBetween(50, 59));
+                    break;
+                case "60-70":
+                    specs.add(ModelSpecification.weightBetween(60, 69));
+                    break;
+                case "70-80":
+                    specs.add(ModelSpecification.weightBetween(70, 79));
+                    break;
+                case "over-80":
+                    specs.add(ModelSpecification.weightGreaterThanEqual(80));
                     break;
             }
         }

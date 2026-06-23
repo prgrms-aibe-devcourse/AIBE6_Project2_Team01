@@ -39,6 +39,21 @@ public class ModelSpecification {
         return (root, criteriaQuery, criteriaBuilder) ->
                 criteriaBuilder.between(root.get("height"), minHeight, maxHeight);
     }
+
+    public static Specification<Model> weightGreaterThanEqual(int minWeight) {
+        return (root, criteriaQuery, criteriaBuilder) ->
+                criteriaBuilder.greaterThanOrEqualTo(root.get("weight"), minWeight);
+    }
+    
+    public static Specification<Model> weightLessThan(int maxWeight) {
+        return (root, criteriaQuery, criteriaBuilder) ->
+                criteriaBuilder.lessThan(root.get("weight"), maxWeight);
+    }
+    
+    public static Specification<Model> weightBetween(int minWeight, int maxWeight) {
+        return (root, criteriaQuery, criteriaBuilder) ->
+                criteriaBuilder.between(root.get("weight"), minWeight, maxWeight);
+    }
     // 카테고리 다중 필터 (선택한 카테고리 중 하나라도 일치하면 검색 - OR 조건)
     public static Specification<Model> hasCategories(List<Category> categories) {
         return (root, query, criteriaBuilder) -> {

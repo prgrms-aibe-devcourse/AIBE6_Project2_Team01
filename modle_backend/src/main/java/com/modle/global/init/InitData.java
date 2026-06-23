@@ -1,26 +1,11 @@
 package com.modle.global.init;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.modle.domain.contract.entity.ContractTemplate;
 import com.modle.domain.contract.repository.ContractTemplateRepository;
 import com.modle.domain.jobposting.entity.JobPosting;
 import com.modle.domain.jobposting.entity.type.Category;
 import com.modle.domain.jobposting.entity.type.JobPostingStatus;
 import com.modle.domain.jobposting.entity.type.PayType;
-import com.modle.global.entity.type.Region;
 import com.modle.domain.jobposting.entity.type.RequiredSex;
 import com.modle.domain.jobposting.repository.JobPostingRepository;
 import com.modle.domain.profile.service.ModelService;
@@ -34,8 +19,23 @@ import com.modle.domain.user.entity.type.UserStatus;
 import com.modle.domain.user.repository.ClientRepository;
 import com.modle.domain.user.repository.ModelRepository;
 import com.modle.domain.user.repository.UserRepository;
-
+import com.modle.global.entity.type.Region;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.modle.domain.user.entity.type.Sex.F;
+import static com.modle.domain.user.entity.type.Sex.M;
 
 @Configuration
 @RequiredArgsConstructor
@@ -94,7 +94,7 @@ public class InitData {
                                 Role.MODEL);
                 userRepository.save(user);
 
-                Model model = Model.create(user, "테스트모델", 170, 55, com.modle.domain.user.entity.type.Sex.M, 25);
+                Model model = Model.create(user, "테스트모델", 170, 55, M, 25);
                 modelRepository.save(model);
         }
 
@@ -134,8 +134,8 @@ public class InitData {
                                 "SEOUL",
                                 Role.MODEL);
                 userRepository.save(user1);
-                Model model1 = modelService.create(user1, "홍길동", 180, 75, com.modle.domain.user.entity.type.Sex.M, 25);
-                modelService.update(model1, "홍길동", 180, 75, com.modle.domain.user.entity.type.Sex.M, 25,
+                Model model1 = modelService.create(user1, "홍길동", 180, 75, M, 25);
+                modelService.update(model1, "홍길동", 180, 75, M, 25,
                                 List.of("FITTING"), List.of("tag1"),
                                 "안녕하세요, 홍길동입니다.",
                                 "SEOUL", "", List.of("SEOUL"),
@@ -147,8 +147,8 @@ public class InitData {
                                 "BUSAN",
                                 Role.MODEL);
                 userRepository.save(user2);
-                Model model2 = modelService.create(user2, "김철수", 175, 68, com.modle.domain.user.entity.type.Sex.M, 30);
-                modelService.update(model2, "김철수", 175, 68, com.modle.domain.user.entity.type.Sex.M, 30,
+                Model model2 = modelService.create(user2, "김철수", 175, 68, M, 30);
+                modelService.update(model2, "김철수", 175, 68, M, 30,
                                 List.of("HAIR"), List.of("tag2"),
                                 "안녕하세요, 김철수입니다.",
                                 "BUSAN", "", List.of("BUSAN"),
@@ -160,8 +160,8 @@ public class InitData {
                                 "DAEJEON",
                                 Role.MODEL);
                 userRepository.save(user3);
-                Model model3 = modelService.create(user3, "이영희", 165, 55, com.modle.domain.user.entity.type.Sex.F, 28);
-                modelService.update(model3, "이영희", 165, 55, com.modle.domain.user.entity.type.Sex.F, 28,
+                Model model3 = modelService.create(user3, "이영희", 165, 55, F, 28);
+                modelService.update(model3, "이영희", 165, 55, F, 28,
                                 List.of("MAKEUP"), List.of("tag3"),
                                 "안녕하세요, 이영희입니다.",
                                 "DAEJEON", "", List.of("DAEJEON"),
@@ -433,7 +433,7 @@ public class InitData {
                         Region[] regions = Region.values();
                         Category category = categories[(i - 1) % categories.length];
                         Region region = regions[(i - 1) % regions.length];
-                        Sex sex = i % 3 == 0 ? Sex.M : Sex.F;
+                        Sex sex = i % 3 == 0 ? M : F;
                         int age = 19 + (i % 17);
                         int height = 155 + (i % 36);
                         int weight = 45 + (i % 36);
