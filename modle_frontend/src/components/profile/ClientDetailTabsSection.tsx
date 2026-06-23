@@ -83,7 +83,7 @@ export function ClientDetailTabsSection({ clientId, clientUserId, reviewCount, i
           리뷰 ({reviewCount})
         </button>
         <button onClick={() => setActiveTab("jobs")} className={tabClass("jobs")}>
-          진행 중인 공고
+          작성한 공고
         </button>
       </div>
 
