@@ -93,6 +93,22 @@ function NewContractPageContent() {
   const [hasDraftContract, setHasDraftContract] = useState(false);
   const [lastSavedFormKey, setLastSavedFormKey] = useState<string | null>(null);
 
+  const todayStr = useMemo(() => {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  }, []);
+
+  // 촬영일이 오늘이면 시작 시간도 현재 시각 이후만 선택 가능
+  const minStartTime = useMemo(() => {
+    if (form.shootDate !== todayStr) {
+      return undefined;
+    }
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  }, [form.shootDate, todayStr]);
+
   const isFileContract = form.contractType === "FILE";
   const isTemplateContract = form.contractType === "TEMPLATE";
   const selectedTemplate =
@@ -295,6 +311,10 @@ function NewContractPageContent() {
 
     if (!form.shootDate || !form.shootStartTime || !form.shootEndTime) {
       return "촬영 날짜와 시간을 모두 입력해주십시오.";
+    }
+
+    if (new Date(preview.shootStartAt) < new Date()) {
+      return "촬영 시작 일시는 현재 시각 이후여야 합니다.";
     }
 
     if (preview.shootStartAt >= preview.shootEndAt) {
@@ -539,6 +559,7 @@ function NewContractPageContent() {
                 <input
                   className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
                   type="date"
+                  min={todayStr}
                   value={form.shootDate}
                   onChange={(event) => updateField("shootDate", event.target.value)}
                 />
@@ -549,6 +570,7 @@ function NewContractPageContent() {
                   <input
                     className="h-11 w-full rounded-md border border-hairline bg-canvas-soft px-3 text-[15px] leading-6 text-ink outline-none transition focus:border-ink"
                     type="time"
+                    min={minStartTime}
                     value={form.shootStartTime}
                     onChange={(event) =>
                       updateField("shootStartTime", event.target.value)
