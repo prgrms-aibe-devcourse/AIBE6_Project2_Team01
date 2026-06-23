@@ -1,7 +1,7 @@
 import { JobListItem } from "@/types/job";
 import { getRegionLabel } from "@/lib/constants/region";
 import { getCategoryLabel } from "@/lib/constants/category";
-import { getJobStatusLabel } from "@/lib/constants/jobStatus";
+import { STATUS_LABELS } from "@/lib/constants/jobPostingStatus";
 import Link from "next/link";
 
 interface JobCardProps {
@@ -28,7 +28,7 @@ export function JobCard({ job, isFavorited, onToggleFavorite }: JobCardProps) {
               <span className="text-[13px] font-bold text-gray-600 truncate">{companyName}</span>
             </div>
             <span className="text-[11px] font-bold text-gray-400">
-              {getJobStatusLabel(job.status)}
+              {job.status ? STATUS_LABELS[job.status] ?? job.status : ""}
             </span>
           </div>
           <h3 className="text-[17px] font-bold text-gray-900 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors">

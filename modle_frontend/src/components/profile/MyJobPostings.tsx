@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getMyJobPostings, type MyJobPosting } from '@/lib/api/application';
 import { REGION_OPTIONS } from '@/lib/constants/region';
+import { STATUS_LABELS } from '@/lib/constants/jobPostingStatus';
 
 const REGION_LABELS = Object.fromEntries(REGION_OPTIONS.map((o) => [o.value, o.label]));
 
@@ -13,10 +14,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   HAND: '핸드', FOOD: '음식', PRODUCT: '제품', ETC: '기타',
 };
 
-const JOB_STATUS_LABELS: Record<string, string> = {
-  RECRUITING: '모집 중', SHOOTING: '촬영 중', COMPLETED: '완료',
-  CANCELLED: '취소', ON_HOLD: '일시정지', CLOSED: '마감',
-};
 
 export function MyJobPostings() {
   const [items, setItems] = useState<MyJobPosting[]>([]);
@@ -73,7 +70,7 @@ export function MyJobPostings() {
               </div>
               <div className="flex gap-2">
                 <dt className="w-16 shrink-0 text-gray-400">상태</dt>
-                <dd className="font-medium text-black">{JOB_STATUS_LABELS[item.status] ?? item.status}</dd>
+                <dd className="font-medium text-black">{STATUS_LABELS[item.status] ?? item.status}</dd>
               </div>
               <div className="flex gap-2">
                 <dt className="w-16 shrink-0 text-gray-400">인원</dt>
