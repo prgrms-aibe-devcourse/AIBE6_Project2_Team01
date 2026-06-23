@@ -31,17 +31,21 @@ export function ClientDetailTabsSection({ clientId, clientUserId, reviewCount, i
   const [jobs, setJobs] = useState<ClientJobPosting[]>([]);
   const [jobsLoading, setJobsLoading] = useState(false);
   const [jobsError, setJobsError] = useState<string | null>(null);
+  const [jobsLoaded, setJobsLoaded] = useState(false);
 
   useEffect(() => {
-    if (activeTab !== "jobs") return;
-
+    // 탭 활성화 여부와 무관하게 마운트 시 한 번 조회해, 비활성 상태에서도 탭 개수를 표시한다.
     let cancelled = false;
     setJobsLoading(true);
     setJobsError(null);
 
-    getClientJobPostings(clientId, statusFilter || undefined)
+    // 공개 공고 전체를 한 번만 받아오고, 상태 필터링·개수 집계는 클라이언트에서 처리한다.
+    getClientJobPostings(clientId)
       .then((data) => {
-        if (!cancelled) setJobs(data);
+        if (!cancelled) {
+          setJobs(data);
+          setJobsLoaded(true);
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled) {
@@ -55,7 +59,7 @@ export function ClientDetailTabsSection({ clientId, clientUserId, reviewCount, i
     return () => {
       cancelled = true;
     };
-  }, [activeTab, statusFilter, clientId]);
+  }, [clientId]);
 
   function tabClass(tab: Tab) {
     return `flex-1 cursor-pointer py-4 text-center transition-colors border-b-[3px] ${
@@ -73,6 +77,16 @@ export function ClientDetailTabsSection({ clientId, clientUserId, reviewCount, i
     }`;
   }
 
+  // 선택한 상태 필터로 좁힌 목록 (빈 값이면 전체)
+  const visibleJobs = statusFilter
+    ? jobs.filter((j) => j.status === statusFilter)
+    : jobs;
+
+  // 필터 버튼/탭에 표시할 상태별 개수 (빈 값이면 공개 공고 전체)
+  function statusCount(value: string) {
+    return value ? jobs.filter((j) => j.status === value).length : jobs.length;
+  }
+
   return (
     <div className="mt-20 md:mt-24">
       <div className="sticky top-0 z-10 flex border-b border-gray-200 bg-white">
@@ -83,7 +97,7 @@ export function ClientDetailTabsSection({ clientId, clientUserId, reviewCount, i
           리뷰 ({reviewCount})
         </button>
         <button onClick={() => setActiveTab("jobs")} className={tabClass("jobs")}>
-          작성한 공고
+          작성한 공고{jobsLoaded ? ` (${visibleJobs.length})` : ""}
         </button>
       </div>
 
@@ -106,7 +120,7 @@ export function ClientDetailTabsSection({ clientId, clientUserId, reviewCount, i
                   onClick={() => setStatusFilter(f.value)}
                   className={filterClass(f.value)}
                 >
-                  {f.label}
+                  {f.label}{jobsLoaded ? ` (${statusCount(f.value)})` : ""}
                 </button>
               ))}
             </div>
@@ -115,11 +129,11 @@ export function ClientDetailTabsSection({ clientId, clientUserId, reviewCount, i
               <div className="py-16 text-center text-sm text-gray-400">불러오는 중…</div>
             ) : jobsError ? (
               <div className="py-16 text-center text-sm text-red-500">{jobsError}</div>
-            ) : jobs.length === 0 ? (
+            ) : visibleJobs.length === 0 ? (
               <div className="py-16 text-center text-sm text-gray-400">작성한 공고가 없습니다.</div>
             ) : (
               <ul className="flex flex-col gap-3">
-                {jobs.map((job) => (
+                {visibleJobs.map((job) => (
                   <li key={job.jobPostingId}>
                     <a
                       href={`/jobs/${job.jobPostingId}`}
