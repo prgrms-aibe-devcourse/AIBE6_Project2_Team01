@@ -178,6 +178,18 @@ export function ModelEditForm({ initialData }: Props) {
       return;
     }
 
+    if (formData.experience !== undefined && (formData.experience < 0 || formData.experience > 60)) {
+      setError('경력은 0~60 사이로 입력해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.shoeSize !== undefined && (formData.shoeSize < 200 || formData.shoeSize > 350)) {
+      setError('발사이즈는 200~350 사이로 입력해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
     if (!formData.field) {
       setError('희망 활동분야(Category)를 하나 이상 선택해주세요.');
       setIsLoading(false);
@@ -341,37 +353,63 @@ export function ModelEditForm({ initialData }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">상의 사이즈 (Top Size)</label>
-          <input
-            type="text"
-            name="topSize"
-            value={formData.topSize || ''}
-            onChange={handleChange}
-            className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors"
-            placeholder="예: S, M, L 또는 95, 100"
-          />
+          <div className="relative">
+            <select
+              name="topSize"
+              value={formData.topSize || ''}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors appearance-none cursor-pointer"
+            >
+              <option value="">상의 사이즈 선택</option>
+              <option value="SS">SS</option>
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+              <option value="2XL">2XL</option>
+              <option value="3XL">3XL</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </div>
+          </div>
         </div>
         <div>
           <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">하의 사이즈 (Bottom Size)</label>
-          <input
-            type="text"
-            name="bottomSize"
-            value={formData.bottomSize || ''}
-            onChange={handleChange}
-            className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors"
-            placeholder="예: S, M 또는 28, 30"
-          />
+          <div className="relative">
+            <select
+              name="bottomSize"
+              value={formData.bottomSize || ''}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors appearance-none cursor-pointer"
+            >
+              <option value="">하의 사이즈 선택</option>
+              <option value="SS">SS</option>
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+              <option value="2XL">2XL</option>
+              <option value="3XL">3XL</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </div>
+          </div>
         </div>
       </div>
 
       <div>
-        <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">경력 (Experience)</label>
+        <label className="block text-xs font-bold text-black mb-2 uppercase tracking-wider">경력 (Experience) - 년 단위</label>
         <input
-          type="text"
+          type="number"
           name="experience"
-          value={formData.experience || ''}
+          min="0"
+          max="60"
+          value={formData.experience ?? ''}
           onChange={handleChange}
           className="w-full px-4 py-3 bg-white border border-gray-300 text-black focus:outline-none focus:border-black focus:ring-0 transition-colors"
-          placeholder="예: 신입, 1년 미만, 3년 이상, 다수 쇼핑몰 촬영"
+          placeholder="숫자로 입력 (0 입력 시 '신입'으로 표시됩니다)"
         />
       </div>
 

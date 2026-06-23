@@ -139,7 +139,7 @@ public class InitData {
                                 List.of("FITTING"), List.of("tag1"),
                                 "안녕하세요, 홍길동입니다.",
                                 "SEOUL", "", List.of("SEOUL"),
-                                "신입", "L", "M", 270, "월,수,금");
+                                0, "L", "M", 270, "월,수,금");
 
                 User user2 = User.createLocal(
                                 "model2@modle.com",
@@ -152,7 +152,7 @@ public class InitData {
                                 List.of("HAIR"), List.of("tag2"),
                                 "안녕하세요, 김철수입니다.",
                                 "BUSAN", "", List.of("BUSAN"),
-                                "3년", "M", "S", 260, "화,목");
+                                3, "M", "S", 260, "화,목");
 
                 User user3 = User.createLocal(
                                 "model3@modle.com",
@@ -165,7 +165,7 @@ public class InitData {
                                 List.of("MAKEUP"), List.of("tag3"),
                                 "안녕하세요, 이영희입니다.",
                                 "DAEJEON", "", List.of("DAEJEON"),
-                                "5년", "S", "S", 240, "주말");
+                                5, "S", "S", 240, "주말");
         }
 
         @Transactional
@@ -437,7 +437,7 @@ public class InitData {
                         int age = 19 + (i % 17);
                         int height = 155 + (i % 36);
                         int weight = 45 + (i % 36);
-                        String experience = i % 5 == 0 ? "신입" : (i % 7) + "년차";
+                        Integer experience = i % 5 == 0 ? 0 : (i % 7);
                         List<String> categoryNames = distinctNames(List.of(
                                         category.name(),
                                         categories[i % categories.length].name(),

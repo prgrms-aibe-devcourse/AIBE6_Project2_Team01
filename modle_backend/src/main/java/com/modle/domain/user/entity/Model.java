@@ -51,8 +51,8 @@ public class Model extends BaseEntity {
     @Column(nullable = false)
     private int age;
 
-    @Column(length = 100)
-    private String experience;
+    @Column
+    private Integer experience;
 
     @Column(length = 50)
     private String topSize;
@@ -109,7 +109,7 @@ public class Model extends BaseEntity {
 
     public void update(String name, int height, int weight, Sex sex,
             int age, String introduction, String profileImageUrl,
-            String experience,
+            Integer experience,
             String topSize, String bottomSize, Integer shoeSize, String availableDays) {
         this.name = name;
         this.height = height;

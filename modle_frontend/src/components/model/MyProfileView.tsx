@@ -66,12 +66,12 @@ export function MyProfileView({ data }: Props) {
               {data.field}
             </p>
           )}
-          {data.experience && (
+          {data.experience !== undefined && data.experience !== null && (
             <p className="text-xs font-bold uppercase tracking-widest text-black mt-2">
               <span className="text-gray-500 mr-2 border-r border-black pr-2">
                 경력 (EXPERIENCE)
               </span>{" "}
-              {data.experience}
+              {data.experience === 0 ? "신입" : `${data.experience}년`}
             </p>
           )}
           {data.availableDays && (

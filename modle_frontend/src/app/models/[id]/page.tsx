@@ -98,7 +98,7 @@ export default async function ModelDetailPage({ params }: PageProps) {
               <div className="flex items-center">
                 <span className="w-28 text-gray-500 font-medium">경력</span>
                 <span className="text-ink font-bold">
-                  {modelData.experience || "미상"}
+                  {modelData.experience === 0 ? "신입" : modelData.experience ? `${modelData.experience}년` : "미상"}
                 </span>
               </div>
               <div className="flex items-center">

@@ -26,7 +26,7 @@ public record ModelDto(
         
         List<String> activeRegions,
         
-        String experience,
+        Integer experience,
         String topSize,
         String bottomSize,
         Integer shoeSize,

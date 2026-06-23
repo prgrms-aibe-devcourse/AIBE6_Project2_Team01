@@ -149,7 +149,7 @@ public class ModelService {
             String region,
             String profileImageUrl,
             List<String> activeRegions,
-            String experience,
+            Integer experience,
             String topSize,
             String bottomSize,
             Integer shoeSize,

@@ -22,7 +22,7 @@ export interface Model {
   tags?: string[];
   introduction?: string;
   portfolios?: Portfolio[];
-  experience?: string;
+  experience?: number;
   topSize?: string;
   bottomSize?: string;
   shoeSize?: number;
