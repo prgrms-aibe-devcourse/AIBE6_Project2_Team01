@@ -5,6 +5,8 @@ import com.modle.domain.review.dto.response.ReviewResponse;
 import com.modle.domain.review.service.ReviewService;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.response.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,10 +19,12 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/reviews")
+@Tag(name = "리뷰", description = "촬영 완료 후 양방향 리뷰 API")
 public class ReviewController {
     private final ReviewService reviewService;
 
     // TRUST-001: 리뷰 작성 (촬영 완료 후, 의뢰인↔모델 양방향)
+    @Operation(summary = "리뷰 작성", description = "촬영 완료 후 의뢰인↔모델 간 리뷰를 작성합니다.")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("isAuthenticated()")
@@ -36,6 +40,7 @@ public class ReviewController {
     }
 
     // 특정 유저가 받은 리뷰 목록
+    @Operation(summary = "유저 리뷰 목록 조회", description = "특정 유저가 받은 리뷰 목록을 조회합니다.")
     @GetMapping("/users/{userId}/reviews")
     public ApiResponse<List<ReviewResponse>> getReviews(
             @PathVariable Long userId

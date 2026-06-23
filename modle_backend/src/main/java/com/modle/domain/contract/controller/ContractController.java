@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "ApiV1ContractController", description = "계약서 API 컨트롤러")
+@Tag(name = "계약서", description = "계약서 작성·발송·동의 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/contracts")
@@ -45,6 +45,7 @@ public class ContractController {
         );
     }
 
+    @Operation(summary = "계약서 템플릿 목록 조회", description = "선택 가능한 계약서 템플릿 목록을 조회합니다. (CLIENT 전용)")
     @GetMapping("/templates")
     @PreAuthorize("hasRole('CLIENT')")
     public ApiResponse<List<ContractTemplateResponse>> getTemplates() {
@@ -54,6 +55,7 @@ public class ContractController {
         );
     }
 
+    @Operation(summary = "계약서 PDF 생성", description = "계약 내용으로 PDF를 생성합니다. (CLIENT 전용)")
     @PostMapping("/pdf")
     @PreAuthorize("hasRole('CLIENT')")
     public ApiResponse<ContractPdfResponse> createContractPdf(
@@ -71,6 +73,7 @@ public class ContractController {
         );
     }
 
+    @Operation(summary = "계약서 발송", description = "작성한 계약서를 모델에게 발송합니다. (CLIENT 전용)")
     @PostMapping("/{id}/notify")
     @PreAuthorize("hasRole('CLIENT')")
     public ApiResponse<ContractResponse> notifyContract(
@@ -83,6 +86,7 @@ public class ContractController {
         );
     }
 
+    @Operation(summary = "계약서 열람", description = "발송된 계약서를 열람합니다. (MODEL 전용)")
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('MODEL')")
     public ApiResponse<ContractViewResponse> viewContract(
@@ -123,6 +127,7 @@ public class ContractController {
         );
     }
 
+    @Operation(summary = "계약 내역 조회", description = "상태별 계약 내역 목록을 조회합니다. (CLIENT·MODEL)")
     @GetMapping
     @PreAuthorize("hasAnyRole('CLIENT', 'MODEL')")
     public ApiResponse<List<ContractListItemResponse>> getContracts(

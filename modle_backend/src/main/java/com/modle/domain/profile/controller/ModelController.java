@@ -25,7 +25,7 @@ import java.util.List;
 @RestController // @Controller + @ResponseBody
 @RequestMapping("/api/v1/models")
 @RequiredArgsConstructor
-@Tag(name = "ModelController", description = "API Model 컨트롤러")
+@Tag(name = "모델", description = "모델 프로필 조회·검색·수정 API")
 public class ModelController {
         private final ModelService modelService;
         private final GcsService gcsService;

@@ -1,6 +1,8 @@
 package com.modle.domain.profile.controller;
 
 import com.modle.global.gcs.GcsService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,8 +17,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/images")
 @RequiredArgsConstructor
+@Tag(name = "이미지", description = "이미지 업로드 API")
 public class ImageController {
     private final GcsService gcsService;
+    @Operation(summary = "이미지 업로드", description = "파일을 GCS에 업로드하고 이미지 URL을 반환합니다.")
     @PostMapping("/upload")
     public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file) {
         try {

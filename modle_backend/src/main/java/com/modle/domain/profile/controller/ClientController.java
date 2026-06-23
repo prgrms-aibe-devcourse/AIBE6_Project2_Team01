@@ -24,7 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/clients")
 @RequiredArgsConstructor
-@Tag(name = "ClientController", description = "API Client 컨트롤러")
+@Tag(name = "의뢰인", description = "의뢰인 프로필 조회·수정 API")
 public class ClientController {
     private final ClientService clientService;
     private final GcsService gcsService;

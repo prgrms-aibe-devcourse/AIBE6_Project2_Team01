@@ -10,6 +10,8 @@ import com.modle.domain.message.dto.response.MessageResponse;
 import com.modle.domain.message.service.MessageService;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.response.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -28,10 +30,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/messages")
 @RequiredArgsConstructor
+@Tag(name = "쪽지", description = "대화방·쪽지 송수신 API")
 public class MessageController {
 
     private final MessageService messageService;
 
+    @Operation(summary = "대화방 생성", description = "상대방과의 대화방을 생성합니다.")
     @PostMapping("/conversations")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<MessageConversationResponse> createConversation(
@@ -44,6 +48,7 @@ public class MessageController {
         );
     }
 
+    @Operation(summary = "쪽지 전송", description = "대화방에 쪽지를 전송합니다.")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<MessageResponse> sendMessage(
@@ -56,6 +61,7 @@ public class MessageController {
         );
     }
 
+    @Operation(summary = "대화 목록 조회", description = "본인이 참여 중인 대화방 목록을 조회합니다.")
     @GetMapping("/conversations")
     public ApiResponse<MessageInboxResponse> getConversations(
             @AuthenticationPrincipal SecurityUser user
@@ -66,6 +72,7 @@ public class MessageController {
         );
     }
 
+    @Operation(summary = "대화방 메시지 조회", description = "특정 대화방의 쪽지 목록을 페이징 조회합니다.")
     @GetMapping("/conversations/{conversationId}/messages")
     public ApiResponse<ConversationMessagesResponse> getConversationMessages(
             @AuthenticationPrincipal SecurityUser user,
@@ -78,6 +85,7 @@ public class MessageController {
         );
     }
 
+    @Operation(summary = "대화방 읽음 처리", description = "특정 대화방의 안 읽은 쪽지를 읽음 처리합니다.")
     @PatchMapping("/read")
     public ApiResponse<Integer> markConversationAsRead(
             @AuthenticationPrincipal SecurityUser user,
@@ -89,6 +97,7 @@ public class MessageController {
         );
     }
 
+    @Operation(summary = "대화방 삭제", description = "특정 대화방을 삭제합니다.")
     @DeleteMapping("/conversations/{conversationId}")
     public ApiResponse<Void> deleteConversation(
             @AuthenticationPrincipal SecurityUser user,

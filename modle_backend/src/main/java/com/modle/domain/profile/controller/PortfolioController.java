@@ -10,6 +10,8 @@ import com.modle.domain.user.dto.PortfolioReorderRequest;
 import com.modle.domain.user.entity.Model;
 import com.modle.global.auth.SecurityUser;
 import com.modle.global.response.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -23,12 +25,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/portfolios")
 @RequiredArgsConstructor
+@Tag(name = "포트폴리오", description = "모델 포트폴리오 이미지 관리 API")
 public class PortfolioController {
     private final PortfolioService portfolioService;
     private final ModelService modelService; // 내 모델 정보 조회를 위해 사용
 
 
 
+    @Operation(summary = "포트폴리오 이미지 업로드", description = "여러 장의 이미지를 카테고리와 함께 업로드합니다. (MODEL 전용)")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<List<PortfolioDto>> uploadPortfolios(
             @RequestParam("files") List<MultipartFile> files, // ⭐ List로 받기
@@ -51,6 +55,7 @@ public class PortfolioController {
         );
     }
     // [삭제] 특정 포트폴리오 지우기
+    @Operation(summary = "포트폴리오 삭제", description = "특정 포트폴리오 이미지를 삭제합니다.")
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deletePortfolio(
             @PathVariable Long id,
@@ -65,6 +70,7 @@ public class PortfolioController {
         );
     }
     //portfolio 정보변경
+    @Operation(summary = "포트폴리오 정보 수정", description = "특정 포트폴리오의 카테고리 등 정보를 수정합니다.")
     @PutMapping("/{id}")
     public ApiResponse<Void> modifyPortfolio(
             @PathVariable Long id,
@@ -77,6 +83,7 @@ public class PortfolioController {
     }
 
 
+    @Operation(summary = "포트폴리오 순서 변경", description = "포트폴리오 이미지의 노출 순서를 변경합니다.")
     @PutMapping("/reorder")
     public ApiResponse<Void> reorderPortfolios(
             @RequestBody PortfolioReorderRequest request,

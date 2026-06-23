@@ -13,6 +13,8 @@ import com.modle.global.exception.ErrorCode;
 import com.modle.global.response.ApiResponse;
 import com.modle.global.rq.Rq;
 import com.modle.domain.user.service.EmailVerifyService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,11 +23,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
+@Tag(name = "인증/회원", description = "회원가입·로그인·토큰·비밀번호 재설정 API")
 public class UserController {
     private final UserService userService;
     private final Rq rq;
     private final EmailVerifyService emailVerifyService;
 
+    @Operation(summary = "모델 회원가입", description = "모델 회원으로 가입합니다.")
     @PostMapping("/signup/model")
     public ApiResponse<Void> registerModel(
             @Valid @RequestBody ModelRegisterRequest request
@@ -37,6 +41,7 @@ public class UserController {
         );
     }
 
+    @Operation(summary = "의뢰인 회원가입", description = "의뢰인 회원으로 가입합니다. (가입 후 관리자 승인 필요)")
     @PostMapping("/signup/client")
     public ApiResponse<Void> registerClient(
             @Valid @RequestBody ClientRegisterRequest request
@@ -48,6 +53,7 @@ public class UserController {
         );
     }
 
+    @Operation(summary = "이메일 인증 코드 발송", description = "회원가입용 이메일 인증 코드를 발송합니다.")
     @PostMapping("/email/verify/send")
     public ApiResponse<Void> sendVerificationCode(
             @Valid @RequestBody EmailVerifyRequest request
@@ -56,6 +62,7 @@ public class UserController {
         return new ApiResponse<>("200-1", "인증 코드가 발송되었습니다.");
     }
 
+    @Operation(summary = "이메일 인증 코드 확인", description = "발송된 인증 코드를 검증합니다.")
     @PostMapping("/email/verify/confirm")
     public ApiResponse<Void> confirmVerificationCode(
             @Valid @RequestBody EmailVerifyConfirmRequest request
@@ -64,6 +71,7 @@ public class UserController {
         return new ApiResponse<>("200-1", "이메일 인증이 완료되었습니다.");
     }
 
+    @Operation(summary = "로그인", description = "이메일·비밀번호로 로그인하고 액세스/리프레시 토큰을 쿠키로 발급합니다.")
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(
             @Valid @RequestBody LoginRequest request
@@ -88,6 +96,7 @@ public class UserController {
         );
     }
 
+    @Operation(summary = "로그아웃", description = "리프레시 토큰을 폐기하고 인증 쿠키를 삭제합니다.")
     @PostMapping("/logout")
     public ApiResponse<Void> logout() {
         // 쿠키에서 Refresh Token 꺼내서 Redis 삭제
@@ -103,6 +112,7 @@ public class UserController {
         return new ApiResponse<>("200-1", "로그아웃 되었습니다.");
     }
 
+    @Operation(summary = "토큰 재발급", description = "리프레시 토큰으로 액세스/리프레시 토큰을 재발급합니다.")
     @PostMapping("/reissue")
     public ApiResponse<Void> reissue() {
         // 쿠키에서 Refresh Token 꺼냄
@@ -124,6 +134,7 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "소셜 가입 추가 정보 입력", description = "소셜 로그인 후 부족한 추가 정보를 입력하고 토큰을 재발급합니다.")
     @PostMapping("/signup/additional")
     public ApiResponse<Void> signupAdditional(
             @Valid @RequestBody AdditionalInfoRequest request,
@@ -142,6 +153,7 @@ public class UserController {
         return new ApiResponse<>("200-1", "추가 정보 입력이 완료되었습니다.");
     }
 
+    @Operation(summary = "내 정보 조회", description = "로그인한 사용자의 정보를 조회합니다.")
     @GetMapping("/me")
     public ApiResponse<UserDto> me(
             @AuthenticationPrincipal SecurityUser securityUser
@@ -150,6 +162,7 @@ public class UserController {
         return new ApiResponse<>("200-1", "내 정보 조회 성공", new UserDto(user));
     }
 
+    @Operation(summary = "비밀번호 재설정 코드 발송", description = "비밀번호 재설정용 인증 코드를 이메일로 발송합니다.")
     @PostMapping("/password/reset/send")
     public ApiResponse<Void> sendPasswordResetCode(
             @Valid @RequestBody EmailVerifyRequest request
@@ -158,6 +171,7 @@ public class UserController {
         return new ApiResponse<>("200-1", "입력하신 이메일이 가입된 계정이라면 인증 코드가 발송됩니다.");
     }
 
+    @Operation(summary = "비밀번호 재설정 코드 확인", description = "인증 코드를 검증하고 재설정 토큰을 발급합니다.")
     @PostMapping("/password/reset/confirm")
     public ApiResponse<PasswordResetResponse> confirmPasswordResetCode(
             @Valid @RequestBody EmailVerifyConfirmRequest request
@@ -166,6 +180,7 @@ public class UserController {
         return new ApiResponse<>("200-1", "이메일 인증이 완료되었습니다.", new PasswordResetResponse(resetToken));
     }
 
+    @Operation(summary = "비밀번호 재설정", description = "재설정 토큰을 검증하고 새 비밀번호로 변경합니다.")
     @PostMapping("/password/reset")
     public ApiResponse<Void> resetPassword(
             @Valid @RequestBody PasswordResetRequest request
