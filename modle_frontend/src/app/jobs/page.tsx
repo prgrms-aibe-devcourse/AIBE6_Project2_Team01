@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { JobCard } from "@/components/jobposting/JobCard";
+import { JobCardSkeleton } from "@/components/jobposting/JobCardSkeleton";
 
 type JobListItem = components["schemas"]["JobPostingListResponse"];
 type PageData = components["schemas"]["PageJobPostingListResponse"];
@@ -253,7 +254,13 @@ export default function JobsPage() {
 
         {/* 목록 */}
         {loading ? (
-          <p className="py-12 text-center text-[15px] text-mute">로딩 중...</p>
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <li key={i} className="relative h-full">
+                <JobCardSkeleton />
+              </li>
+            ))}
+          </ul>
         ) : items.length === 0 ? (
           <p className="py-12 text-center text-[15px] text-mute">
             등록된 공고가 없습니다.
