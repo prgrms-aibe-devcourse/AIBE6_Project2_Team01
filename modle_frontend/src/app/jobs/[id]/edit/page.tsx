@@ -101,7 +101,6 @@ export default function EditJobPage({
         category: formData.category as
           | "HAIR"
           | "MAKEUP"
-          | "CLOTHING"
           | "FITTING"
           | "HAND"
           | "FOOD"

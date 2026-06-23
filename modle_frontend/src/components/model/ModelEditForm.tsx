@@ -132,7 +132,6 @@ export function ModelEditForm({ initialData }: Props) {
     { label: '메이크업', value: 'MAKEUP' },
     { label: '손/부분', value: 'HAND' },
     { label: '피팅', value: 'FITTING' },
-    { label: '의류', value: 'CLOTHING' },
     { label: '푸드', value: 'FOOD' },
     { label: '제품', value: 'PRODUCT' },
     { label: '기타', value: 'ETC' },

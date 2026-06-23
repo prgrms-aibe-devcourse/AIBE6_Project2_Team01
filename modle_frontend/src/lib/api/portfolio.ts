@@ -15,7 +15,7 @@ export const uploadPortfolioImages = async (files: File[], category: string): Pr
     params: {
       query: {
         category: category as
-          | 'HAIR' | 'MAKEUP' | 'CLOTHING' | 'FITTING'
+          | 'HAIR' | 'MAKEUP' | 'FITTING'
           | 'HAND' | 'FOOD' | 'PRODUCT' | 'ETC',
       },
     },

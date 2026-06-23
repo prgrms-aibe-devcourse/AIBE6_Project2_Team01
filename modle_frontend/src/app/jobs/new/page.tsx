@@ -14,7 +14,6 @@ import { useEffect, useState } from "react";
 const CATEGORY_OPTIONS: { value: Category; label: string }[] = [
   { value: "HAIR", label: "헤어" },
   { value: "MAKEUP", label: "메이크업" },
-  { value: "CLOTHING", label: "의류" },
   { value: "FITTING", label: "피팅" },
   { value: "HAND", label: "핸드" },
   { value: "FOOD", label: "음식" },
@@ -62,7 +61,6 @@ export default function NewJobPage() {
         category: formData.category as
           | "HAIR"
           | "MAKEUP"
-          | "CLOTHING"
           | "FITTING"
           | "HAND"
           | "FOOD"
