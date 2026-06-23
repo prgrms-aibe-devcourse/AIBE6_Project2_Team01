@@ -6,6 +6,7 @@ import com.modle.domain.user.entity.type.UserStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,4 +17,6 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
     Optional<Client> findByUser(User user);
 
     Optional<Client> findByUserId(Long userId);
+
+    List<Client> findByUser_IdIn(Collection<Long> userIds);
 }

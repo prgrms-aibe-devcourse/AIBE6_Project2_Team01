@@ -29,7 +29,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -122,8 +124,19 @@ public class JobPostingService {
         Region regionEnum = parseEnum(Region.class, region);
         Category categoryEnum = parseEnum(Category.class, category);
         JobPostingStatus statusEnum = parseEnum(JobPostingStatus.class, status);
-        return jobPostingRepository.findByFilter(regionEnum, categoryEnum, statusEnum, pageable)
-                .map(JobPostingListResponse::from);
+        Page<JobPosting> page = jobPostingRepository.findByFilter(regionEnum, categoryEnum, statusEnum, pageable);
+
+        List<Long> clientIds = page.getContent().stream()
+                .map(JobPosting::getClientId)
+                .distinct()
+                .toList();
+        Map<Long, Client> clientsByUserId = clientIds.isEmpty()
+                ? Map.of()
+                : clientRepository.findByUser_IdIn(clientIds).stream()
+                        .collect(Collectors.toMap(c -> c.getUser().getId(), c -> c));
+
+        return page.map(jobPosting ->
+                JobPostingListResponse.from(jobPosting, clientsByUserId.get(jobPosting.getClientId())));
     }
 
     private <E extends Enum<E>> E parseEnum(Class<E> enumClass, String value) {
