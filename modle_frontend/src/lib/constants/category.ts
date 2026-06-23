@@ -9,8 +9,7 @@ export const CATEGORY_OPTIONS = [
   { value: "ETC", label: "기타" },
 ] as const;
 
-export function getCategoryLabel(value: string | undefined | null): string {
-  if (!value) return "선택 안됨";
-  const option = CATEGORY_OPTIONS.find((opt) => opt.value === value);
-  return option ? option.label : value;
+// 카테고리 enum 값을 한글 라벨로 변환 (매칭 없으면 원래 값 반환)
+export function getCategoryLabel(value?: string | null): string {
+  return CATEGORY_OPTIONS.find((o) => o.value === value)?.label ?? value ?? "";
 }

@@ -25,6 +25,13 @@ const CATEGORY_OPTIONS = [
   { value: "ETC", label: "기타" },
 ];
 
+const STATUS_FILTER_OPTIONS = [
+  { value: "", label: "전체 상태" },
+  { value: "RECRUITING", label: "모집 중" },
+  { value: "SHOOTING", label: "촬영 중" },
+  { value: "COMPLETED", label: "완료" },
+];
+
 
 
 const STATUS_LABELS: Record<string, string> = {
@@ -51,6 +58,7 @@ export default function JobsPage() {
   const isClient = user?.role === "CLIENT";
   const [region, setRegion] = useState("");
   const [category, setCategory] = useState("");
+  const [status, setStatus] = useState("");
   const [page, setPage] = useState(0);
   const [pageData, setPageData] = useState<PageData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -111,6 +119,7 @@ export default function JobsPage() {
           query: {
             region: region || undefined,
             category: category || undefined,
+            status: status || undefined,
             page,
             size: 12,
           },
@@ -129,13 +138,18 @@ export default function JobsPage() {
     return () => {
       cancelled = true;
     };
-  }, [region, category, page]);
+  }, [region, category, status, page]);
 
-  const handleFilterChange = (nextRegion: string, nextCategory: string) => {
+  const handleFilterChange = (
+    nextRegion: string,
+    nextCategory: string,
+    nextStatus: string,
+  ) => {
     setLoading(true);
     setPage(0);
     setRegion(nextRegion);
     setCategory(nextCategory);
+    setStatus(nextStatus);
   };
 
   const handlePageChange = (i: number) => {
@@ -146,6 +160,7 @@ export default function JobsPage() {
   const items = pageData?.content ?? [];
   const totalPages = pageData?.totalPages ?? 1;
   const currentPage = pageData?.number ?? 0;
+  const totalCount = pageData?.totalElements ?? 0;
 
   return (
     <main className="min-h-screen bg-canvas text-ink">
@@ -189,8 +204,11 @@ export default function JobsPage() {
               <button
                 key={o.value}
                 type="button"
-                onClick={() => handleFilterChange(region, o.value)}
-                className={`whitespace-nowrap rounded-xl px-5 py-2.5 text-[14px] font-bold transition-all ${
+                onClick={() => {
+                  const next = category === o.value ? "" : o.value;
+                  if (next !== category) handleFilterChange(region, next, status);
+                }}
+                className={`whitespace-nowrap rounded-lg px-3 py-2 text-[13px] font-bold transition-all ${
                   category === o.value
                     ? "bg-ink text-canvas shadow-md"
                     : "bg-transparent text-gray-500 hover:bg-gray-100 hover:text-ink"
@@ -201,7 +219,20 @@ export default function JobsPage() {
             ))}
           </div>
           
-          <div className="w-full md:w-auto flex shrink-0 border-t md:border-t-0 md:border-l border-hairline pt-4 md:pt-0 md:pl-4 mt-2 md:mt-0 relative" ref={regionRef}>
+          <div className="w-full md:w-auto flex shrink-0 gap-2 border-t md:border-t-0 md:border-l border-hairline pt-4 md:pt-0 md:pl-4 mt-2 md:mt-0">
+            <select
+              value={status}
+              onChange={(e) => handleFilterChange(region, category, e.target.value)}
+              className="w-full md:w-40 h-11 rounded-xl border border-hairline bg-gray-50 px-4 text-[14px] font-medium text-ink outline-none transition focus:border-ink focus:bg-white focus:ring-2 focus:ring-ink/10 cursor-pointer appearance-none"
+              style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg stroke='currentColor' fill='none' stroke-width='2' viewBox='0 0 24 24' stroke-linecap='round' stroke-linejoin='round' height='1em' width='1em' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 1rem center", backgroundSize: "1em" }}
+            >
+              {STATUS_FILTER_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+            <div className="relative w-full md:w-48" ref={regionRef}>
             <div
               onClick={() => setIsRegionOpen(!isRegionOpen)}
               className="w-full md:w-48 h-11 rounded-xl border border-hairline bg-gray-50 px-4 text-[14px] font-medium text-ink flex items-center justify-between cursor-pointer hover:border-ink hover:bg-white transition"
@@ -213,7 +244,7 @@ export default function JobsPage() {
               <div className="absolute z-50 top-full mt-2 left-0 md:left-4 w-full md:w-48 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                 <div
                   className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-gray-500 text-[14px]"
-                  onClick={() => { handleFilterChange('', category); setIsRegionOpen(false); }}
+                  onClick={() => { handleFilterChange('', category, status); setIsRegionOpen(false); }}
                 >
                   🗺️ 전체 지역
                 </div>
@@ -221,15 +252,22 @@ export default function JobsPage() {
                   <div
                     key={o.value}
                     className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-ink text-[14px]"
-                    onClick={() => { handleFilterChange(o.value, category); setIsRegionOpen(false); }}
+                    onClick={() => { handleFilterChange(o.value, category, status); setIsRegionOpen(false); }}
                   >
                     {o.label}
                   </div>
                 ))}
               </div>
             )}
+            </div>
           </div>
         </section>
+
+        {!loading ? (
+          <p className="text-[14px] text-gray-500">
+            총 <span className="font-bold text-ink">{totalCount.toLocaleString()}</span>개의 공고
+          </p>
+        ) : null}
 
         {/* 목록 */}
         {loading ? (
@@ -247,6 +285,7 @@ export default function JobsPage() {
                   isFavorited={favoritedIds.has(job.id!)}
                   onToggleFavorite={isModel ? (e, id) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     toggleFavorite(id);
                   } : undefined}
                 />

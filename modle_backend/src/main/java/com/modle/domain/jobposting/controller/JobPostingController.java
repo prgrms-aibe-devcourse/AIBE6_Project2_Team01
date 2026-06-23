@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -82,8 +83,9 @@ public class JobPostingController {
     public ApiResponse<Page<JobPostingListResponse>> getJobPostings(
             @RequestParam(required = false) String region,
             @RequestParam(required = false) String category,
-            @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ApiResponse.ok("공고 목록 조회 성공", jobPostingService.getJobPostings(region, category, pageable));
+            @RequestParam(required = false) String status,
+            @ParameterObject @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ApiResponse.ok("공고 목록 조회 성공", jobPostingService.getJobPostings(region, category, status, pageable));
     }
 
     @GetMapping("/mine/recruiting")

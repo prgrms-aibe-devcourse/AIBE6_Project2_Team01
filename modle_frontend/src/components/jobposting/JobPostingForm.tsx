@@ -61,6 +61,7 @@ export type JobPostingFormState = {
   minCareerMonths: string;
   payment: string;
   payType: PayType | "";
+  serviceDetail: string;
   shootDate: string;
   imageUrls: string[];
 };
@@ -81,6 +82,7 @@ export const defaultFormState: JobPostingFormState = {
   minCareerMonths: "",
   payment: "",
   payType: "",
+  serviceDetail: "",
   shootDate: "",
   imageUrls: [],
 };
@@ -111,6 +113,9 @@ export function JobPostingForm({
   const [aiError, setAiError] = useState("");
   const [aiGenerated, setAiGenerated] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
   const [prevExternalCategory, setPrevExternalCategory] = useState(externalCategory);
   if (prevExternalCategory !== externalCategory && externalCategory) {
@@ -196,11 +201,60 @@ export function JobPostingForm({
       setMessage("보수 유형을 선택해주세요.");
       return;
     }
+    if (form.shootDate && form.shootDate < todayStr) {
+      setStatus("error");
+      setMessage("촬영 예정일은 오늘 이후로 선택해주세요.");
+      return;
+    }
     if (!form.ageMin && !form.ageMax) {
       setStatus("error");
       setMessage("나이 최소 또는 최대를 입력해주세요.");
       return;
     }
+
+    const rangeError =
+      validateRange(form.ageMin, form.ageMax, "나이", 15, 80) ??
+      validateRange(form.heightMin, form.heightMax, "키", 100, 220) ??
+      validateRange(form.weightMin, form.weightMax, "몸무게", 30, 150);
+    if (rangeError) {
+      setStatus("error");
+      setMessage(rangeError);
+      return;
+    }
+
+    if (form.requiredCount) {
+      const count = Number(form.requiredCount);
+      if (!Number.isInteger(count) || count < 1 || count > 100) {
+        setStatus("error");
+        setMessage("최종 섭외 인원은 1~100 사이의 정수로 입력해주세요.");
+        return;
+      }
+    }
+
+    if (form.minCareerMonths) {
+      const months = Number(form.minCareerMonths);
+      if (!Number.isInteger(months) || months < 0 || months > 600) {
+        setStatus("error");
+        setMessage("최소 경력은 0~600개월 사이의 정수로 입력해주세요.");
+        return;
+      }
+    }
+
+    if (form.payType === "CASH") {
+      const pay = Number(form.payment);
+      if (!form.payment || !Number.isInteger(pay) || pay < 0) {
+        setStatus("error");
+        setMessage("보수 금액은 0 이상의 정수로 입력해주세요.");
+        return;
+      }
+    }
+
+    if (form.payType === "SERVICE" && !form.serviceDetail.trim()) {
+      setStatus("error");
+      setMessage("제공 서비스 내용을 입력해주세요.");
+      return;
+    }
+
     setStatus("saving");
     setMessage("");
     try {
@@ -384,6 +438,7 @@ export function JobPostingForm({
             <input
               className={inputClass}
               type="date"
+              min={todayStr}
               value={form.shootDate}
               onChange={(e) => updateField("shootDate", e.target.value)}
               required
@@ -497,6 +552,7 @@ export function JobPostingForm({
                   className={toggleBtn(form.payType === pt)}
                   onClick={() => {
                     if (pt !== "CASH") updateField("payment", "");
+                    if (pt !== "SERVICE") updateField("serviceDetail", "");
                     updateField("payType", pt);
                   }}
                 >
@@ -514,6 +570,19 @@ export function JobPostingForm({
                 min={0}
                 value={form.payment}
                 onChange={(e) => updateField("payment", e.target.value)}
+                required
+              />
+            </Field>
+          ) : null}
+
+          {form.payType === "SERVICE" ? (
+            <Field label="제공 서비스" required>
+              <input
+                className={inputClass}
+                value={form.serviceDetail}
+                onChange={(e) => updateField("serviceDetail", e.target.value)}
+                placeholder="예: 시술 1회 무료 제공"
+                maxLength={50}
                 required
               />
             </Field>
@@ -537,6 +606,25 @@ export function JobPostingForm({
       </aside>
     </form>
   );
+}
+
+// 최소/최대 입력값의 범위와 역전 여부를 검증한다 (값이 없으면 통과). 문제가 있으면 메시지, 없으면 null.
+function validateRange(
+  minStr: string,
+  maxStr: string,
+  label: string,
+  lo: number,
+  hi: number,
+): string | null {
+  const min = minStr ? Number(minStr) : null;
+  const max = maxStr ? Number(maxStr) : null;
+  if (min !== null && (!Number.isInteger(min) || min < lo || min > hi))
+    return `${label} 최소는 ${lo}~${hi} 사이의 정수로 입력해주세요.`;
+  if (max !== null && (!Number.isInteger(max) || max < lo || max > hi))
+    return `${label} 최대는 ${lo}~${hi} 사이의 정수로 입력해주세요.`;
+  if (min !== null && max !== null && min > max)
+    return `${label} 최소값이 최대값보다 클 수 없습니다.`;
+  return null;
 }
 
 function Field({

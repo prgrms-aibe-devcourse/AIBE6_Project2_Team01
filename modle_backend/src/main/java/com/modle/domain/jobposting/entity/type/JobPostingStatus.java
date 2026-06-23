@@ -24,7 +24,7 @@ public enum JobPostingStatus {
     public boolean canTransitionTo(JobPostingStatus next) {
         return switch (this) {
             case RECRUITING -> Set.of(SHOOTING, CANCELLED, ON_HOLD, CLOSED).contains(next);
-            case SHOOTING   -> Set.of(COMPLETED, CANCELLED, ON_HOLD).contains(next);
+            case SHOOTING   -> Set.of(CANCELLED, ON_HOLD).contains(next);
             case ON_HOLD    -> Set.of(RECRUITING, CANCELLED, CLOSED, SHOOTING).contains(next);
             default         -> false;
         };

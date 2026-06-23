@@ -6,6 +6,8 @@ import { applyToJob } from "@/lib/api/application";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { Toast, type ToastState } from "@/components/ui/Toast";
+import { getRegionLabel } from "@/lib/constants/region";
+import { getCategoryLabel } from "@/lib/constants/category";
 
 type JobSummary = {
   id: number;
@@ -129,11 +131,11 @@ export default function ApplyPage({
             </div>
             <div className="grid grid-cols-[80px_1fr] gap-3">
               <dt className="text-gray-500 font-bold">카테고리</dt>
-              <dd className="text-black font-medium">{job?.category}</dd>
+              <dd className="text-black font-medium">{getCategoryLabel(job?.category)}</dd>
             </div>
             <div className="grid grid-cols-[80px_1fr] gap-3">
               <dt className="text-gray-500 font-bold">지역</dt>
-              <dd className="text-black font-medium">{job?.region}</dd>
+              <dd className="text-black font-medium">{getRegionLabel(job?.region)}</dd>
             </div>
           </dl>
         </section>

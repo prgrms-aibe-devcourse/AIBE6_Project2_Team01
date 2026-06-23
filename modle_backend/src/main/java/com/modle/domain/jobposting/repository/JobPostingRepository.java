@@ -21,9 +21,9 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
     @Query("SELECT j FROM JobPosting j WHERE j.id = :id")
     Optional<JobPosting> findByIdForUpdate(@Param("id") Long id);
 
-    // JOB-005: 지역·카테고리 필터 (null이면 전체 조회)
-    @Query("SELECT j FROM JobPosting j WHERE (:region IS NULL OR j.region = :region) AND (:category IS NULL OR j.category = :category)")
-    Page<JobPosting> findByFilter(@Param("region") Region region, @Param("category") Category category, Pageable pageable);
+    // JOB-005: 지역·카테고리·상태 필터 (null이면 해당 조건 전체 조회)
+    @Query("SELECT j FROM JobPosting j WHERE (:region IS NULL OR j.region = :region) AND (:category IS NULL OR j.category = :category) AND (:status IS NULL OR j.status = :status)")
+    Page<JobPosting> findByFilter(@Param("region") Region region, @Param("category") Category category, @Param("status") JobPostingStatus status, Pageable pageable);
 
     List<JobPosting> findByClientIdAndStatusOrderByCreatedDateDesc(
             Long clientId,

@@ -75,6 +75,9 @@ public class JobPosting extends BaseEntity {
     @Column
     private PayType payType;
 
+    @Column(columnDefinition = "TEXT")
+    private String serviceDetail; // payType이 SERVICE일 때 제공 서비스 내용
+
     @Column
     private LocalDateTime shootDate;
 
@@ -86,7 +89,7 @@ public class JobPosting extends BaseEntity {
                        Integer heightMin, Integer heightMax,
                        Integer weightMin, Integer weightMax,
                        Integer minCareerMonths,
-                       BigDecimal payment, PayType payType, LocalDateTime shootDate) {
+                       BigDecimal payment, PayType payType, String serviceDetail, LocalDateTime shootDate) {
         this.clientId = clientId;
         this.title = title;
         this.content = content;
@@ -104,6 +107,7 @@ public class JobPosting extends BaseEntity {
         this.minCareerMonths = minCareerMonths;
         this.payment = payment;
         this.payType = payType;
+        this.serviceDetail = serviceDetail;
         this.shootDate = shootDate;
     }
 
@@ -114,7 +118,7 @@ public class JobPosting extends BaseEntity {
                        Integer heightMin, Integer heightMax,
                        Integer weightMin, Integer weightMax,
                        Integer minCareerMonths,
-                       BigDecimal payment, PayType payType, LocalDateTime shootDate) {
+                       BigDecimal payment, PayType payType, String serviceDetail, LocalDateTime shootDate) {
         this.title = title;
         this.content = content;
         this.category = category;
@@ -130,6 +134,7 @@ public class JobPosting extends BaseEntity {
         this.minCareerMonths = minCareerMonths;
         this.payment = payment;
         this.payType = payType;
+        this.serviceDetail = serviceDetail;
         this.shootDate = shootDate;
     }
 

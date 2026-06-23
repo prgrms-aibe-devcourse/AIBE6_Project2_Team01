@@ -101,14 +101,15 @@ export default function NewJobPage() {
           : undefined,
         payment: formData.payment ? Number(formData.payment) : undefined,
         payType: formData.payType || undefined,
+        serviceDetail: formData.serviceDetail || undefined,
         shootDate: formData.shootDate
           ? `${formData.shootDate}T00:00:00`
           : undefined,
+        imageUrls: formData.imageUrls,
     };
 
-    // imageUrls는 백엔드에 추가됐으나 schema.d.ts 재생성 보류 중이라 캐스팅으로 전달
     const { response, data } = await client.POST("/api/v1/jobs", {
-      body: { ...requestBody, imageUrls: formData.imageUrls } as typeof requestBody,
+      body: requestBody,
     });
 
     if (!response.ok) {
@@ -123,9 +124,6 @@ export default function NewJobPage() {
     <main className="min-h-screen bg-canvas text-ink">
       <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
         <header className="border-b border-hairline pb-6">
-          <p className="font-mono text-xs leading-4 tracking-[0.4px] text-mute">
-            JOBS / NEW
-          </p>
           <div className="mt-3">
             <h1 className="text-[28px] font-bold leading-9 text-ink">
               공고 등록

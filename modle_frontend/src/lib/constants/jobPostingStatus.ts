@@ -23,7 +23,6 @@ export const STATUS_TRANSITION_LABELS: Record<string, string> = {
 
 export const STATUS_CHANGE_DESCRIPTIONS: Record<string, string> = {
   SHOOTING: "모델과 촬영을 시작합니다.",
-  COMPLETED: "모든 촬영이 완료되었습니다.",
   CANCELLED: "공고를 취소합니다. 진행이 불가한 경우 사용하며 되돌릴 수 없습니다.",
   ON_HOLD: "촬영을 일시 중단합니다. 이후 재개하거나 재모집할 수 있습니다.",
   CLOSED: "모집을 정상 종료합니다. 취소와 달리 이상 없이 마무리된 경우입니다.",
@@ -40,6 +39,6 @@ export const eulo = (text: string): string => {
 
 export const STATUS_TRANSITIONS: Record<string, string[]> = {
   RECRUITING: ["SHOOTING", "CANCELLED", "ON_HOLD", "CLOSED"],
-  SHOOTING: ["COMPLETED", "CANCELLED", "ON_HOLD"],
+  SHOOTING: ["CANCELLED", "ON_HOLD"],
   ON_HOLD: ["SHOOTING", "RECRUITING", "CANCELLED", "CLOSED"],
 };

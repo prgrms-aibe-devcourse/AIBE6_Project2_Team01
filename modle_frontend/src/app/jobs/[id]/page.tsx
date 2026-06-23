@@ -44,6 +44,7 @@ type ClientDetail = ClientInfo & {
   minCareerMonths?: number;
   payment?: number;
   payType?: string;
+  serviceDetail?: string;
   shootDate?: string;
   createdDate?: string;
   recommendedModelIds: number[];
@@ -68,6 +69,7 @@ type ModelDetail = ClientInfo & {
   minCareerMonths?: number;
   payment?: number;
   payType?: string;
+  serviceDetail?: string;
   shootDate?: string;
   createdDate?: string;
   favorited: boolean;
@@ -85,6 +87,7 @@ type OtherDetail = ClientInfo & {
   requiredCount?: number;
   payment?: number;
   payType?: string;
+  serviceDetail?: string;
   shootDate?: string;
   createdDate?: string;
   imageUrls?: string[];
@@ -323,7 +326,7 @@ export default function JobDetailPage({
           | "CANCELLED"
           | "ON_HOLD"
           | "CLOSED",
-        reason: reason || null,
+        reason: reason || undefined,
       },
     });
     setStatusChanging(false);
@@ -580,6 +583,9 @@ export default function JobDetailPage({
                           : "-"
                   }
                 />
+                {detail.payType === "SERVICE" && detail.serviceDetail ? (
+                  <InfoRow label="제공 서비스" value={detail.serviceDetail} />
+                ) : null}
                 {detail.shootDate ? (
                   <InfoRow
                     label="촬영일"

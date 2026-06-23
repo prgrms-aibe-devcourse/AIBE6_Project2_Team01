@@ -66,6 +66,7 @@ public class JobPostingService {
                 .minCareerMonths(request.minCareerMonths())
                 .payment(request.payment())
                 .payType(request.payType())
+                .serviceDetail(request.serviceDetail())
                 .shootDate(request.shootDate())
                 .build();
 
@@ -93,7 +94,7 @@ public class JobPostingService {
                 request.heightMin(), request.heightMax(),
                 request.weightMin(), request.weightMax(),
                 request.minCareerMonths(),
-                request.payment(), request.payType(), request.shootDate());
+                request.payment(), request.payType(), request.serviceDetail(), request.shootDate());
 
         replaceImages(jobPostingId, request.imageUrls());
 
@@ -116,11 +117,12 @@ public class JobPostingService {
         jobPostingRepository.delete(jobPosting);
     }
 
-    // JOB-005: 지역·카테고리 필터를 적용한 공고 목록을 반환한다.
-    public Page<JobPostingListResponse> getJobPostings(String region, String category, Pageable pageable) {
+    // JOB-005: 지역·카테고리·상태 필터를 적용한 공고 목록을 반환한다.
+    public Page<JobPostingListResponse> getJobPostings(String region, String category, String status, Pageable pageable) {
         Region regionEnum = parseEnum(Region.class, region);
         Category categoryEnum = parseEnum(Category.class, category);
-        return jobPostingRepository.findByFilter(regionEnum, categoryEnum, pageable)
+        JobPostingStatus statusEnum = parseEnum(JobPostingStatus.class, status);
+        return jobPostingRepository.findByFilter(regionEnum, categoryEnum, statusEnum, pageable)
                 .map(JobPostingListResponse::from);
     }
 
@@ -197,6 +199,7 @@ public class JobPostingService {
                 .minCareerMonths(original.getMinCareerMonths())
                 .payment(original.getPayment())
                 .payType(original.getPayType())
+                .serviceDetail(original.getServiceDetail())
                 .shootDate(original.getShootDate())
                 .build();
 
