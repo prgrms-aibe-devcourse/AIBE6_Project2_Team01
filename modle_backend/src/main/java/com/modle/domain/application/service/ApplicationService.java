@@ -28,6 +28,7 @@ import com.modle.domain.user.repository.ModelRepository;
 import com.modle.global.exception.CustomException;
 import com.modle.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,7 +85,14 @@ public class ApplicationService {
                 .coverLetter(request != null ? request.coverLetter() : null)
                 .status(ApplicationStatus.APPLIED)
                 .build();
-        Application saved = applicationRepository.save(application);
+
+        Application saved;
+        try {
+            // 동시 요청 경합 시 DB 유니크 제약(uq_application_active) 위반을 즉시 감지하기 위해 flush.
+            saved = applicationRepository.saveAndFlush(application);
+        } catch (DataIntegrityViolationException e) {
+            throw new CustomException(ErrorCode.APPLICATION_ALREADY_EXISTS);
+        }
 
         var conversation = messageService.createConversation(
                 jobPosting.getClientId(),
