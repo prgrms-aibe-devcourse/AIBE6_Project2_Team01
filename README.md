@@ -52,7 +52,7 @@ AI 추천 기반으로 연결하고, 지원·계약·리뷰까지 한 곳에서 
 
 ## 👥 멤버 소개
 
-| **김락현** | **김영욱** | **신재희** | **임현호** | **김영욱** |
+| **김락현** | **김영욱** | **신재희** | **임현호** | **최정우** |
 |---------|---------|---------|---------|---------|
 | [@Rakhyunn](https://github.com/Rakhyunn) | [@wooki0123](https://github.com/wooki0123) | [@SHINJAEHEE-DEV](https://github.com/SHINJAEHEE-DEV) | [@predevho](https://github.com/predevho) | [@woo0218](https://github.com/woo0218) |
 
