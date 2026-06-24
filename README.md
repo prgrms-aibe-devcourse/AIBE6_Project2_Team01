@@ -482,7 +482,7 @@ flowchart TD
         GCS["☁️ GCP Storage<br/>이미지 · 계약 PDF"]
         AI["🤖 OpenAI · Groq<br/>임베딩 · AI 추천"]
         OAuth["🔐 OAuth2<br/>Google · Kakao · Naver"]
-        SMTP["📧 SMTP (Gmail)<br/>이메일 인증 · 알림"]
+        Sendgrid["📧 Sendgrid <br/>이메일 인증 · 알림"]
     end
 
     Browser -->|HTTPS| FE
@@ -493,7 +493,7 @@ flowchart TD
     BE -->|파일 업로드/다운로드| GCS
     BE -->|임베딩 생성/추천| AI
     BE -->|소셜 로그인| OAuth
-    BE -->|메일 발송| SMTP
+    BE -->|메일 발송| Sendgrid
 
     classDef client fill:#61DAFB22,stroke:#61DAFB,stroke-width:2px;
     classDef server fill:#6DB33F22,stroke:#6DB33F,stroke-width:2px;
